@@ -17,7 +17,6 @@ import { supabase } from "../integrations/supabase/client";
 import { AuthModal } from "./AuthModal";
 import { toast } from "sonner";
 import { User } from "@supabase/supabase-js";
-import { cn } from "../lib/utils";
 
 interface NavbarProps {
   onShowSettings: () => void;
@@ -27,6 +26,25 @@ interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = ({ onShowSettings, onShowHistory }) => {
   const { theme, setTheme, language, setLanguage, apiKey, history } = useSettingsStore();
   const t = useTranslation(language);
+  const [user, setUser] = useState<User | null>(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    toast.success('Deslogado com sucesso');
+  };
 
   return (
     <header className="h-[52px] border-b border-border bg-surface sticky top-0 z-40 px-6 flex items-center justify-between">
