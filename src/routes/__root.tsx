@@ -1,6 +1,6 @@
 import { createRootRouteWithContext, Outlet, ScrollRestoration, HeadContent, Scripts, useNavigate, useLocation } from '@tanstack/react-router'
 import * as React from 'react'
-import { useStore } from '../lib/store'
+import { useSettingsStore } from '../store/useAppStore'
 import { useAuthStore } from '../store/useAuthStore'
 import { supabase } from '../integrations/supabase/client'
 import { AccessStatusScreen } from '../components/AccessScreens'
@@ -35,7 +35,7 @@ export const Route = createRootRouteWithContext()({
 })
 
 function RootComponent() {
-  const theme = useStore((state) => state.app.theme)
+  const theme = useSettingsStore((state) => state.theme)
   const { user, profile, loading, initialized, setSession } = useAuthStore()
   const navigate = useNavigate()
   const location = useLocation()
@@ -61,10 +61,12 @@ function RootComponent() {
   }, [user, initialized, loading, location.pathname, navigate])
 
   React.useEffect(() => {
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark')
-    } else {
+    if (theme === 'light') {
+      document.documentElement.classList.add('light')
       document.documentElement.classList.remove('dark')
+    } else {
+      document.documentElement.classList.add('dark')
+      document.documentElement.classList.remove('light')
     }
   }, [theme])
 
@@ -72,7 +74,7 @@ function RootComponent() {
   const showStatusScreen = user && profile && profile.access_status !== 'active' && location.pathname !== '/login';
 
   return (
-    <html className={theme}>
+    <html lang="pt-BR">
       <head>
         <HeadContent />
       </head>
