@@ -12,7 +12,7 @@ import {
   HelpCircle,
   User as UserIcon,
   LogOut,
-  ShieldCheck,
+  
   ChevronDown,
   UserCircle
 } from "lucide-react";
