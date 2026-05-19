@@ -1,6 +1,6 @@
 import React from "react";
-import { AIResponse } from "../../lib/types";
-import { cn } from "../../lib/utils";
+import { AIResponse } from "../../../lib/types";
+import { cn } from "../../../lib/utils";
 import { 
   Shield, 
   Thermometer, 
@@ -108,7 +108,7 @@ export const SummaryTab = ({ results }: { results: AIResponse }) => {
             <div className="space-y-3">
                 <p className="text-[8px] font-black uppercase text-muted/30 tracking-[0.3em]">Breakdown por cor (AMS)</p>
                 <div className="flex flex-wrap gap-4">
-                    {results.estimates.filament_per_color.map((f, i) => (
+                    {results.estimates.filament_per_color.map((f: any, i: number) => (
                         <div key={i} className="flex items-center gap-2 bg-white/5 px-3 py-2 rounded-xl border border-white/5">
                             <div className="w-3 h-3 rounded-full shadow-lg" style={{ backgroundColor: f.color }} />
                             <span className="text-[10px] font-bold text-white uppercase tracking-tighter">Tray {f.slot}: {f.grams}g</span>
