@@ -14,7 +14,152 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      access_requests: {
+        Row: {
+          created_at: string | null
+          id: string
+          message: string | null
+          resolved_at: string | null
+          resolved_by: string | null
+          status: string | null
+          type: string
+          user_email: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          message?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string | null
+          type: string
+          user_email: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          message?: string | null
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: string | null
+          type?: string
+          user_email?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "access_requests_resolved_by_fkey"
+            columns: ["resolved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "access_requests_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          access_end: string | null
+          access_start: string | null
+          access_status: string
+          access_type: string | null
+          created_at: string | null
+          email: string
+          full_name: string | null
+          id: string
+          last_login: string | null
+          notes: string | null
+          renewal_requested_at: string | null
+          role: string
+        }
+        Insert: {
+          access_end?: string | null
+          access_start?: string | null
+          access_status?: string
+          access_type?: string | null
+          created_at?: string | null
+          email: string
+          full_name?: string | null
+          id: string
+          last_login?: string | null
+          notes?: string | null
+          renewal_requested_at?: string | null
+          role?: string
+        }
+        Update: {
+          access_end?: string | null
+          access_start?: string | null
+          access_status?: string
+          access_type?: string | null
+          created_at?: string | null
+          email?: string
+          full_name?: string | null
+          id?: string
+          last_login?: string | null
+          notes?: string | null
+          renewal_requested_at?: string | null
+          role?: string
+        }
+        Relationships: []
+      }
+      subscriptions: {
+        Row: {
+          created_at: string | null
+          currency: string | null
+          current_period_end: string | null
+          current_period_start: string | null
+          external_id: string | null
+          id: string
+          payment_provider: string | null
+          plan: string | null
+          price_cents: number | null
+          status: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          currency?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          external_id?: string | null
+          id?: string
+          payment_provider?: string | null
+          plan?: string | null
+          price_cents?: number | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          currency?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          external_id?: string | null
+          id?: string
+          payment_provider?: string | null
+          plan?: string | null
+          price_cents?: number | null
+          status?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
