@@ -14,13 +14,11 @@ export const AccountModal: React.FC<AccountModalProps> = ({ onClose }) => {
   if (!user || !profile) return null;
 
   const getInitials = (name: string, email: string) => {
-    const displayName = name || email || 'U';
-    if (displayName.includes('@')) {
-      return displayName.charAt(0).toUpperCase();
-    }
-    const parts = displayName.split(' ').filter(n => n.length > 0);
+    if (!name) return email ? email.charAt(0).toUpperCase() : 'U';
+    const parts = name.trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) return email ? email.charAt(0).toUpperCase() : 'U';
     if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
-    return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+    return (parts[0].charAt(0) + parts[1].charAt(0)).toUpperCase();
   };
 
   const formatDate = (dateString: string) => {
