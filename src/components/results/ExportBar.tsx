@@ -57,13 +57,13 @@ export const ExportBar = ({ results, onReset }: { results: AIResponse, onReset: 
 
   return (
     <div className="flex flex-wrap gap-3">
-      <button onClick={onReset} className="flex-1 min-w-[120px] flex items-center justify-center gap-2 px-4 py-3.5 bg-white/5 border border-white/5 rounded-2xl text-[10px] font-black tracking-widest text-muted hover:text-white transition-all">
+      <button onClick={onReset} className="flex-1 min-w-[120px] flex items-center justify-center gap-2 px-4 py-3.5 bg-transparent border border-border-strong rounded-xl text-[10px] font-bold tracking-widest text-foreground hover:text-primary hover:border-primary hover:bg-surface-hover transition-all">
         <RotateCcw className="w-3.5 h-3.5" /> REFAZER
       </button>
-      <button onClick={handleDownload} className="flex-1 min-w-[120px] flex items-center justify-center gap-2 px-4 py-3.5 bg-white/5 border border-white/5 rounded-2xl text-[10px] font-black tracking-widest text-muted hover:text-white transition-all">
+      <button onClick={handleDownload} className="flex-1 min-w-[120px] flex items-center justify-center gap-2 px-4 py-3.5 bg-transparent border border-border-strong rounded-xl text-[10px] font-bold tracking-widest text-foreground hover:text-primary hover:border-primary hover:bg-surface-hover transition-all">
         <Download className="w-3.5 h-3.5" /> BAIXAR .TXT
       </button>
-      <button onClick={handleShare} className="flex-1 min-w-[120px] flex items-center justify-center gap-2 px-4 py-3.5 bg-white/5 border border-white/5 rounded-2xl text-[10px] font-black tracking-widest text-muted hover:text-white transition-all">
+      <button onClick={handleShare} className="flex-1 min-w-[120px] flex items-center justify-center gap-2 px-4 py-3.5 bg-transparent border border-border-strong rounded-xl text-[10px] font-bold tracking-widest text-foreground hover:text-primary hover:border-primary hover:bg-surface-hover transition-all">
         <Share className="w-3.5 h-3.5" /> COMPARTILHAR
       </button>
     </div>
