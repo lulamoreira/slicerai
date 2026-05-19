@@ -137,7 +137,12 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
                     <input 
                     type={showKey ? "text" : "password"}
                     value={apiKey}
-                    onChange={(e) => setApiKey(e.target.value)}
+                    onChange={(e) => {
+                      const newKey = e.target.value;
+                      setApiKey(newKey);
+                      // Force sync to localStorage happens via persist middleware, 
+                      // but we ensure the local state is updated for the Test button.
+                    }}
                     placeholder="AIza..."
                     className="w-full bg-surface-raised border border-border-strong rounded-xl p-3.5 text-xs font-mono font-bold outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-foreground pr-12"
                     />
