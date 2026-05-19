@@ -70,7 +70,7 @@ export const Wizard: React.FC = () => {
       </div>
 
       {/* Footer */}
-      <div className="mt-4 flex gap-4 shrink-0">
+      <div className="px-6 md:px-10 pb-6 md:pb-8 pt-3 shrink-0 bg-surface flex gap-4">
         {step > 1 && (
           <button
             onClick={prevStep}
