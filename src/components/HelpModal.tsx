@@ -1,5 +1,5 @@
 import React from "react";
-import { X, HelpCircle, Package, Wand2, Bot, ClipboardCheck, Key, HelpCircle as MessageSquareQuestion } from "lucide-react";
+import { X, HelpCircle, Package, Wand2, Bot, ClipboardCheck, Key, HelpCircle as HelpIcon } from "lucide-react";
 import { Button } from "./ui/button";
 import { cn } from "../lib/utils";
 
@@ -80,7 +80,7 @@ export const HelpModal: React.FC<HelpModalProps> = ({ onClose }) => {
           {/* FAQ */}
           <div className="space-y-4">
             <div className="flex items-center gap-3 text-muted px-1">
-              <MessageSquareQuestion className="w-5 h-5" />
+              <HelpIcon className="w-5 h-5" />
               <h3 className="text-xs font-black uppercase tracking-widest">Perguntas Frequentes</h3>
             </div>
             <div className="space-y-2">

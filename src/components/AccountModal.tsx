@@ -24,11 +24,8 @@ export const AccountModal: React.FC<AccountModalProps> = ({ onClose }) => {
   };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: 'long',
-      year: 'numeric'
-    });
+    const d = new Date(dateString);
+    return `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`;
   };
 
   return (
@@ -66,9 +63,9 @@ export const AccountModal: React.FC<AccountModalProps> = ({ onClose }) => {
             </div>
 
             <div className="flex items-center justify-between pt-1">
-              <span className="text-[10px] font-bold text-muted uppercase tracking-widest">Acesso Expira em:</span>
+              <span className="text-[10px] font-bold text-muted uppercase tracking-widest">Duração:</span>
               <span className="text-[10px] font-black text-foreground uppercase tracking-widest">
-                {profile.access_end ? formatDate(profile.access_end) : 'Indefinido'}
+                {profile.access_end ? `Até ${formatDate(profile.access_end)}` : 'Indefinido'}
               </span>
             </div>
           </div>
