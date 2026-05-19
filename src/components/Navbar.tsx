@@ -98,7 +98,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onShowSettings, onShowHistory })
 
         <button 
           onClick={() => setLanguage(language === 'pt-BR' ? 'en' : 'pt-BR')}
-          className="flex items-center gap-2 px-1.5 py-0.5 border border-border-strong hover:bg-primary-subtle rounded-md transition-all text-foreground-soft hover:text-primary text-[0.7rem]"
+          className="flex items-center gap-2 px-1.5 py-0.5 border border-border-strong hover:bg-primary-subtle rounded-md transition-all text-foreground-soft hover:text-primary text-[0.7rem] hidden sm:flex"
         >
           <Languages className="w-3.5 h-3.5" />
           {language === 'pt-BR' ? 'PT-BR' : 'EN'}
@@ -115,6 +115,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onShowSettings, onShowHistory })
 
         <div className="w-px h-6 bg-border mx-1 sm:mx-2" />
 
+        {renderStatusChip()}
+
         <button 
           onClick={onShowSettings}
           className={cn(
@@ -125,33 +127,68 @@ export const Navbar: React.FC<NavbarProps> = ({ onShowSettings, onShowHistory })
           <SettingsIcon className="w-5 h-5" />
         </button>
 
-        <div className="w-px h-6 bg-border mx-1 sm:mx-2" />
-
         {user ? (
-          <div className="flex items-center gap-2">
-            <div className="flex flex-col items-end hidden md:flex">
-              <span className="text-[10px] font-bold text-foreground leading-none">{user.email?.split('@')[0]}</span>
-              <span className="text-[8px] font-bold text-primary uppercase tracking-widest mt-1">Status: Ativo</span>
-            </div>
+          <div className="relative">
             <button 
-              onClick={handleLogout}
-              className="p-1.5 hover:bg-destructive/10 rounded-lg transition-all text-muted hover:text-destructive group"
-              title="Sair"
+              onClick={() => setShowDropdown(!showDropdown)}
+              className="flex items-center gap-2 pl-2 pr-1 py-1 hover:bg-surface-raised rounded-full border border-border transition-all"
             >
-              <LogOut className="w-5 h-5 group-hover:scale-110 transition-transform" />
+              <div className="w-7 h-7 bg-primary rounded-full flex items-center justify-center text-[10px] font-black text-[#0d0d14]">
+                {getInitials(profile?.full_name || user.email || '')}
+              </div>
+              <ChevronDown className={cn("w-3.5 h-3.5 text-muted transition-transform", showDropdown && "rotate-180")} />
             </button>
+
+            {showDropdown && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setShowDropdown(false)} />
+                <div className="absolute right-0 mt-3 w-64 bg-surface border border-border rounded-2xl shadow-2xl z-50 p-2 animate-in fade-in slide-in-from-top-4 duration-300">
+                  <div className="px-4 py-3 border-b border-border mb-2">
+                    <p className="text-xs font-bold text-foreground truncate">{profile?.full_name || 'Usuário SlicerAI'}</p>
+                    <p className="text-[10px] text-muted font-medium truncate mt-0.5">{user.email}</p>
+                  </div>
+                  
+                  <div className="space-y-1">
+                    <button className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-surface-raised rounded-xl text-[10px] font-bold text-foreground-soft hover:text-foreground transition-all uppercase tracking-widest">
+                      <UserCircle className="w-4 h-4 text-primary" />
+                      Minha Conta
+                    </button>
+                    
+                    {profile?.role === 'admin' && (
+                      <Link 
+                        to="/admin" 
+                        onClick={() => setShowDropdown(false)}
+                        className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-primary/10 rounded-xl text-[10px] font-bold text-primary transition-all uppercase tracking-widest"
+                      >
+                        <ShieldCheck className="w-4 h-4" />
+                        Painel Admin
+                      </Link>
+                    )}
+                    
+                    <div className="h-px bg-border my-2 mx-2" />
+                    
+                    <button 
+                      onClick={handleLogout}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-destructive/10 rounded-xl text-[10px] font-bold text-destructive transition-all uppercase tracking-widest"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Sair
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         ) : (
-          <button 
-            onClick={() => setShowAuthModal(true)}
-            className="flex items-center gap-2 px-3 py-1.5 bg-primary text-[#0d0d14] rounded-lg text-[10px] font-bold tracking-widest hover:bg-primary-hover transition-all shadow-lg"
+          <Button 
+            size="sm" 
+            onClick={() => navigate({ to: '/login' })}
+            className="h-8 px-4 text-[10px] font-bold tracking-widest uppercase"
           >
-            <UserIcon className="w-3.5 h-3.5" />
             ENTRAR
-          </button>
+          </Button>
         )}
       </div>
-      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
     </header>
   );
 };
