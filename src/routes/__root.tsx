@@ -1,5 +1,4 @@
-import { createRootRouteWithContext, Outlet, ScrollRestoration } from '@tanstack/react-router'
-import { Meta, Scripts } from '@tanstack/react-start'
+import { createRootRouteWithContext, Outlet, ScrollRestoration, HeadContent, Scripts } from '@tanstack/react-router'
 import * as React from 'react'
 import { useStore } from '../lib/store'
 import '../styles.css'
@@ -36,7 +35,7 @@ function RootComponent() {
   return (
     <html className={theme}>
       <head>
-        <Meta />
+        <HeadContent />
       </head>
       <body className="bg-background text-foreground transition-colors duration-300">
         <Outlet />
