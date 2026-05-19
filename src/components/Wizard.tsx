@@ -43,7 +43,7 @@ export const Wizard: React.FC = () => {
   return (
     <div className="flex flex-col h-full animate-in fade-in duration-500">
       {/* Progress */}
-      <div className="mb-4">
+      <div className="mb-4 px-6 md:px-10 pt-6 md:pt-10">
         <div className="flex justify-between items-end mb-4">
           <div className="space-y-1">
             <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-primary">Passo 0{step}</span>
@@ -65,7 +65,7 @@ export const Wizard: React.FC = () => {
       </div>
 
       {/* Step Content */}
-      <div className="flex-1 overflow-y-auto min-h-0 pr-4 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto min-h-0 pl-6 md:pl-10 pr-6 md:pr-10 custom-scrollbar">
         {renderStep()}
       </div>
 
@@ -95,13 +95,6 @@ export const Wizard: React.FC = () => {
           <div className="flex-1" />
         )}
       </div>
-
-      {!wizard.fileName && (
-        <div className="mt-6 p-4 bg-destructive/5 border border-destructive/20 rounded-xl flex items-center gap-3 text-destructive text-[10px] font-bold uppercase tracking-widest animate-pulse">
-          <AlertCircle className="w-4 h-4" />
-          Upload de arquivo necessário para prosseguir
-        </div>
-      )}
     </div>
   );
 };
