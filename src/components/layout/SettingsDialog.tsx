@@ -13,8 +13,9 @@ import {
   CheckCircle2, 
   AlertCircle 
 } from "lucide-react";
-import { testConnection } from "../../lib/ai";
+import { testConnectionDetailed } from "../../lib/ai";
 import { toast } from "sonner";
+import { ExternalLink } from "lucide-react";
 import { cn } from "../../lib/utils";
 
 interface SettingsDialogProps {
@@ -42,15 +43,23 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
     }
     setTesting(true);
     setTestResult('idle');
-    const ok = await testConnection(apiKey);
+    const result = await testConnectionDetailed(apiKey);
     setTesting(false);
-    if (ok) {
+    if (result === "ok") {
       setTestResult('success');
-      toast.success("Conexão estabelecida!");
+      toast.success("✅ Conectado");
+    } else if (result === "rate_limited") {
+      setTestResult('error');
+      setErrorMessage("Limite atingido");
+      toast.error("⚠️ Limite atingido — aguarde alguns minutos");
+    } else if (result === "invalid") {
+      setTestResult('error');
+      setErrorMessage("Chave inválida");
+      toast.error("❌ Chave inválida");
     } else {
       setTestResult('error');
-      setErrorMessage("Chave inválida ou erro de rede");
-      toast.error("Erro na conexão");
+      setErrorMessage("Erro de rede");
+      toast.error("❌ Erro na conexão");
     }
   };
 
@@ -81,10 +90,10 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
         </h2>
 
         <div className="space-y-10 custom-scrollbar max-h-[60vh] pr-2 overflow-y-auto">
-          {/* OpenAI Key */}
+          {/* Gemini Key */}
           <div className="space-y-4">
             <div className="flex justify-between items-center px-1">
-                <label className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">OpenAI API Key</label>
+                <label className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">Google Gemini API Key</label>
                 <div className="flex items-center gap-1 opacity-50">
                     <Wifi className="w-2.5 h-2.5" />
                     <span className="text-[8px] font-bold uppercase tracking-widest">Conexão Segura</span>
@@ -96,7 +105,7 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
                     type={showKey ? "text" : "password"}
                     value={apiKey}
                     onChange={(e) => setApiKey(e.target.value)}
-                    placeholder="sk-..."
+                    placeholder="AIza..."
                     className="w-full bg-surface border border-white/5 rounded-2xl p-4 text-xs font-mono font-bold outline-none focus:border-primary/40 focus:ring-4 focus:ring-primary/5 transition-all text-white pr-12"
                     />
                     <button 
@@ -127,10 +136,18 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
                     )}
                 </button>
             </div>
+            <a
+              href="https://aistudio.google.com/apikey"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 text-[10px] font-black tracking-widest text-primary hover:underline px-1"
+            >
+              {language === 'pt-BR' ? 'OBTER CHAVE GRÁTIS' : 'GET FREE KEY'} <ExternalLink className="w-3 h-3" />
+            </a>
             <p className="text-[9px] text-muted/40 font-bold uppercase tracking-widest px-2 leading-relaxed italic">
                 {language === 'pt-BR' 
-                    ? "* Sua chave é salva localmente e nunca enviada para nossos servidores." 
-                    : "* Your key is saved locally and never sent to our servers."}
+                    ? "Obtenha sua chave gratuita em aistudio.google.com/apikey. Não é necessário cartão de crédito. Sua chave é salva localmente." 
+                    : "Get your free key at aistudio.google.com/apikey. No credit card required. Your key is saved locally."}
             </p>
           </div>
 
