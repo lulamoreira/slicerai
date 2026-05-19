@@ -10,7 +10,8 @@ import {
   Printer,
   Layers,
   Palette,
-  X
+  X,
+  Ghost
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR, enUS } from "date-fns/locale";
