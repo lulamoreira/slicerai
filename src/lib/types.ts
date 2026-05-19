@@ -17,6 +17,8 @@ export interface GeometryStats {
   thinWalls: boolean;
   bridging: boolean;
   boundingBox: { x: number; y: number; z: number };
+  parts: number;
+  colors: number;
 }
 
 export interface WizardState {
