@@ -5,6 +5,7 @@ import { FileDrop } from '../components/FileDrop'
 import { Wizard } from '../components/Wizard'
 import { ResultsPanel } from '../components/ResultsPanel'
 import { useStore } from '../lib/store'
+import { translations, useTranslation } from '../lib/i18n'
 import { 
   Settings, 
   History, 
@@ -24,6 +25,7 @@ export const Route = createFileRoute('/')({
 
 function HomeComponent() {
   const { wizard, currentResults, updateWizard, app, toggleTheme, setLanguage, setOpenAIKey, loadFromHistory, history } = useStore()
+  const t = useTranslation(app.language)
   const [showSettings, setShowSettings] = React.useState(false)
   const [showHistory, setShowHistory] = React.useState(false)
   const [uploadedFile, setUploadedFile] = React.useState<File | undefined>()
