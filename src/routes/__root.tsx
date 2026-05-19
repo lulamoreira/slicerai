@@ -1,6 +1,9 @@
-import { createRootRouteWithContext, Outlet, ScrollRestoration, HeadContent, Scripts } from '@tanstack/react-router'
+import { createRootRouteWithContext, Outlet, ScrollRestoration, HeadContent, Scripts, useNavigate, useLocation } from '@tanstack/react-router'
 import * as React from 'react'
 import { useStore } from '../lib/store'
+import { useAuthStore } from '../store/useAuthStore'
+import { supabase } from '../integrations/supabase/client'
+import { AccessStatusScreen } from '../components/AccessScreens'
 import '../styles.css'
 
 export const Route = createRootRouteWithContext()({
@@ -33,7 +36,30 @@ export const Route = createRootRouteWithContext()({
 
 function RootComponent() {
   const theme = useStore((state) => state.app.theme)
+  const { user, profile, loading, initialized, setSession } = useAuthStore()
+  const navigate = useNavigate()
+  const location = useLocation()
   
+  React.useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session?.user ?? null)
+    })
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session?.user ?? null)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [setSession])
+
+  React.useEffect(() => {
+    if (initialized && !loading) {
+      if (!user && location.pathname !== '/login') {
+        navigate({ to: '/login' })
+      }
+    }
+  }, [user, initialized, loading, location.pathname, navigate])
+
   React.useEffect(() => {
     if (theme === 'dark') {
       document.documentElement.classList.add('dark')
@@ -42,16 +68,28 @@ function RootComponent() {
     }
   }, [theme])
 
+  // Auth Guard Screen Overlay
+  const showStatusScreen = user && profile && profile.access_status !== 'active' && location.pathname !== '/login';
+
   return (
     <html className={theme}>
       <head>
         <HeadContent />
       </head>
       <body className="bg-background text-foreground transition-colors duration-300">
-        <Outlet />
+        {loading && !initialized ? (
+          <div className="fixed inset-0 bg-background flex items-center justify-center">
+            <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin" />
+          </div>
+        ) : (
+          <>
+            {showStatusScreen ? <AccessStatusScreen /> : <Outlet />}
+          </>
+        )}
         <ScrollRestoration />
         <Scripts />
       </body>
     </html>
   )
 }
+
