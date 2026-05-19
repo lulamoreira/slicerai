@@ -1,7 +1,8 @@
 import React from "react";
-import { useTranslation } from "../lib/i18n";
-import { useSettingsStore } from "../store/useAppStore";
-import { cn } from "../lib/utils";
+import { useTranslation } from "../../lib/i18n";
+import { useSettingsStore } from "../../store/useAppStore";
+import { Copy } from "lucide-react";
+import { toast } from "sonner";
 
 export const ProfileNameSuggestion: React.FC<{ name: string }> = ({ name }) => {
   const { language } = useSettingsStore();
@@ -16,6 +17,15 @@ export const ProfileNameSuggestion: React.FC<{ name: string }> = ({ name }) => {
         <code className="flex-1 text-xs font-mono font-bold text-primary truncate pl-2">
           {name}
         </code>
+        <button 
+          onClick={() => {
+            navigator.clipboard.writeText(name);
+            toast.success("Nome do perfil copiado!");
+          }}
+          className="p-2.5 hover:bg-primary/10 text-muted group-hover:text-primary rounded-xl transition-all active:scale-90"
+        >
+          <Copy className="w-4 h-4" />
+        </button>
       </div>
     </div>
   );
