@@ -113,7 +113,7 @@ export const ReviewStep: React.FC = () => {
         {!apiKey && (
           <div className="p-3 bg-[rgba(255,180,84,0.1)] border border-[rgba(255,180,84,0.3)] rounded-lg flex items-center justify-between gap-3">
             <span className="text-[0.85rem] font-medium text-warning">
-              ⚠️ Configure sua chave Gemini nas ⚙️ Configurações para continuar
+              ⚠️ Configure sua chave Gemini 2.0 Flash nas ⚙️ Configurações para continuar
             </span>
             <button
               onClick={openSettings}
