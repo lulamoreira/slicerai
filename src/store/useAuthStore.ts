@@ -61,19 +61,19 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       
       let profileData = data as unknown as Profile;
 
-      // Sync full_name from user metadata if empty in profile
-      if (!profileData.full_name && user.user_metadata?.full_name) {
-        const { data: updated, error: updateError } = await supabase
-          .from('profiles')
-          .update({ full_name: user.user_metadata.full_name })
-          .eq('id', user.id)
-          .select()
-          .single();
-        
-        if (!updateError && updated) {
-          profileData = updated as unknown as Profile;
-        }
+      // Ensure full_name is populated from metadata or email as fallback
+      if (!profileData.full_name) {
+        profileData.full_name = user.user_metadata?.full_name || user.email || null;
       }
+
+      // Update profile in DB if name was missing but present in metadata
+      if (!data.full_name && user.user_metadata?.full_name) {
+        await supabase.from('profiles')
+          .update({ full_name: user.user_metadata.full_name })
+          .eq('id', user.id);
+      }
+
+      console.log('Profile role:', profileData?.role);
 
       // Check for automatic expiry
       if (profileData.access_status === 'active' && profileData.access_end && new Date(profileData.access_end) < new Date()) {
