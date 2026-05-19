@@ -563,7 +563,8 @@ const RequestsTab = ({ onApprove }: { onApprove: (req: any) => void }) => {
         </div>
       ))}
     </div>
-);
+  );
+};
 
 const SettingsTab = () => {
   const [apiKey, setApiKey] = useState('');
@@ -643,7 +644,6 @@ const SettingsTab = () => {
       </div>
     </div>
   );
-};
 };
 
 const SubsTab = () => (
