@@ -138,7 +138,6 @@ export const ModelViewer: React.FC<ModelViewerProps> = ({ file: fileProp }) => {
           environment="city" 
           intensity={0.5} 
           adjustCamera={true}
-          center
         >
           {file && <Model file={file} />}
         </Stage>
