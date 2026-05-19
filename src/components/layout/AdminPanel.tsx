@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../integrations/supabase/client';
 import { useAuthStore } from '../../store/useAuthStore';
+import { Link } from '@tanstack/react-router';
 import { 
   Users as UsersIcon, 
   FileText, 
