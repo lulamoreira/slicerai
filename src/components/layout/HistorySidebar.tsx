@@ -81,18 +81,18 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({ onClose }) => {
                                 <p className="text-[13px] font-bold text-foreground truncate group-hover:text-primary transition-colors leading-tight">
                                     {entry.fileName}
                                 </p>
-                                <div className="flex items-center gap-2 text-[9px] font-black text-muted/50 uppercase tracking-tighter">
+                                <div className="flex items-center gap-2 text-[9px] font-bold text-muted uppercase tracking-tighter">
                                     <Clock className="w-2.5 h-2.5" />
                                     {formatDistanceToNow(entry.timestamp, { addSuffix: true, locale })}
                                 </div>
                                 <div className="flex items-center gap-3 mt-1">
                                     <div className="flex items-center gap-1">
                                         <Printer className="w-2.5 h-2.5 text-primary" />
-                                        <span className="text-[8px] font-black text-muted uppercase tracking-widest">{entry.printer.split(' ')[0]}</span>
+                                        <span className="text-[8px] font-bold text-muted uppercase tracking-widest">{entry.printer.split(' ')[0]}</span>
                                     </div>
                                     <div className="flex items-center gap-1">
-                                        <div className="w-2 h-2 rounded-full border border-white/10" style={{ backgroundColor: entry.color }} />
-                                        <span className="text-[8px] font-black text-muted uppercase tracking-widest truncate max-w-[60px]">{entry.material}</span>
+                                        <div className="w-2 h-2 rounded-full border border-border" style={{ backgroundColor: entry.color }} />
+                                        <span className="text-[8px] font-bold text-muted uppercase tracking-widest truncate max-w-[60px]">{entry.material}</span>
                                     </div>
                                 </div>
                             </div>
