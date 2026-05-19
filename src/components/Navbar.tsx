@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useAppStore, useSettingsStore } from "../store/useAppStore";
 import { useTranslation } from "../lib/i18n";
 import { 
@@ -8,8 +8,15 @@ import {
   Sun, 
   Languages, 
   Github,
-  Hexagon
+  Hexagon,
+  User as UserIcon,
+  LogOut
 } from "lucide-react";
+import { cn } from "../lib/utils";
+import { supabase } from "../integrations/supabase/client";
+import { AuthModal } from "./AuthModal";
+import { toast } from "sonner";
+import { User } from "@supabase/supabase-js";
 import { cn } from "../lib/utils";
 
 interface NavbarProps {
