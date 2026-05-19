@@ -233,31 +233,93 @@ const UsersTab = () => {
 const RequestsTab = () => {
   const [requests, setRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedRequest, setSelectedRequest] = useState<any>(null);
+
+  const fetchRequests = async () => {
+    const { data } = await supabase
+      .from('access_requests')
+      .select('*')
+      .order('created_at', { ascending: false });
+    setRequests(data || []);
+    setLoading(false);
+  };
 
   useEffect(() => {
-    const fetchRequests = async () => {
-      const { data } = await supabase
-        .from('access_requests')
-        .select('*')
-        .order('created_at', { ascending: false });
-      setRequests(data || []);
-      setLoading(false);
-    };
     fetchRequests();
   }, []);
+
+  const handleDeny = async (id: string) => {
+    if (!confirm('Deseja negar esta solicitação?')) return;
+    
+    const { error } = await supabase
+      .from('access_requests')
+      .update({ status: 'denied', resolved_at: new Date().toISOString() })
+      .eq('id', id);
+    
+    if (!error) {
+      toast.error('Solicitação negada');
+      fetchRequests();
+    }
+  };
+
+  const handleApprove = async (req: any) => {
+    // Open a simple prompt for days or set to indefinite
+    const days = prompt('Aprovar por quantos dias? (Deixe vazio para Indefinido)', '30');
+    let access_end = null;
+    if (days) {
+      const d = new Date();
+      d.setDate(d.getDate() + parseInt(days));
+      access_end = d.toISOString();
+    }
+
+    // 1. Update Profile
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .update({ 
+        access_status: 'active', 
+        access_end,
+        access_type: 'manual'
+      })
+      .eq('id', req.user_id);
+
+    if (profileError) {
+      toast.error('Erro ao atualizar perfil: ' + profileError.message);
+      return;
+    }
+
+    // 2. Update Request
+    const { error: requestError } = await supabase
+      .from('access_requests')
+      .update({ 
+        status: 'approved', 
+        resolved_at: new Date().toISOString() 
+      })
+      .eq('id', req.id);
+
+    if (!requestError) {
+      toast.success('Acesso aprovado com sucesso!');
+      fetchRequests();
+    }
+  };
 
   if (loading) return <div>Carregando...</div>;
 
   return (
     <div className="space-y-4">
+      {requests.length === 0 && (
+        <div className="text-center py-20 opacity-30">
+          <History className="w-12 h-12 mx-auto mb-4" />
+          <p className="text-sm font-bold uppercase tracking-widest">Nenhuma solicitação encontrada</p>
+        </div>
+      )}
       {requests.map((req) => (
-        <div key={req.id} className="p-6 bg-surface border border-border rounded-2xl flex items-center justify-between hover:border-primary/30 transition-all shadow-sm group">
+        <div key={req.id} className="p-6 bg-surface border border-border rounded-2xl flex items-center justify-between hover:border-primary/30 transition-all shadow-sm group animate-in fade-in slide-in-from-right-4 duration-300">
           <div className="flex items-center gap-6">
             <div className={cn(
               "w-12 h-12 rounded-xl flex items-center justify-center",
               req.type === 'renewal' ? "bg-accent/10 text-accent" : "bg-primary/10 text-primary"
             )}>
-              {req.type === 'renewal' ? <RotateCcw className="w-5 h-5" /> : <UserPlus className="w-5 h-5" />}
+              {req.type === 'renewal' ? <History className="w-5 h-5" /> : <UserPlus className="w-5 h-5" />}
             </div>
             <div>
               <div className="flex items-center gap-3">
@@ -269,7 +331,7 @@ const RequestsTab = () => {
                   {req.type === 'renewal' ? 'Renovação' : 'Novo Acesso'}
                 </Badge>
               </div>
-              <p className="text-[10px] text-muted-foreground mt-1 italic">"{req.message}"</p>
+              <p className="text-[10px] text-muted-foreground mt-1 italic">"{req.message || 'Sem mensagem'}"</p>
               <div className="flex items-center gap-2 mt-2 text-[9px] text-muted font-bold uppercase tracking-widest">
                 <Calendar className="w-3 h-3" />
                 {new Date(req.created_at).toLocaleString()}
@@ -280,11 +342,32 @@ const RequestsTab = () => {
           <div className="flex gap-2">
             {req.status === 'pending' ? (
               <>
-                <Button size="sm" variant="outline" className="h-9 text-[10px] font-bold tracking-widest text-destructive border-destructive hover:bg-destructive/10">NEGARR</Button>
-                <Button size="sm" className="h-9 text-[10px] font-bold tracking-widest">APROVAR</Button>
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  onClick={() => handleDeny(req.id)}
+                  className="h-9 text-[10px] font-bold tracking-widest text-destructive border-destructive hover:bg-destructive/10"
+                >
+                  NEGAR
+                </Button>
+                <Button 
+                  size="sm" 
+                  onClick={() => handleApprove(req)}
+                  className="h-9 text-[10px] font-bold tracking-widest"
+                >
+                  APROVAR
+                </Button>
               </>
             ) : (
-              <Badge variant="secondary" className="uppercase text-[8px]">{req.status}</Badge>
+              <Badge 
+                variant="secondary" 
+                className={cn(
+                  "uppercase text-[8px] font-black px-3 py-1",
+                  req.status === 'approved' ? "bg-success/20 text-success border-success/30" : "bg-destructive/20 text-destructive border-destructive/30"
+                )}
+              >
+                {req.status === 'approved' ? 'Aprovado' : 'Negado'}
+              </Badge>
             )}
           </div>
         </div>
