@@ -199,9 +199,9 @@ const UsersTab = () => {
             <tr className="border-b border-border bg-surface-raised/50">
               <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Usuário</th>
               <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Status</th>
-              <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Acesso</th>
               <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">API Gemini</th>
               <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Expira</th>
+              <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Último Login</th>
               <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground text-right">Ações</th>
             </tr>
           </thead>
@@ -218,7 +218,15 @@ const UsersTab = () => {
                   <StatusBadge status={user.access_status} />
                 </td>
                 <td className="px-6 py-4">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{user.access_type}</span>
+                  <Badge 
+                    variant="outline" 
+                    className={cn(
+                      "text-[8px] font-black uppercase tracking-[0.1em] py-0.5",
+                      user.api_key_mode === 'centralized' ? "border-teal-500/50 text-teal-500 bg-teal-500/5" : "border-muted text-muted"
+                    )}
+                  >
+                    {user.api_key_mode === 'centralized' ? 'Chave Central' : 'Chave Pessoal'}
+                  </Badge>
                 </td>
                 <td className="px-6 py-4">
                   <Badge 
@@ -236,11 +244,15 @@ const UsersTab = () => {
                     {user.access_end ? new Date(user.access_end).toLocaleDateString() : 'Indefinido'}
                   </span>
                 </td>
-                <td className="px-6 py-4 text-right">
-                  <div className="flex justify-end gap-2">
-                    <button onClick={() => setSelectedUser(user)} className="p-2 hover:bg-primary-subtle text-muted hover:text-primary rounded-lg transition-all"><Edit2 className="w-3.5 h-3.5" /></button>
-                    <button className="p-2 hover:bg-destructive/10 text-muted hover:text-destructive rounded-lg transition-all"><Trash2 className="w-3.5 h-3.5" /></button>
-                  </div>
+                <td className="px-6 py-4">
+                  <span className="text-[10px] font-bold text-foreground">
+                    {user.access_end ? new Date(user.access_end).toLocaleDateString() : 'Indefinido'}
+                  </span>
+                </td>
+                <td className="px-6 py-4">
+                  <span className="text-[10px] font-bold text-muted uppercase">
+                    {user.last_login ? new Date(user.last_login).toLocaleString() : '—'}
+                  </span>
                 </td>
               </tr>
             ))}
@@ -265,6 +277,7 @@ const EditUserModal = ({ user, onClose, onSave }: any) => {
   const [status, setStatus] = useState(user.access_status);
   const [mode, setMode] = useState(user.api_key_mode || 'personal');
   const [days, setDays] = useState('30');
+  const [notes, setNotes] = useState(user.notes || '');
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
@@ -283,7 +296,8 @@ const EditUserModal = ({ user, onClose, onSave }: any) => {
       .update({ 
         access_status: status,
         api_key_mode: mode,
-        access_end
+        access_end,
+        notes
       })
       .eq('id', user.id);
 
@@ -376,6 +390,16 @@ const EditUserModal = ({ user, onClose, onSave }: any) => {
                 </div>
               </button>
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-[10px] font-bold uppercase tracking-widest text-muted ml-1">Notas do Administrador</label>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              className="w-full bg-surface-raised border border-border rounded-xl p-3 text-xs font-medium outline-none min-h-[80px]"
+              placeholder="Notas internas sobre o usuário..."
+            />
           </div>
         </div>
 
