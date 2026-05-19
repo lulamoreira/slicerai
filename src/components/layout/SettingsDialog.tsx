@@ -13,8 +13,9 @@ import {
   CheckCircle2, 
   AlertCircle 
 } from "lucide-react";
-import { testConnection } from "../../lib/ai";
+import { testConnectionDetailed } from "../../lib/ai";
 import { toast } from "sonner";
+import { ExternalLink } from "lucide-react";
 import { cn } from "../../lib/utils";
 
 interface SettingsDialogProps {
