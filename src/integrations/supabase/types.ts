@@ -71,6 +71,7 @@ export type Database = {
           access_start: string | null
           access_status: string
           access_type: string | null
+          api_key_mode: string | null
           created_at: string | null
           email: string
           full_name: string | null
@@ -85,6 +86,7 @@ export type Database = {
           access_start?: string | null
           access_status?: string
           access_type?: string | null
+          api_key_mode?: string | null
           created_at?: string | null
           email: string
           full_name?: string | null
@@ -99,6 +101,7 @@ export type Database = {
           access_start?: string | null
           access_status?: string
           access_type?: string | null
+          api_key_mode?: string | null
           created_at?: string | null
           email?: string
           full_name?: string | null
