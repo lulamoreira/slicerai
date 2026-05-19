@@ -1,6 +1,5 @@
 import React from "react";
-import { useAppStore } from "../store/useAppStore";
-import { useSettingsStore } from "../store/useAppStore"; // wait, fixed below
+import { useAppStore, useSettingsStore } from "../store/useAppStore";
 import { useTranslation } from "../lib/i18n";
 import { 
   Maximize2, 
