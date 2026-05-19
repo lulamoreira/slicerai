@@ -17,6 +17,17 @@ import {
   Link as LinkIcon
 } from 'lucide-react'
 import { Toaster } from 'sonner'
+
+const toasterProps = {
+  position: 'top-center' as const,
+  duration: 2500,
+  toastOptions: {
+    classNames: {
+      success: '!bg-[#4caf7d] !border-[#4caf7d] !text-white',
+      error: '!bg-[#ff4d6d] !border-[#ff4d6d] !text-white',
+    },
+  },
+}
 import { cn } from '../lib/utils'
 import { SettingsDialog } from '../components/layout/SettingsDialog'
 import { HistorySidebar } from '../components/layout/HistorySidebar'
