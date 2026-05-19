@@ -38,6 +38,15 @@ function HomeComponent() {
   const [showSettings, setShowSettings] = React.useState(false)
   const [showHistory, setShowHistory] = React.useState(false)
 
+  // Apply theme
+  React.useEffect(() => {
+    if (theme === 'dark') {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
+  }, [theme])
+
   // Rehydrate from URL
   React.useEffect(() => {
     const params = new URLSearchParams(window.location.search)
