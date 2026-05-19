@@ -58,8 +58,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       if (error) throw error;
       
+      const profileData = data as unknown as Profile;
+
       // Check for automatic expiry
-      if (data.access_status === 'active' && data.access_end && new Date(data.access_end) < new Date()) {
+      if (profileData.access_status === 'active' && profileData.access_end && new Date(profileData.access_end) < new Date()) {
         const { data: updated, error: updateError } = await supabase
           .from('profiles')
           .update({ access_status: 'expired' })
@@ -68,12 +70,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           .single();
         
         if (!updateError && updated) {
-          set({ profile: updated });
+          set({ profile: updated as unknown as Profile });
           return;
         }
       }
 
-      set({ profile: data, loading: false });
+      set({ profile: profileData, loading: false });
     } catch (error) {
       console.error('Error fetching profile:', error);
       set({ loading: false });
@@ -97,7 +99,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       .single();
 
     if (!error && data) {
-      set({ profile: data });
+      set({ profile: data as unknown as Profile });
     }
   }
 }));
