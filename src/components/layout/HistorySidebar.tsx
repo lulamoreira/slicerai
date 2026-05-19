@@ -32,15 +32,15 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({ onClose }) => {
   };
 
   return (
-    <div className="flex flex-col h-full bg-surface border-l border-white/10 shadow-2xl animate-in slide-in-from-right-full duration-500 relative">
-        <div className="p-8 flex items-center justify-between border-b border-white/5">
-            <h2 className="text-xl font-black italic tracking-tighter flex items-center gap-3">
-                <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
+    <div className="flex flex-col h-full bg-surface border-l border-border-strong shadow-2xl animate-in slide-in-from-right-full duration-500 relative">
+        <div className="p-8 flex items-center justify-between border-b border-border">
+            <h2 className="text-xl font-bold tracking-tight flex items-center gap-3">
+                <div className="w-8 h-8 rounded-lg bg-primary-subtle flex items-center justify-center">
                     <History className="w-4 h-4 text-primary" />
                 </div>
                 {language === 'pt-BR' ? 'Histórico' : 'History'}
             </h2>
-            <button onClick={onClose} className="p-2 text-muted hover:text-white transition-colors bg-white/5 rounded-lg">
+            <button onClick={onClose} className="p-1.5 text-muted hover:text-foreground transition-all hover:bg-surface-raised rounded-lg">
                 <X className="w-4 h-4" />
             </button>
         </div>
@@ -48,10 +48,10 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({ onClose }) => {
         <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-4">
             {history.length === 0 ? (
                 <div className="py-20 text-center space-y-6 opacity-30">
-                    <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mx-auto border border-dashed border-white/20">
-                        <Ghost className="w-10 h-10 text-muted" />
+                    <div className="w-20 h-20 rounded-full bg-surface-raised flex items-center justify-center mx-auto border border-dashed border-border-strong">
+                        <Ghost className="w-10 h-10 text-muted/30" />
                     </div>
-                    <p className="text-muted text-xs font-black uppercase tracking-widest italic">
+                    <p className="text-muted text-[10px] font-bold uppercase tracking-widest">
                         {language === 'pt-BR' ? 'Nenhum histórico ainda' : 'No history yet'}
                     </p>
                 </div>
@@ -67,10 +67,10 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({ onClose }) => {
                             });
                             onClose();
                         }}
-                        className="w-full group bg-surface-raised border border-white/5 rounded-[1.5rem] p-4 flex flex-col gap-4 transition-all hover:border-primary/50 hover:bg-white/[0.02] text-left shadow-lg overflow-hidden relative"
+                        className="w-full group bg-surface-raised border border-border rounded-xl p-4 flex flex-col gap-4 transition-all hover:border-primary hover:bg-surface-hover text-left shadow-sm overflow-hidden relative"
                     >
                         <div className="flex gap-4 min-w-0 relative z-10">
-                            <div className="w-16 h-16 rounded-xl bg-black/40 flex items-center justify-center overflow-hidden border border-white/5 shrink-0 shadow-inner">
+                            <div className="w-16 h-16 rounded-lg bg-background flex items-center justify-center overflow-hidden border border-border shrink-0 shadow-inner">
                                 {entry.thumbnail ? (
                                     <img src={entry.thumbnail} alt="" className="w-full h-full object-contain opacity-80 group-hover:opacity-100 transition-opacity" />
                                 ) : (
@@ -78,7 +78,7 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({ onClose }) => {
                                 )}
                             </div>
                             <div className="flex-1 min-w-0 space-y-1 py-1">
-                                <p className="text-[13px] font-black italic text-white truncate group-hover:text-primary transition-colors leading-tight">
+                                <p className="text-[13px] font-bold text-foreground truncate group-hover:text-primary transition-colors leading-tight">
                                     {entry.fileName}
                                 </p>
                                 <div className="flex items-center gap-2 text-[9px] font-black text-muted/50 uppercase tracking-tighter">
@@ -101,7 +101,7 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({ onClose }) => {
                             </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-2 pt-3 border-t border-white/5">
+                        <div className="grid grid-cols-2 gap-2 pt-3 border-t border-border">
                             <div className="flex items-center gap-2">
                                 <Layers className="w-2.5 h-2.5 text-muted/30" />
                                 <span className="text-[9px] font-mono text-muted/50 font-bold">{entry.results.quality.layer_height}mm</span>
@@ -119,10 +119,10 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({ onClose }) => {
         </div>
 
         {history.length > 0 && (
-            <div className="p-6 border-t border-white/5">
+            <div className="p-6 border-t border-border">
                 <button 
                     onClick={clearHistory}
-                    className="w-full flex items-center justify-center gap-2 py-3 bg-destructive/10 border border-destructive/20 text-destructive text-[10px] font-black tracking-widest rounded-xl hover:bg-destructive hover:text-white transition-all group"
+                    className="w-full flex items-center justify-center gap-2 py-3 bg-transparent border border-destructive text-destructive text-[10px] font-bold tracking-widest rounded-lg hover:bg-destructive/10 transition-all group"
                 >
                     <Trash2 className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
                     {language === 'pt-BR' ? 'LIMPAR HISTÓRICO' : 'CLEAR HISTORY'}
