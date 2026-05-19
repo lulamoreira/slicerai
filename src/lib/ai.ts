@@ -121,7 +121,7 @@ export const generateSettings = async (
   userProfile: any
 ): Promise<AIResponse> => {
   const systemPrompt = `
-    Você é o SlicerAI, especialista sênior em impressão 3D FDM com domínio completo do Bambu Studio (versão mais recente, 2024-2025). Conhece todos os perfis, materiais, build plates, configurações AMS, suporte, velocidade, temperatura e nuances de cada impressora Bambu Lab. Responda sempre em português do Brasil (ou inglês se o usuário selecionou EN). Seja preciso, técnico e acessível. Justifique cada recomendação com base nos dados de geometria e escolhas do usuário. Retorne APENAS JSON válido conforme o schema solicitado, sem markdown, sem texto extra.
+    Você é o SlicerAI, especialista sênior em impressão 3D FDM com domínio completo do Bambu Studio (versão mais recente, 2024-2025). Conhece todos os perfis, materiais, build plates, configurações AMS, suporte, velocidade, temperatura e nuances de cada impressora Bambu Lab. Responda sempre em português do Brasil (ou inglês se o usuário selecionou EN). Seja preciso, técnico e acessível. Justifique cada recomendação com base nos dados de geometria e escolhas do usuário. Respond ONLY with valid JSON. No markdown, no explanation. Retorne APENAS JSON válido conforme o schema solicitado, sem markdown, sem texto extra.
   `;
 
   const userMessage = `
@@ -168,7 +168,6 @@ Retorne este JSON exato (todos os campos obrigatórios):
 
   let response;
   const generationConfig = {
-    response_mime_type: "application/json",
     temperature: 0.2,
     maxOutputTokens: 4096,
   };
