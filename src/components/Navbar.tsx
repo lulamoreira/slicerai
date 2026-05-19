@@ -38,9 +38,18 @@ export const Navbar: React.FC<NavbarProps> = ({ onShowSettings, onShowHistory })
     navigate({ to: '/login' });
   };
 
-  const getInitials = (name: string) => {
-    if (!name) return 'U';
-    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  const getInitials = (name: string, email: string) => {
+    const displayName = name || email || 'U';
+    if (displayName.includes('@')) {
+      return displayName.charAt(0).toUpperCase();
+    }
+    return displayName
+      .split(' ')
+      .filter(n => n.length > 0)
+      .map(n => n[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2);
   };
 
   // Status Chip logic
@@ -135,7 +144,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onShowSettings, onShowHistory })
               className="flex items-center gap-2 pl-2 pr-1 py-1 hover:bg-surface-raised rounded-full border border-border transition-all"
             >
               <div className="w-7 h-7 bg-primary rounded-full flex items-center justify-center text-[10px] font-black text-[#0d0d14]">
-                {getInitials(profile?.full_name || user.email || '')}
+                {getInitials(profile?.full_name || '', user.email || '')}
               </div>
               <ChevronDown className={cn("w-3.5 h-3.5 text-muted transition-transform", showDropdown && "rotate-180")} />
             </button>
@@ -146,7 +155,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onShowSettings, onShowHistory })
                 <div className="absolute right-0 mt-3 w-64 bg-surface border border-border rounded-2xl shadow-2xl z-50 p-2 animate-in fade-in slide-in-from-top-4 duration-300">
                   <div className="px-4 py-3 border-b border-border mb-2">
                     <p className="text-xs font-bold text-foreground truncate">{profile?.full_name || user.email}</p>
-                    <p className="text-[10px] text-muted font-medium truncate mt-0.5">{user.email}</p>
+                    {profile?.full_name && (
+                      <p className="text-[10px] text-muted font-medium truncate mt-0.5">{user.email}</p>
+                    )}
                   </div>
                   
                   <div className="space-y-1">
@@ -163,7 +174,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onShowSettings, onShowHistory })
                         }}
                         className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-primary/10 rounded-xl text-[10px] font-bold text-primary transition-all uppercase tracking-widest text-left"
                       >
-                        <ShieldCheck className="w-4 h-4" />
+                        <ShieldCheck className="w-4 h-4 text-primary" />
                         Painel Admin
                       </button>
                     )}
