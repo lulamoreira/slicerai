@@ -9,6 +9,7 @@ import {
   Languages, 
   Github,
   Hexagon,
+  HelpCircle,
   User as UserIcon,
   LogOut,
   ShieldCheck,
@@ -21,6 +22,7 @@ import { toast } from "sonner";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Button } from "./ui/button";
 import { AccountModal } from "./AccountModal";
+import { HelpModal } from "./HelpModal";
 
 interface NavbarProps {
   onShowSettings: () => void;
@@ -32,6 +34,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onShowSettings, onShowHistory })
   const { user, profile, logout } = useAuthStore();
   const [showDropdown, setShowDropdown] = useState(false);
   const [showAccountModal, setShowAccountModal] = useState(false);
+  const [showHelpModal, setShowHelpModal] = useState(false);
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -112,16 +115,15 @@ export const Navbar: React.FC<NavbarProps> = ({ onShowSettings, onShowHistory })
           {language === 'pt-BR' ? 'PT-BR' : 'EN'}
         </button>
 
-        <a 
-          href="https://github.com" 
-          target="_blank" 
-          rel="noreferrer"
-          className="p-1.5 hover:bg-primary-subtle rounded-lg transition-all text-muted hover:text-primary hidden sm:block"
-        >
-          <Github className="w-5 h-5" />
-        </a>
-
         <div className="w-px h-6 bg-border mx-1 sm:mx-2" />
+
+        <button 
+          onClick={() => setShowHelpModal(true)}
+          className="p-1.5 hover:bg-primary-subtle rounded-lg transition-all text-muted hover:text-primary"
+          title="Ajuda"
+        >
+          <HelpCircle className="w-5 h-5" />
+        </button>
 
         {renderStatusChip()}
 
@@ -209,6 +211,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onShowSettings, onShowHistory })
       </div>
 
       {showAccountModal && <AccountModal onClose={() => setShowAccountModal(false)} />}
+      {showHelpModal && <HelpModal onClose={() => setShowHelpModal(false)} />}
     </header>
   );
 };
