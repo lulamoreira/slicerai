@@ -169,8 +169,10 @@ function HomeComponent() {
         </div>
 
         {/* Right Panel: Wizard / Results */}
-        <div className="w-full md:w-[60%] p-6 md:p-10 bg-surface overflow-y-auto custom-scrollbar">
-          {status === 'result' ? <ResultsPanel /> : <Wizard />}
+        <div className="w-full md:w-[60%] flex flex-col bg-surface overflow-hidden">
+          <div className="flex-1 overflow-hidden p-6 md:p-10">
+            {status === 'result' ? <ResultsPanel /> : <Wizard />}
+          </div>
         </div>
       </main>
 

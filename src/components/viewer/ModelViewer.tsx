@@ -33,12 +33,29 @@ const Model = ({ file }: { file: File }) => {
           geometry = loader.parse(result as ArrayBuffer);
           geometry.computeVertexNormals();
           geometry.center();
-          object = new THREE.Mesh(geometry);
+          const mesh = new THREE.Mesh(geometry);
+          
+          // Scaling
+          const box = new THREE.Box3().setFromObject(mesh);
+          const size = box.getSize(new THREE.Vector3());
+          const maxDim = Math.max(size.x, size.y, size.z);
+          mesh.scale.setScalar(80 / maxDim);
+          
+          // Re-center after scale
+          geometry.center();
+          object = mesh;
         } else if (file.name.toLowerCase().endsWith('.3mf')) {
           const loader = new ThreeMFLoader();
           object = loader.parse(result as ArrayBuffer);
+          
+          // Center and scale the group/object
           const box = new THREE.Box3().setFromObject(object);
-          const center = box.getCenter(new THREE.Vector3());
+          const size = box.getSize(new THREE.Vector3());
+          const maxDim = Math.max(size.x, size.y, size.z);
+          const scale = 80 / maxDim;
+          object.scale.setScalar(scale);
+          
+          const center = new THREE.Box3().setFromObject(object).getCenter(new THREE.Vector3());
           object.position.sub(center);
 
           // Extract geometry for analysis
@@ -55,13 +72,13 @@ const Model = ({ file }: { file: File }) => {
         }
 
         if (object) {
-          // Force DoubleSide material to ensure visibility
+          // Force material settings
           object.traverse((child) => {
             if ((child as THREE.Mesh).isMesh) {
               (child as THREE.Mesh).material = new THREE.MeshStandardMaterial({
-                color: wizard.baseColor || "#00c8b4",
+                color: "#00ADB5",
                 metalness: 0.1,
-                roughness: 0.7,
+                roughness: 0.4,
                 side: THREE.DoubleSide
               });
             }
@@ -108,7 +125,7 @@ const Model = ({ file }: { file: File }) => {
       if ((child as THREE.Mesh).isMesh) meshes.push(child as THREE.Mesh);
     });
     meshes.forEach((mesh, idx) => {
-      let color = wizard.baseColor || "#00c8b4";
+      let color = "#00ADB5";
       if (wizard.hasAMS && meshes.length > 1) {
         const slot = wizard.amsSlots[idx % wizard.amsSlotCount];
         if (slot?.color) color = slot.color;
@@ -116,7 +133,7 @@ const Model = ({ file }: { file: File }) => {
       mesh.material = new THREE.MeshStandardMaterial({
         color,
         metalness: 0.1,
-        roughness: 0.7,
+        roughness: 0.4,
         wireframe: isWireframe,
         side: THREE.DoubleSide
       });
@@ -133,18 +150,17 @@ export const ModelViewer: React.FC<ModelViewerProps> = ({ file: fileProp }) => {
   const file = fileProp || storeFile || undefined;
   return (
     <div className="w-full h-full bg-[var(--background)] relative rounded-xl overflow-hidden border border-border">
-      <Canvas shadows dpr={[1, 2]} camera={{ position: [150, 150, 150], fov: 45 }}>
+      <Canvas shadows dpr={[1, 2]} camera={{ position: [120, 80, 120], fov: 45, near: 0.1, far: 10000 }}>
         <Stage 
           environment="city" 
           intensity={0.5} 
-          adjustCamera={true}
+          adjustCamera={false}
         >
           {file && <Model file={file} />}
         </Stage>
-        <ambientLight intensity={1.5} />
-        <pointLight position={[100, 100, 100]} intensity={2.0} />
-        <pointLight position={[-100, -100, -100]} intensity={1.0} />
-        <OrbitControls makeDefault />
+        <ambientLight intensity={1.0} />
+        <directionalLight position={[5, 10, 5]} intensity={2} />
+        <OrbitControls makeDefault enableDamping dampingFactor={0.05} />
         <Grid
           infiniteGrid
           fadeDistance={300}
