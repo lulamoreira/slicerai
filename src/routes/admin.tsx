@@ -2,6 +2,7 @@ import * as React from 'react'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { AdminPanel } from '../components/layout/AdminPanel'
 import { useAuthStore } from '../store/useAuthStore'
+import { toast } from 'sonner'
 
 export const Route = createFileRoute('/admin')({
   component: AdminComponent,
@@ -14,6 +15,7 @@ function AdminComponent() {
   React.useEffect(() => {
     if (initialized && !loading) {
       if (!profile || profile.role !== 'admin') {
+        toast.error('Acesso não autorizado');
         navigate({ to: '/' })
       }
     }
