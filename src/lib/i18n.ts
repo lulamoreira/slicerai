@@ -1,4 +1,4 @@
-import { translations } from "./i18n";
+import { translations } from "./translations";
 
 export type Language = keyof typeof translations;
 
@@ -7,7 +7,6 @@ export const useTranslation = (lang: Language) => {
     const section = (translations[lang] as any);
     if (!section) return key;
     
-    // Simple deep lookup
     const keys = key.split('.');
     let result = section;
     for (const k of keys) {
