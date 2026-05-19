@@ -158,10 +158,10 @@ const NavItem = ({ icon, label, active, onClick, badge, disabled }: any) => (
   </button>
 );
 
-const UsersTab = () => {
+const UsersTab = ({ onEditUser }: { onEditUser: (user: any) => void }) => {
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [selectedUserLocal, setSelectedUserLocal] = useState<any>(null);
 
   const fetchUsers = async () => {
     const { data } = await supabase
