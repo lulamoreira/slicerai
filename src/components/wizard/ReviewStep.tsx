@@ -96,7 +96,7 @@ export const ReviewStep: React.FC = () => {
           <div className="flex items-center gap-3 min-w-0">
             <Palette className="w-4 h-4 text-primary shrink-0" />
             <div className="flex flex-col gap-1 min-w-0">
-              <span className="text-[0.8rem] text-muted font-medium opacity-60">{label}</span>
+               <span className="text-[0.8rem] text-muted font-medium opacity-60">Cor</span>
               <div className="flex items-center gap-2">
                 <span
                   className="inline-block w-4 h-4 rounded-full border border-border-strong shadow-inner shrink-0"
