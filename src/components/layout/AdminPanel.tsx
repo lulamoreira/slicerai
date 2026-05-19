@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../integrations/supabase/client';
 import { useAuthStore } from '../../store/useAuthStore';
+import { Link } from '@tanstack/react-router';
 import { 
   Users as UsersIcon, 
   FileText, 
@@ -22,7 +23,10 @@ import {
   Send,
   UserCheck,
   UserX,
-  History
+  History,
+  Eye,
+  EyeOff,
+  Settings as SettingsIcon
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -31,8 +35,10 @@ import { toast } from 'sonner';
 import { cn } from '../../lib/utils';
 
 export const AdminPanel: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'users' | 'requests' | 'subs'>('users');
+  const [activeTab, setActiveTab] = useState<'users' | 'requests' | 'subs' | 'settings'>('users');
   const [requestCount, setRequestCount] = useState(0);
+  const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [usersRefreshKey, setUsersRefreshKey] = useState(0);
 
   const fetchCount = async () => {
     const { count } = await supabase
@@ -100,9 +106,15 @@ export const AdminPanel: React.FC = () => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <header className="h-16 border-b border-border bg-surface flex items-center justify-between px-8">
-          <h1 className="text-sm font-bold uppercase tracking-widest text-foreground">
-            {activeTab === 'users' ? 'Gestão de Usuários' : activeTab === 'requests' ? 'Solicitações de Acesso' : 'Assinaturas (Em Breve)'}
-          </h1>
+          <Link to="/" className="text-[10px] font-bold uppercase tracking-widest text-muted hover:text-primary transition-all">
+            ← Voltar ao app
+          </Link>
+          <div className="flex items-center gap-4">
+            <h1 className="text-sm font-black uppercase tracking-widest text-foreground flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-primary" />
+              Painel Admin
+            </h1>
+          </div>
           <div className="flex items-center gap-4">
             {activeTab === 'users' && (
               <Button size="sm" className="h-9 px-4 text-[10px] font-bold tracking-widest uppercase">
@@ -114,11 +126,31 @@ export const AdminPanel: React.FC = () => {
         </header>
 
         <main className="flex-1 overflow-y-auto p-8 custom-scrollbar">
-          {activeTab === 'users' && <UsersTab />}
-          {activeTab === 'requests' && <RequestsTab />}
+          {activeTab === 'users' && <UsersTab key={usersRefreshKey} onEditUser={setSelectedUser} />}
+          {activeTab === 'requests' && (
+            <RequestsTab 
+              onApprove={async (req) => {
+                const { data } = await supabase.from('profiles').select('*').eq('id', req.user_id).single();
+                if (data) setSelectedUser({ ...data, requestId: req.id });
+              }} 
+            />
+          )}
           {activeTab === 'subs' && <SubsTab />}
+          {activeTab === 'settings' && <SettingsTab />}
         </main>
       </div>
+
+      {selectedUser && (
+        <EditUserModal 
+          user={selectedUser} 
+          onClose={() => setSelectedUser(null)} 
+          onSave={() => {
+            setSelectedUser(null);
+            setUsersRefreshKey(prev => prev + 1);
+            fetchCount();
+          }} 
+        />
+      )}
     </div>
   );
 };
@@ -151,10 +183,9 @@ const NavItem = ({ icon, label, active, onClick, badge, disabled }: any) => (
   </button>
 );
 
-const UsersTab = () => {
+const UsersTab = ({ onEditUser }: { onEditUser: (user: any) => void }) => {
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedUser, setSelectedUser] = useState<any>(null);
 
   const fetchUsers = async () => {
     const { data } = await supabase
@@ -192,9 +223,9 @@ const UsersTab = () => {
             <tr className="border-b border-border bg-surface-raised/50">
               <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Usuário</th>
               <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Status</th>
-              <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Acesso</th>
               <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">API Gemini</th>
               <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Expira</th>
+              <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Último Login</th>
               <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground text-right">Ações</th>
             </tr>
           </thead>
@@ -209,9 +240,6 @@ const UsersTab = () => {
                 </td>
                 <td className="px-6 py-4">
                   <StatusBadge status={user.access_status} />
-                </td>
-                <td className="px-6 py-4">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">{user.access_type}</span>
                 </td>
                 <td className="px-6 py-4">
                   <Badge 
@@ -229,9 +257,14 @@ const UsersTab = () => {
                     {user.access_end ? new Date(user.access_end).toLocaleDateString() : 'Indefinido'}
                   </span>
                 </td>
+                <td className="px-6 py-4">
+                  <span className="text-[10px] font-bold text-muted uppercase">
+                    {user.last_login ? new Date(user.last_login).toLocaleString() : '—'}
+                  </span>
+                </td>
                 <td className="px-6 py-4 text-right">
                   <div className="flex justify-end gap-2">
-                    <button onClick={() => setSelectedUser(user)} className="p-2 hover:bg-primary-subtle text-muted hover:text-primary rounded-lg transition-all"><Edit2 className="w-3.5 h-3.5" /></button>
+                    <button onClick={() => onEditUser(user)} className="p-2 hover:bg-primary-subtle text-muted hover:text-primary rounded-lg transition-all"><Edit2 className="w-3.5 h-3.5" /></button>
                     <button className="p-2 hover:bg-destructive/10 text-muted hover:text-destructive rounded-lg transition-all"><Trash2 className="w-3.5 h-3.5" /></button>
                   </div>
                 </td>
@@ -240,16 +273,6 @@ const UsersTab = () => {
           </tbody>
         </table>
       </div>
-      {selectedUser && (
-        <EditUserModal 
-          user={selectedUser} 
-          onClose={() => setSelectedUser(null)} 
-          onSave={() => {
-            setSelectedUser(null);
-            fetchUsers();
-          }} 
-        />
-      )}
     </div>
   );
 };
@@ -258,6 +281,7 @@ const EditUserModal = ({ user, onClose, onSave }: any) => {
   const [status, setStatus] = useState(user.access_status);
   const [mode, setMode] = useState(user.api_key_mode || 'personal');
   const [days, setDays] = useState('30');
+  const [notes, setNotes] = useState(user.notes || '');
   const [saving, setSaving] = useState(false);
 
   const handleSave = async () => {
@@ -276,13 +300,23 @@ const EditUserModal = ({ user, onClose, onSave }: any) => {
       .update({ 
         access_status: status,
         api_key_mode: mode,
-        access_end
+        access_end,
+        notes
       })
       .eq('id', user.id);
 
     if (error) {
       toast.error('Erro ao salvar: ' + error.message);
     } else {
+      if (user.requestId) {
+        await supabase
+          .from('access_requests')
+          .update({ 
+            status: 'approved', 
+            resolved_at: new Date().toISOString() 
+          })
+          .eq('id', user.requestId);
+      }
       toast.success('Usuário atualizado!');
       onSave();
     }
@@ -370,6 +404,16 @@ const EditUserModal = ({ user, onClose, onSave }: any) => {
               </button>
             </div>
           </div>
+
+          <div className="space-y-2">
+            <label className="text-[10px] font-bold uppercase tracking-widest text-muted ml-1">Notas do Administrador</label>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              className="w-full bg-surface-raised border border-border rounded-xl p-3 text-xs font-medium outline-none min-h-[80px]"
+              placeholder="Notas internas sobre o usuário..."
+            />
+          </div>
         </div>
 
         <Button onClick={handleSave} disabled={saving} className="w-full h-12 text-[10px] font-black tracking-widest uppercase">
@@ -380,10 +424,9 @@ const EditUserModal = ({ user, onClose, onSave }: any) => {
   );
 };
 
-const RequestsTab = () => {
+const RequestsTab = ({ onApprove }: { onApprove: (req: any) => void }) => {
   const [requests, setRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedRequest, setSelectedRequest] = useState<any>(null);
 
   const fetchRequests = async () => {
     const { data } = await supabase
@@ -522,6 +565,86 @@ const RequestsTab = () => {
           </div>
         </div>
       ))}
+    </div>
+  );
+};
+
+const SettingsTab = () => {
+  const [apiKey, setApiKey] = useState('');
+  const [showKey, setShowKey] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [centralizedCount, setCentralizedCount] = useState(0);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      const { count } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true })
+        .eq('api_key_mode', 'centralized');
+      setCentralizedCount(count || 0);
+    };
+    fetchStats();
+  }, []);
+
+  const handleSaveSecret = async () => {
+    if (!apiKey) {
+      toast.error('Insira a chave Gemini');
+      return;
+    }
+    setSaving(true);
+    toast.info('Para segurança, as chaves mestras devem ser configuradas no painel do Supabase (GEMINI_API_KEY).', {
+      duration: 6000
+    });
+    setSaving(false);
+  };
+
+  return (
+    <div className="max-w-2xl space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="bg-surface border border-border rounded-[2rem] p-8 space-y-8">
+        <div>
+          <h2 className="text-sm font-black uppercase tracking-widest text-foreground">Configurações do Sistema</h2>
+          <p className="text-[10px] text-muted-foreground mt-2 leading-relaxed">Gerencie as chaves globais e limites do aplicativo.</p>
+        </div>
+
+        <div className="space-y-4">
+          <label className="text-[10px] font-black uppercase tracking-widest text-primary ml-1">Chave Gemini Centralizada</label>
+          <div className="flex gap-3">
+            <div className="relative flex-1">
+              <input 
+                type={showKey ? "text" : "password"}
+                placeholder="Configurada no Servidor (GEMINI_API_KEY)"
+                className="w-full bg-surface-raised border border-border rounded-xl p-3.5 text-xs font-mono font-bold outline-none opacity-50 cursor-not-allowed"
+                disabled
+              />
+              <button 
+                onClick={() => setShowKey(!showKey)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-muted"
+              >
+                {showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+            <Button variant="outline" className="h-12 px-6 text-[10px] font-bold tracking-widest">TESTAR</Button>
+          </div>
+          <p className="text-[9px] text-muted-foreground italic">
+            "Esta chave é usada para todos os usuários no modo centralizado. Ela é armazenada com segurança no servidor, nunca exposta ao browser."
+          </p>
+        </div>
+
+        <div className="p-6 bg-teal-500/5 border border-teal-500/20 rounded-2xl flex items-center justify-between">
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-widest text-teal-500">Uso do Sistema</p>
+            <p className="text-[11px] font-bold text-foreground mt-1">Usuários Centralizados: {centralizedCount}</p>
+          </div>
+          <div className="text-right">
+            <p className="text-[9px] text-muted-foreground uppercase tracking-widest font-black">Estimativa Mensal</p>
+            <p className="text-[11px] font-bold text-foreground mt-1">~{centralizedCount * 5}k tokens</p>
+          </div>
+        </div>
+
+        <Button onClick={handleSaveSecret} className="w-full h-12 text-[10px] font-black tracking-widest uppercase">
+          Configurar no Supabase
+        </Button>
+      </div>
     </div>
   );
 };
