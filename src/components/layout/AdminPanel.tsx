@@ -563,7 +563,87 @@ const RequestsTab = ({ onApprove }: { onApprove: (req: any) => void }) => {
         </div>
       ))}
     </div>
+);
+
+const SettingsTab = () => {
+  const [apiKey, setApiKey] = useState('');
+  const [showKey, setShowKey] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [centralizedCount, setCentralizedCount] = useState(0);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      const { count } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true })
+        .eq('api_key_mode', 'centralized');
+      setCentralizedCount(count || 0);
+    };
+    fetchStats();
+  }, []);
+
+  const handleSaveSecret = async () => {
+    if (!apiKey) {
+      toast.error('Insira a chave Gemini');
+      return;
+    }
+    setSaving(true);
+    toast.info('Para segurança, as chaves mestras devem ser configuradas no painel do Supabase (GEMINI_API_KEY).', {
+      duration: 6000
+    });
+    setSaving(false);
+  };
+
+  return (
+    <div className="max-w-2xl space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      <div className="bg-surface border border-border rounded-[2rem] p-8 space-y-8">
+        <div>
+          <h2 className="text-sm font-black uppercase tracking-widest text-foreground">Configurações do Sistema</h2>
+          <p className="text-[10px] text-muted-foreground mt-2 leading-relaxed">Gerencie as chaves globais e limites do aplicativo.</p>
+        </div>
+
+        <div className="space-y-4">
+          <label className="text-[10px] font-black uppercase tracking-widest text-primary ml-1">Chave Gemini Centralizada</label>
+          <div className="flex gap-3">
+            <div className="relative flex-1">
+              <input 
+                type={showKey ? "text" : "password"}
+                placeholder="Configurada no Servidor (GEMINI_API_KEY)"
+                className="w-full bg-surface-raised border border-border rounded-xl p-3.5 text-xs font-mono font-bold outline-none opacity-50 cursor-not-allowed"
+                disabled
+              />
+              <button 
+                onClick={() => setShowKey(!showKey)}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-muted"
+              >
+                {showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+            <Button variant="outline" className="h-12 px-6 text-[10px] font-bold tracking-widest">TESTAR</Button>
+          </div>
+          <p className="text-[9px] text-muted-foreground italic">
+            "Esta chave é usada para todos os usuários no modo centralizado. Ela é armazenada com segurança no servidor, nunca exposta ao browser."
+          </p>
+        </div>
+
+        <div className="p-6 bg-teal-500/5 border border-teal-500/20 rounded-2xl flex items-center justify-between">
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-widest text-teal-500">Uso do Sistema</p>
+            <p className="text-[11px] font-bold text-foreground mt-1">Usuários Centralizados: {centralizedCount}</p>
+          </div>
+          <div className="text-right">
+            <p className="text-[9px] text-muted-foreground uppercase tracking-widest font-black">Estimativa Mensal</p>
+            <p className="text-[11px] font-bold text-foreground mt-1">~{centralizedCount * 5}k tokens</p>
+          </div>
+        </div>
+
+        <Button onClick={handleSaveSecret} className="w-full h-12 text-[10px] font-black tracking-widest uppercase">
+          Configurar no Supabase
+        </Button>
+      </div>
+    </div>
   );
+};
 };
 
 const SubsTab = () => (
