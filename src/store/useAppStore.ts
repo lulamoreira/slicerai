@@ -86,10 +86,7 @@ export const useAppStore = create<AppStore>((set) => ({
   status: 'idle',
   file: null,
   geometry: null,
-  wizard: {
-    ...initialWizard,
-    printer: (useSettingsStore.getState().defaultPrinter as any) || "X1C"
-  },
+  wizard: initialWizard,
   results: null,
   orientationAdvice: { suggested: false, dismissed: false },
   isWireframe: false,
