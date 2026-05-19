@@ -14,13 +14,11 @@ export const AccountModal: React.FC<AccountModalProps> = ({ onClose }) => {
   if (!user || !profile) return null;
 
   const getInitials = (name: string, email: string) => {
-    const displayName = name || email || 'U';
-    if (displayName.includes('@')) {
-      return displayName.charAt(0).toUpperCase();
-    }
-    const parts = displayName.split(' ').filter(n => n.length > 0);
+    if (!name) return email ? email.charAt(0).toUpperCase() : 'U';
+    const parts = name.trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) return email ? email.charAt(0).toUpperCase() : 'U';
     if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
-    return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+    return (parts[0].charAt(0) + parts[1].charAt(0)).toUpperCase();
   };
 
   const formatDate = (dateString: string) => {
@@ -38,11 +36,13 @@ export const AccountModal: React.FC<AccountModalProps> = ({ onClose }) => {
         </button>
 
         <div className="flex flex-col items-center text-center mb-8">
-          <div className="w-24 h-24 bg-primary rounded-full flex items-center justify-center text-2xl font-black text-[#0d0d14] mb-4 shadow-xl shadow-primary/20 ring-4 ring-primary/10">
+          <div className="w-24 h-24 bg-primary rounded-full flex items-center justify-center text-2xl font-bold text-[#0d0d14] mb-4 shadow-xl shadow-primary/20 ring-4 ring-primary/10">
             {getInitials(profile.full_name || '', user.email || '')}
           </div>
-          <h2 className="text-xl font-bold tracking-tight text-foreground uppercase">{profile.full_name || 'Usuário SlicerAI'}</h2>
-          <p className="text-xs text-muted font-bold tracking-widest uppercase opacity-60 mt-1">{user.email}</p>
+          <h2 className="text-xl font-bold tracking-tight text-foreground uppercase">{profile.full_name || user.email}</h2>
+          {profile.full_name && (
+            <p className="text-xs text-muted font-bold tracking-widest uppercase opacity-60 mt-1">{user.email}</p>
+          )}
         </div>
 
         <div className="space-y-6">
@@ -57,7 +57,7 @@ export const AccountModal: React.FC<AccountModalProps> = ({ onClose }) => {
                   "px-2.5 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border",
                   profile.access_status === 'active' ? "bg-success/10 text-success border-success/20" : "bg-destructive/10 text-destructive border-destructive/20"
                 )}>
-                  {profile.access_status === 'active' ? '✅ Ativo' : 'Pendente'}
+                  {profile.access_status === 'active' ? 'Ativo' : 'Expirado'}
                 </span>
               </div>
             </div>

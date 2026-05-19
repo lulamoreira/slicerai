@@ -12,7 +12,7 @@ import {
   HelpCircle,
   User as UserIcon,
   LogOut,
-  ShieldCheck,
+  
   ChevronDown,
   UserCircle
 } from "lucide-react";
@@ -44,13 +44,11 @@ export const Navbar: React.FC<NavbarProps> = ({ onShowSettings, onShowHistory })
   };
 
   const getInitials = (name: string, email: string) => {
-    const displayName = name || email || 'U';
-    if (displayName.includes('@')) {
-      return displayName.charAt(0).toUpperCase();
-    }
-    const parts = displayName.split(' ').filter(n => n.length > 0);
+    if (!name) return email ? email.charAt(0).toUpperCase() : 'U';
+    const parts = name.trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) return email ? email.charAt(0).toUpperCase() : 'U';
     if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
-    return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
+    return (parts[0].charAt(0) + parts[1].charAt(0)).toUpperCase();
   };
 
   // Status Chip logic
@@ -143,7 +141,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onShowSettings, onShowHistory })
               onClick={() => setShowDropdown(!showDropdown)}
               className="flex items-center gap-2 pl-2 pr-1 py-1 hover:bg-surface-raised rounded-full border border-border transition-all"
             >
-              <div className="w-7 h-7 bg-primary rounded-full flex items-center justify-center text-[10px] font-black text-[#0d0d14]">
+              <div className="w-7 h-7 bg-primary rounded-full flex items-center justify-center text-[10px] font-bold text-[#0d0d14]">
                 {getInitials(profile?.full_name || '', user.email || '')}
               </div>
               <ChevronDown className={cn("w-3.5 h-3.5 text-muted transition-transform", showDropdown && "rotate-180")} />
@@ -180,8 +178,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onShowSettings, onShowHistory })
                         }}
                         className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-primary/10 rounded-xl text-[10px] font-bold text-primary transition-all uppercase tracking-widest text-left"
                       >
-                        <ShieldCheck className="w-4 h-4 text-primary" />
-                        Painel Admin
+                        🛡️ Painel Admin
                       </button>
                     )}
                     
