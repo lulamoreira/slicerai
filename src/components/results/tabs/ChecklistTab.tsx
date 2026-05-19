@@ -32,19 +32,19 @@ const ChecklistItem = ({ text }: { text: string }) => {
     <button 
       onClick={() => setChecked(!checked)}
       className={cn(
-        "w-full flex items-center gap-5 p-5 bg-surface-raised border rounded-2xl transition-all text-left shadow-lg group",
-        checked ? "border-primary/40 bg-primary/[0.03]" : "border-white/5 hover:border-white/10 hover:bg-white/[0.02]"
+        "w-full flex items-center gap-5 p-5 bg-surface border rounded-xl transition-all text-left shadow-sm group",
+        checked ? "border-primary/40 bg-primary-subtle" : "border-border hover:border-border-strong hover:bg-surface-hover"
       )}
     >
       <div className={cn(
-        "w-7 h-7 rounded-xl border flex items-center justify-center transition-all shadow-inner",
-        checked ? "bg-primary border-primary shadow-lg shadow-primary/20" : "bg-surface border-white/10 group-hover:border-white/20"
+        "w-6 h-6 rounded-md border-2 flex items-center justify-center transition-all",
+        checked ? "bg-primary border-primary" : "bg-transparent border-border-strong"
       )}>
-        <Check className={cn("w-4 h-4 text-white transition-all scale-50 opacity-0", checked && "scale-100 opacity-100")} />
+        <Check className={cn("w-3.5 h-3.5 text-[#0d0d14] transition-all scale-50 opacity-0", checked && "scale-100 opacity-100")} />
       </div>
       <span className={cn(
         "text-sm font-bold transition-colors leading-relaxed truncate-2-lines",
-        checked ? "text-white italic line-through opacity-50" : "text-muted-foreground group-hover:text-white"
+        checked ? "text-foreground-soft italic line-through opacity-50" : "text-foreground-soft group-hover:text-foreground"
       )}>
         {text}
       </span>
