@@ -56,19 +56,19 @@ function HomeComponent() {
   React.useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const cfg = params.get('cfg')
-    if (cfg) {
-      try {
-        const decoded = JSON.parse(atob(cfg))
-        useAppStore.setState({ 
-          wizard: decoded.wizard, 
-          results: decoded.results,
-          status: 'result'
-        })
-        setSharedBanner(true)
-        setTimeout(() => setSharedBanner(false), 5000)
-      } catch (e) {
-        console.error('Failed to rehydrate from URL', e)
-      }
+    if (!cfg) return
+    try {
+      const decoded = JSON.parse(atob(cfg))
+      if (!decoded || typeof decoded !== 'object' || !decoded.wizard || !decoded.results) return
+      useAppStore.setState({ 
+        wizard: decoded.wizard, 
+        results: decoded.results,
+        status: 'result'
+      })
+      setSharedBanner(true)
+      setTimeout(() => setSharedBanner(false), 5000)
+    } catch {
+      // Silently ignore malformed cfg
     }
   }, [])
 
