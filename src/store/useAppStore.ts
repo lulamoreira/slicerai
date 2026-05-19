@@ -26,6 +26,7 @@ interface WizardState {
   useCase: string;
   fileName: string;
   fileSize: number;
+  geometryStats?: GeometryStats;
   shouldRotate90X: boolean;
 }
 
