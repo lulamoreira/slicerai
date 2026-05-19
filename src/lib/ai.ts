@@ -165,7 +165,7 @@ Retorne este JSON exato (todos os campos obrigatórios):
   const fullPrompt = `${systemPrompt}\n\n${userMessage}`;
 
   const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+    `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -202,7 +202,7 @@ export const testConnection = async (apiKey: string): Promise<boolean> => {
 export const testConnectionDetailed = async (apiKey: string): Promise<ConnectionResult> => {
   try {
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
+      `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
