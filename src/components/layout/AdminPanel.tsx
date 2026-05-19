@@ -23,7 +23,10 @@ import {
   Send,
   UserCheck,
   UserX,
-  History
+  History,
+  Eye,
+  EyeOff,
+  Settings as SettingsIcon
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
