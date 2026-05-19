@@ -25,7 +25,7 @@ import {
   Share
 } from "lucide-react";
 import { toast } from "sonner";
-import { AIResponse } from "../../../lib/types";
+import { AIResponse } from "../../lib/types";
 
 export const ExportBar = ({ results, onReset }: { results: AIResponse, onReset: () => void }) => {
   const { wizard } = useAppStore();
