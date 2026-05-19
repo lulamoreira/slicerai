@@ -53,7 +53,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('full_name, role, access_status, access_end, api_key_mode, created_at')
+        .select('id, email, full_name, role, access_status, access_end, api_key_mode, created_at')
         .eq('id', user.id)
         .single();
 
@@ -61,24 +61,27 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       
       let profileData = data as unknown as Profile;
 
-      // Normalize role to lowercase
+      // Normalize role to lowercase and ensure it's correct
       if (profileData.role) {
         profileData.role = profileData.role.toLowerCase() as 'admin' | 'user';
       }
 
-      // Ensure full_name is populated from metadata or email as fallback
-      if (!profileData.full_name) {
-        profileData.full_name = user.user_metadata?.full_name || user.email || null;
-      }
+      console.log('AuthStore: profile.role =', profileData?.role);
 
-      // Update profile in DB if name was missing but present in metadata
-      if (!data.full_name && user.user_metadata?.full_name) {
+      // Ensure full_name is populated from metadata or email as fallback
+      const metadataName = user.user_metadata?.full_name || user.user_metadata?.name;
+      
+      if (!profileData.full_name && metadataName) {
+        profileData.full_name = metadataName;
+        // Update profile in DB if name was missing but present in metadata
         await supabase.from('profiles')
-          .update({ full_name: user.user_metadata.full_name })
+          .update({ full_name: metadataName })
           .eq('id', user.id);
       }
 
-      console.log('Fetched profile role:', profileData?.role);
+      if (!profileData.full_name) {
+        profileData.full_name = user.email || null;
+      }
 
       // Check for automatic expiry
       if (profileData.access_status === 'active' && profileData.access_end && new Date(profileData.access_end) < new Date()) {
@@ -90,7 +93,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           .single();
         
         if (!updateError && updated) {
-          set({ profile: updated as unknown as Profile, loading: false });
+          const updatedProfile = updated as unknown as Profile;
+          updatedProfile.role = updatedProfile.role.toLowerCase() as 'admin' | 'user';
+          set({ profile: updatedProfile, loading: false });
           return;
         }
       }
