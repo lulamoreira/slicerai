@@ -36,14 +36,17 @@ const Model = ({ file }: { file: File }) => {
           const mesh = new THREE.Mesh(geometry);
           
           // Scaling
-          const box = new THREE.Box3().setFromObject(mesh);
-          const size = box.getSize(new THREE.Vector3());
+          const bbox = new THREE.Box3().setFromBufferAttribute(
+            geometry.attributes.position as THREE.BufferAttribute
+          );
+          const size = bbox.getSize(new THREE.Vector3());
           const maxDim = Math.max(size.x, size.y, size.z);
-          mesh.scale.setScalar(80 / maxDim);
-          
-          // Re-center after scale
-          geometry.center();
-          object = mesh;
+          if (maxDim > 0) {
+            const scale = 80 / maxDim;
+            geometry.scale(scale, scale, scale);
+            geometry.center();
+          }
+          object = new THREE.Mesh(geometry);
         } else if (file.name.toLowerCase().endsWith('.3mf')) {
           const loader = new ThreeMFLoader();
           object = loader.parse(result as ArrayBuffer);
@@ -94,16 +97,17 @@ const Model = ({ file }: { file: File }) => {
     };
 
     const analyze = (geom: THREE.BufferGeometry) => {
-      const worker = new Worker(new URL('../../workers/analyze.worker.ts', import.meta.url), { type: 'module' });
-      const pos = geom.attributes.position.array as Float32Array;
-      
-      worker.postMessage({ 
-        geometryData: { 
-          position: pos,
-          index: geom.index?.array 
-        } 
-      }, [pos.buffer]);
-
+      const worker = new Worker(
+        new URL('../../workers/analyze.worker.ts', import.meta.url),
+        { type: 'module' }
+      );
+      const posCopy = new Float32Array(geom.attributes.position.array).slice();
+      const idxArray = geom.index?.array;
+      const idxCopy = idxArray ? new Uint32Array(idxArray).slice() : undefined;
+      worker.postMessage(
+        { geometryData: { position: posCopy, index: idxCopy } },
+        idxCopy ? [posCopy.buffer, idxCopy.buffer] : [posCopy.buffer]
+      );
       worker.onmessage = (e) => {
         const { result } = e.data;
         setGeoData(result);
@@ -150,16 +154,17 @@ export const ModelViewer: React.FC<ModelViewerProps> = ({ file: fileProp }) => {
   const file = fileProp || storeFile || undefined;
   return (
     <div className="w-full h-full bg-[var(--background)] relative rounded-xl overflow-hidden border border-border">
-      <Canvas shadows dpr={[1, 2]} camera={{ position: [120, 80, 120], fov: 45, near: 0.1, far: 10000 }}>
-        <Stage 
-          environment="city" 
-          intensity={0.5} 
-          adjustCamera={false}
-        >
-          {file && <Model file={file} />}
-        </Stage>
-        <ambientLight intensity={1.0} />
-        <directionalLight position={[5, 10, 5]} intensity={2} />
+      <Canvas
+        shadows
+        dpr={[1, 2]}
+        camera={{ position: [120, 80, 120], fov: 45, near: 0.1, far: 10000 }}
+        gl={{ antialias: true }}
+      >
+        <ambientLight intensity={1.5} />
+        <directionalLight position={[5, 10, 5]} intensity={2} castShadow />
+        <directionalLight position={[-5, -5, -5]} intensity={0.8} />
+        <pointLight position={[0, 50, 0]} intensity={1.0} />
+        {file && <Model file={file} />}
         <OrbitControls makeDefault enableDamping dampingFactor={0.05} />
         <Grid
           infiniteGrid
@@ -172,11 +177,8 @@ export const ModelViewer: React.FC<ModelViewerProps> = ({ file: fileProp }) => {
           cellThickness={0.8}
           cellColor="#1e1e2e"
         />
-        <ambientLight intensity={0.4} />
-        <directionalLight position={[100, 100, 100]} intensity={0.8} castShadow />
       </Canvas>
-      
-      <button 
+      <button
         onClick={() => useAppStore.getState().toggleWireframe()}
         className="absolute top-4 right-4 p-2 bg-surface-raised border border-border rounded-lg text-[10px] font-bold tracking-widest text-muted hover:text-foreground hover:bg-surface-hover transition-colors z-10"
       >

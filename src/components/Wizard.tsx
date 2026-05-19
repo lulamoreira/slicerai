@@ -65,7 +65,7 @@ export const Wizard: React.FC = () => {
       </div>
 
       {/* Step Content */}
-      <div className="flex-1 overflow-y-auto min-h-0 pr-1 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto min-h-0 pr-4 custom-scrollbar">
         {renderStep()}
       </div>
 
