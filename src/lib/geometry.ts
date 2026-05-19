@@ -85,7 +85,9 @@ export const analyzeGeometry = (mesh: THREE.Mesh): GeometryStats => {
     maxOverhangAngle: maxOverhangAngle,
     thinWalls: false, // Simplification: placeholder
     bridging: false, // Simplification: placeholder
-    boundingBox: { x: size.x, y: size.y, z: size.z }
+    boundingBox: { x: size.x, y: size.y, z: size.z },
+    parts: 1,
+    colors: 1
   };
 };
 

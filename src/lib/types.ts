@@ -17,6 +17,8 @@ export interface GeometryStats {
   thinWalls: boolean;
   bridging: boolean;
   boundingBox: { x: number; y: number; z: number };
+  parts: number;
+  colors: number;
 }
 
 export interface WizardState {
@@ -36,7 +38,7 @@ export interface WizardState {
   fileName: string;
   fileSize: number;
   geometryStats?: GeometryStats;
-  shouldRotate90X?: boolean;
+  shouldRotate90X: boolean;
 }
 
 export interface AIResponse {
