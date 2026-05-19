@@ -20,7 +20,7 @@ export const ReviewStep: React.FC = () => {
 
   const handleGenerate = async () => {
     if (!apiKey) {
-      alert("Por favor, insira sua chave da OpenAI nas configurações.");
+      alert("Por favor, insira sua chave do Google Gemini nas configurações.");
       return;
     }
 
@@ -115,7 +115,7 @@ export const ReviewStep: React.FC = () => {
                 </div>
                 <div className="text-center space-y-1">
                     <span className="text-2xl font-black tracking-tighter italic uppercase block">Gerar com SlicerAI</span>
-                    <span className="text-[10px] opacity-70 font-black uppercase tracking-[0.4em] block pl-1">Otimização gpt-4o</span>
+                    <span className="text-[10px] opacity-70 font-black uppercase tracking-[0.4em] block pl-1">Otimização Gemini 1.5 Flash</span>
                 </div>
             </>
             )}
@@ -123,7 +123,7 @@ export const ReviewStep: React.FC = () => {
 
         {!apiKey && (
             <div className="p-4 bg-destructive/5 border border-destructive/10 rounded-2xl flex items-center justify-center gap-3 animate-pulse">
-                <span className="text-[10px] text-destructive font-black uppercase tracking-widest">⚠️ Chave OpenAI não configurada nas ⚙️ Configurações</span>
+                <span className="text-[10px] text-destructive font-black uppercase tracking-widest">⚠️ Chave Gemini não configurada nas ⚙️ Configurações</span>
             </div>
         )}
       </div>
