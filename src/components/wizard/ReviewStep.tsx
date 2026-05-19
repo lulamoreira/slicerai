@@ -6,11 +6,11 @@ import { cn } from "../../lib/utils";
 import { MATERIAL_DENSITIES } from "../../lib/geometry";
 
 export const ReviewStep: React.FC = () => {
-  const { wizard, setResults, setStatus, status } = useAppStore();
-  const { apiKey } = useSettingsStore();
+  const { wizard, setResults, status } = useAppStore();
+  const { apiKey, addToHistory } = useSettingsStore();
   
   const estimatedWeight = wizard.geometryStats 
-    ? (wizard.geometryStats.volume * (MATERIAL_DENSITIES[wizard.material] || 1.24)).toFixed(1)
+    ? (wizard.geometryStats.volume * (MATERIAL_DENSITIES[wizard.material as keyof typeof MATERIAL_DENSITIES] || 1.24)).toFixed(1)
     : 0;
 
   // Simple heuristic for print time (min)
@@ -29,6 +29,13 @@ export const ReviewStep: React.FC = () => {
       const results = await generateSettings(apiKey, wizard as any);
       setResults(results);
       
+      // Capturar thumbnail (snapshot do canvas)
+      let thumbnail = "";
+      const canvas = document.querySelector('canvas');
+      if (canvas) {
+          thumbnail = canvas.toDataURL('image/png');
+      }
+
       const entry = {
         id: crypto.randomUUID(),
         timestamp: Date.now(),
@@ -36,11 +43,11 @@ export const ReviewStep: React.FC = () => {
         printer: wizard.printer,
         material: wizard.material,
         color: wizard.hasAMS ? wizard.amsSlots[0].color : wizard.baseColor,
-        thumbnail: "",
+        thumbnail,
         results,
         wizardState: wizard as any,
       };
-      useSettingsStore.getState().addToHistory(entry);
+      addToHistory(entry);
     } catch (error) {
       console.error(error);
       alert("Erro ao gerar configurações. Verifique sua chave API.");
