@@ -141,7 +141,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onShowSettings, onShowHistory })
               onClick={() => setShowDropdown(!showDropdown)}
               className="flex items-center gap-2 pl-2 pr-1 py-1 hover:bg-surface-raised rounded-full border border-border transition-all"
             >
-              <div className="w-7 h-7 bg-primary rounded-full flex items-center justify-center text-[10px] font-black text-[#0d0d14]">
+              <div className="w-7 h-7 bg-primary rounded-full flex items-center justify-center text-[10px] font-bold text-[#0d0d14]">
                 {getInitials(profile?.full_name || '', user.email || '')}
               </div>
               <ChevronDown className={cn("w-3.5 h-3.5 text-muted transition-transform", showDropdown && "rotate-180")} />
