@@ -20,7 +20,7 @@ export const analyzeGeometry = (mesh: THREE.Mesh): GeometryStats => {
   }
 
   // Ensure we have a BufferGeometry
-  const bufferGeometry = geometry instanceof THREE.BufferGeometry ? geometry : new THREE.BufferGeometry().fromGeometry(geometry);
+  const bufferGeometry = geometry as THREE.BufferGeometry;
   
   // Calculate Volume and Surface Area
   let volume = 0;
