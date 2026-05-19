@@ -143,8 +143,8 @@ function HomeComponent() {
             )}
           </div>
 
-          {/* Extended Stats Card */}
-          <div className="animate-in slide-in-from-bottom-4 duration-500">
+          {/* Extended Stats Card — desktop only */}
+          <div className="hidden md:block animate-in slide-in-from-bottom-4 duration-500">
             <StatsCard />
           </div>
         </div>
