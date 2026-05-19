@@ -43,15 +43,23 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
     }
     setTesting(true);
     setTestResult('idle');
-    const ok = await testConnection(apiKey);
+    const result = await testConnectionDetailed(apiKey);
     setTesting(false);
-    if (ok) {
+    if (result === "ok") {
       setTestResult('success');
-      toast.success("Conexão estabelecida!");
+      toast.success("✅ Conectado");
+    } else if (result === "rate_limited") {
+      setTestResult('error');
+      setErrorMessage("Limite atingido");
+      toast.error("⚠️ Limite atingido — aguarde alguns minutos");
+    } else if (result === "invalid") {
+      setTestResult('error');
+      setErrorMessage("Chave inválida");
+      toast.error("❌ Chave inválida");
     } else {
       setTestResult('error');
-      setErrorMessage("Chave inválida ou erro de rede");
-      toast.error("Erro na conexão");
+      setErrorMessage("Erro de rede");
+      toast.error("❌ Erro na conexão");
     }
   };
 
