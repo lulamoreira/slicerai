@@ -30,6 +30,18 @@ interface AuthState {
   updateProfile: (updates: Partial<Profile>) => Promise<void>;
 }
 
+const normalizeProfileRole = (role: string | null | undefined): 'admin' | 'user' => {
+  return String(role ?? 'user').trim().toLowerCase() === 'admin' ? 'admin' : 'user';
+};
+
+const resolveProfileName = (profileName: string | null | undefined, user: User) => {
+  const metadataName = user.user_metadata?.full_name || user.user_metadata?.name;
+  const normalizedProfileName = typeof profileName === 'string' ? profileName.trim() : '';
+  const normalizedMetadataName = typeof metadataName === 'string' ? metadataName.trim() : '';
+
+  return normalizedProfileName || normalizedMetadataName || user.email || null;
+};
+
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   profile: null,
@@ -48,7 +60,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   fetchProfile: async () => {
     const { user } = get();
-    if (!user) return;
+    if (!user) {
+      set({ profile: null, loading: false });
+      return;
+    }
 
     try {
       const { data, error } = await supabase
@@ -58,29 +73,22 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         .single();
 
       if (error) throw error;
-      
-      let profileData = data as unknown as Profile;
 
-      // Normalize role to lowercase and ensure it's correct
-      if (profileData.role) {
-        profileData.role = profileData.role.toLowerCase() as 'admin' | 'user';
-      }
+      const profileData = {
+        ...(data as unknown as Profile),
+        role: normalizeProfileRole(data?.role),
+        full_name: resolveProfileName(data?.full_name, user),
+      } satisfies Profile;
 
-      console.log('AuthStore: profile.role =', profileData?.role);
+      console.log('Profile role:', profileData.role);
 
-      // Ensure full_name is populated from metadata or email as fallback
       const metadataName = user.user_metadata?.full_name || user.user_metadata?.name;
-      
-      if (!profileData.full_name && metadataName) {
-        profileData.full_name = metadataName;
-        // Update profile in DB if name was missing but present in metadata
-        await supabase.from('profiles')
-          .update({ full_name: metadataName })
-          .eq('id', user.id);
-      }
 
-      if (!profileData.full_name) {
-        profileData.full_name = user.email || null;
+      if ((!data?.full_name || !String(data.full_name).trim()) && typeof metadataName === 'string' && metadataName.trim()) {
+        await supabase
+          .from('profiles')
+          .update({ full_name: metadataName.trim() })
+          .eq('id', user.id);
       }
 
       // Check for automatic expiry
@@ -93,8 +101,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           .single();
         
         if (!updateError && updated) {
-          const updatedProfile = updated as unknown as Profile;
-          updatedProfile.role = updatedProfile.role.toLowerCase() as 'admin' | 'user';
+          const updatedProfile = {
+            ...(updated as unknown as Profile),
+            role: normalizeProfileRole(updated.role),
+            full_name: resolveProfileName(updated.full_name, user),
+          } satisfies Profile;
+
           set({ profile: updatedProfile, loading: false });
           return;
         }
@@ -124,7 +136,13 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       .single();
 
     if (!error && data) {
-      set({ profile: data as unknown as Profile });
+      set({
+        profile: {
+          ...(data as unknown as Profile),
+          role: normalizeProfileRole(data.role),
+          full_name: resolveProfileName(data.full_name, user),
+        },
+      });
     }
   }
 }));
