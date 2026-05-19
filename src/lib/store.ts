@@ -19,18 +19,15 @@ interface SlicerStore {
   currentResults?: AIResponse;
   isGenerating: boolean;
 
-  // Wizard actions
   setStep: (step: number) => void;
   updateWizard: (updates: Partial<WizardState>) => void;
   resetWizard: () => void;
 
-  // App actions
   toggleTheme: () => void;
   setLanguage: (lang: "pt-BR" | "en") => void;
   setOpenAIKey: (key: string) => void;
   setCostPerKg: (cost: number) => void;
 
-  // History/Results
   setResults: (results: AIResponse) => void;
   addToHistory: (entry: Omit<HistoryEntry, "id" | "timestamp">) => void;
   setGenerating: (isGenerating: boolean) => void;
@@ -41,16 +38,23 @@ const initialWizard: WizardState = {
   step: 1,
   printer: "X1C",
   nozzle: 0.4,
+  layerHeight: 0.20,
   hasAMS: false,
-  amsSlots: Array(4).fill({ material: "PLA", color: "#00ADB5" }),
+  amsSlotCount: 4,
+  amsSlots: Array(16).fill(null).map((_, i) => ({ slot: i + 1, material: "PLA", color: "#00c8b4" })),
   flushStrategy: "Automático",
   wipeTower: true,
   material: "PLA",
   variant: "Basic",
-  baseColor: "#00ADB5",
+  baseColor: "#00c8b4",
+  spoolWeight: 1000,
   buildPlate: "Textured PEI Plate",
-  priority: 50,
-  useCase: "Functional",
+  purposes: ["Funcional"],
+  ironing: false,
+  seamPosition: "Alinhada",
+  supportEnabled: false,
+  supportType: "Tree (Auto)",
+  supportInterface: "Mesmo material",
   fileName: "",
   fileSize: 0,
   shouldRotate90X: false,
