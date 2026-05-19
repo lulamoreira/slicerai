@@ -20,6 +20,7 @@ import { supabase } from "../integrations/supabase/client";
 import { toast } from "sonner";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Button } from "./ui/button";
+import { AccountModal } from "./AccountModal";
 
 interface NavbarProps {
   onShowSettings: () => void;
@@ -30,6 +31,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onShowSettings, onShowHistory })
   const { theme, setTheme, language, setLanguage, apiKey, history } = useSettingsStore();
   const { user, profile, logout } = useAuthStore();
   const [showDropdown, setShowDropdown] = useState(false);
+  const [showAccountModal, setShowAccountModal] = useState(false);
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -43,13 +45,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onShowSettings, onShowHistory })
     if (displayName.includes('@')) {
       return displayName.charAt(0).toUpperCase();
     }
-    return displayName
-      .split(' ')
-      .filter(n => n.length > 0)
-      .map(n => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
+    const parts = displayName.split(' ').filter(n => n.length > 0);
+    if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+    return (parts[0].charAt(0) + parts[parts.length - 1].charAt(0)).toUpperCase();
   };
 
   // Status Chip logic
@@ -161,7 +159,13 @@ export const Navbar: React.FC<NavbarProps> = ({ onShowSettings, onShowHistory })
                   </div>
                   
                   <div className="space-y-1">
-                    <button className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-surface-raised rounded-xl text-[10px] font-bold text-foreground-soft hover:text-foreground transition-all uppercase tracking-widest text-left">
+                    <button 
+                      onClick={() => {
+                        setShowDropdown(false);
+                        setShowAccountModal(true);
+                      }}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-surface-raised rounded-xl text-[10px] font-bold text-foreground-soft hover:text-foreground transition-all uppercase tracking-widest text-left"
+                    >
                       <UserCircle className="w-4 h-4 text-primary" />
                       Minha Conta
                     </button>
@@ -203,6 +207,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onShowSettings, onShowHistory })
           </Button>
         )}
       </div>
+
+      {showAccountModal && <AccountModal onClose={() => setShowAccountModal(false)} />}
     </header>
   );
 };
