@@ -155,7 +155,8 @@ export function AdminPanel() {
   );
 };
 
-const NavItem = ({ icon, label, active, onClick, badge, disabled }: any) => (
+function NavItem({ icon, label, active, onClick, badge, disabled }: any) {
+  return (
   <button
     onClick={onClick}
     disabled={disabled}
@@ -181,9 +182,10 @@ const NavItem = ({ icon, label, active, onClick, badge, disabled }: any) => (
     )}
     {disabled && <Lock className="w-3 h-3 opacity-50" />}
   </button>
-);
+  );
+}
 
-const UsersTab = ({ onEditUser }: { onEditUser: (user: any) => void }) => {
+function UsersTab({ onEditUser }: { onEditUser: (user: any) => void }) {
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -277,7 +279,7 @@ const UsersTab = ({ onEditUser }: { onEditUser: (user: any) => void }) => {
   );
 };
 
-const EditUserModal = ({ user, onClose, onSave }: any) => {
+function EditUserModal({ user, onClose, onSave }: any) {
   const [status, setStatus] = useState(user.access_status);
   const [mode, setMode] = useState(user.api_key_mode || 'personal');
   const [days, setDays] = useState('30');
@@ -436,7 +438,7 @@ const EditUserModal = ({ user, onClose, onSave }: any) => {
   );
 };
 
-const RequestsTab = ({ onApprove }: { onApprove: (req: any) => void }) => {
+function RequestsTab({ onApprove }: { onApprove: (req: any) => void }) {
   const [requests, setRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -581,7 +583,7 @@ const RequestsTab = ({ onApprove }: { onApprove: (req: any) => void }) => {
   );
 };
 
-const SettingsTab = () => {
+function SettingsTab() {
   const [apiKey, setApiKey] = useState('');
   const [showKey, setShowKey] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -661,7 +663,8 @@ const SettingsTab = () => {
   );
 };
 
-const SubsTab = () => (
+function SubsTab() {
+  return (
   <div className="h-full flex flex-col items-center justify-center text-center space-y-6">
     <div className="w-24 h-24 bg-surface-raised rounded-full flex items-center justify-center border border-border shadow-inner">
       <Lock className="w-10 h-10 text-muted" />
@@ -671,9 +674,10 @@ const SubsTab = () => (
       <p className="text-muted-foreground max-w-sm">Esta área permitirá configurar planos de assinatura via Stripe ou Mercado Pago. O acesso é gerenciado manualmente por enquanto.</p>
     </div>
   </div>
-);
+  );
+}
 
-const StatusBadge = ({ status }: { status: string }) => {
+function StatusBadge({ status }: { status: string }) {
   const styles: any = {
     active: "bg-success/10 text-success border-success/20",
     pending: "bg-warning/10 text-warning border-warning/20",
@@ -696,7 +700,8 @@ const StatusBadge = ({ status }: { status: string }) => {
   );
 };
 
-const ShieldAlert = ({ className }: { className?: string }) => (
+function ShieldAlert({ className }: { className?: string }) {
+  return (
   <svg 
     xmlns="http://www.w3.org/2000/svg" 
     width="24" 
@@ -713,9 +718,11 @@ const ShieldAlert = ({ className }: { className?: string }) => (
     <path d="M12 8v4" />
     <path d="M12 16h.01" />
   </svg>
-);
+  );
+}
 
-const RotateCcw = ({ className }: { className?: string }) => (
+function RotateCcw({ className }: { className?: string }) {
+  return (
   <svg 
     xmlns="http://www.w3.org/2000/svg" 
     width="24" 
@@ -731,4 +738,5 @@ const RotateCcw = ({ className }: { className?: string }) => (
     <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
     <path d="M3 3v5h5" />
   </svg>
-);
+  );
+}
