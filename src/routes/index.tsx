@@ -86,7 +86,7 @@ function HomeComponent() {
   if (status === 'idle') {
     return (
       <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">
-        <Toaster position="top-center" theme={theme} />
+        <Toaster {...toasterProps} theme={theme} />
         <Navbar onShowSettings={() => setShowSettings(true)} onShowHistory={() => setShowHistory(true)} />
         <main className="flex-1 flex items-center justify-center p-6">
           <Dropzone />
@@ -105,7 +105,7 @@ function HomeComponent() {
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col font-sans overflow-hidden">
-      <Toaster position="top-center" theme={theme} />
+      <Toaster {...toasterProps} theme={theme} />
       <Navbar onShowSettings={() => setShowSettings(true)} onShowHistory={() => setShowHistory(true)} />
 
       {sharedBanner && (
