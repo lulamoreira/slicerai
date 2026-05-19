@@ -58,7 +58,21 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       if (error) throw error;
       
-      const profileData = data as unknown as Profile;
+      let profileData = data as unknown as Profile;
+
+      // Sync full_name from user metadata if empty in profile
+      if (!profileData.full_name && user.user_metadata?.full_name) {
+        const { data: updated, error: updateError } = await supabase
+          .from('profiles')
+          .update({ full_name: user.user_metadata.full_name })
+          .eq('id', user.id)
+          .select()
+          .single();
+        
+        if (!updateError && updated) {
+          profileData = updated as unknown as Profile;
+        }
+      }
 
       // Check for automatic expiry
       if (profileData.access_status === 'active' && profileData.access_end && new Date(profileData.access_end) < new Date()) {
@@ -70,7 +84,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           .single();
         
         if (!updateError && updated) {
-          set({ profile: updated as unknown as Profile });
+          set({ profile: updated as unknown as Profile, loading: false });
           return;
         }
       }

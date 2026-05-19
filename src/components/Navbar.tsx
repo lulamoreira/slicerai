@@ -145,25 +145,27 @@ export const Navbar: React.FC<NavbarProps> = ({ onShowSettings, onShowHistory })
                 <div className="fixed inset-0 z-40" onClick={() => setShowDropdown(false)} />
                 <div className="absolute right-0 mt-3 w-64 bg-surface border border-border rounded-2xl shadow-2xl z-50 p-2 animate-in fade-in slide-in-from-top-4 duration-300">
                   <div className="px-4 py-3 border-b border-border mb-2">
-                    <p className="text-xs font-bold text-foreground truncate">{profile?.full_name || 'Usuário SlicerAI'}</p>
+                    <p className="text-xs font-bold text-foreground truncate">{profile?.full_name || user.email}</p>
                     <p className="text-[10px] text-muted font-medium truncate mt-0.5">{user.email}</p>
                   </div>
                   
                   <div className="space-y-1">
-                    <button className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-surface-raised rounded-xl text-[10px] font-bold text-foreground-soft hover:text-foreground transition-all uppercase tracking-widest">
+                    <button className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-surface-raised rounded-xl text-[10px] font-bold text-foreground-soft hover:text-foreground transition-all uppercase tracking-widest text-left">
                       <UserCircle className="w-4 h-4 text-primary" />
                       Minha Conta
                     </button>
                     
                     {profile?.role === 'admin' && (
-                      <Link 
-                        to="/admin" 
-                        onClick={() => setShowDropdown(false)}
-                        className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-primary/10 rounded-xl text-[10px] font-bold text-primary transition-all uppercase tracking-widest"
+                      <button 
+                        onClick={() => {
+                          setShowDropdown(false);
+                          navigate({ to: '/admin' });
+                        }}
+                        className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-primary/10 rounded-xl text-[10px] font-bold text-primary transition-all uppercase tracking-widest text-left"
                       >
                         <ShieldCheck className="w-4 h-4" />
                         Painel Admin
-                      </Link>
+                      </button>
                     )}
                     
                     <div className="h-px bg-border my-2 mx-2" />
