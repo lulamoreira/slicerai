@@ -27,7 +27,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onShowSettings, onShowHistory })
         <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center shadow-[0_0_15px_rgba(0,200,180,0.3)]">
           <Hexagon className="w-5 h-5 text-white fill-white/20" />
         </div>
-        <h1 className="font-black italic tracking-tighter text-xl text-white">
+        <h1 className="font-black italic tracking-tighter text-xl text-white hidden sm:block">
           SlicerAI <span className="text-primary">for Bambu</span>
         </h1>
       </div>
