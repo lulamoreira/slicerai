@@ -25,10 +25,10 @@ import {
   Share
 } from "lucide-react";
 import { toast } from "sonner";
-import { SummaryTab } from "./tabs/SummaryTab";
-import { SettingsTab } from "./tabs/SettingsTab";
-import { ExplanationTab } from "./tabs/ExplanationTab";
-import { ChecklistTab } from "./tabs/ChecklistTab";
+import { SummaryTab } from "./results/tabs/SummaryTab";
+import { SettingsTab } from "./results/tabs/SettingsTab";
+import { ExplanationTab } from "./results/tabs/ExplanationTab";
+import { ChecklistTab } from "./results/tabs/ChecklistTab";
 
 export const ResultsPanel: React.FC = () => {
   const { results, resetApp, wizard } = useAppStore();
