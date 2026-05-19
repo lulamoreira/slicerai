@@ -32,8 +32,10 @@ import { toast } from 'sonner';
 import { cn } from '../../lib/utils';
 
 export const AdminPanel: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'users' | 'requests' | 'subs'>('users');
+  const [activeTab, setActiveTab] = useState<'users' | 'requests' | 'subs' | 'settings'>('users');
   const [requestCount, setRequestCount] = useState(0);
+  const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [usersRefreshKey, setUsersRefreshKey] = useState(0);
 
   const fetchCount = async () => {
     const { count } = await supabase
@@ -121,11 +123,31 @@ export const AdminPanel: React.FC = () => {
         </header>
 
         <main className="flex-1 overflow-y-auto p-8 custom-scrollbar">
-          {activeTab === 'users' && <UsersTab />}
-          {activeTab === 'requests' && <RequestsTab />}
+          {activeTab === 'users' && <UsersTab key={usersRefreshKey} onEditUser={setSelectedUser} />}
+          {activeTab === 'requests' && (
+            <RequestsTab 
+              onApprove={async (req) => {
+                const { data } = await supabase.from('profiles').select('*').eq('id', req.user_id).single();
+                if (data) setSelectedUser({ ...data, requestId: req.id });
+              }} 
+            />
+          )}
           {activeTab === 'subs' && <SubsTab />}
+          {activeTab === 'settings' && <SettingsTab />}
         </main>
       </div>
+
+      {selectedUser && (
+        <EditUserModal 
+          user={selectedUser} 
+          onClose={() => setSelectedUser(null)} 
+          onSave={() => {
+            setSelectedUser(null);
+            setUsersRefreshKey(prev => prev + 1);
+            fetchCount();
+          }} 
+        />
+      )}
     </div>
   );
 };
@@ -161,7 +183,6 @@ const NavItem = ({ icon, label, active, onClick, badge, disabled }: any) => (
 const UsersTab = ({ onEditUser }: { onEditUser: (user: any) => void }) => {
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedUserLocal, setSelectedUserLocal] = useState<any>(null);
 
   const fetchUsers = async () => {
     const { data } = await supabase
@@ -240,7 +261,7 @@ const UsersTab = ({ onEditUser }: { onEditUser: (user: any) => void }) => {
                 </td>
                 <td className="px-6 py-4 text-right">
                   <div className="flex justify-end gap-2">
-                    <button onClick={() => setSelectedUser(user)} className="p-2 hover:bg-primary-subtle text-muted hover:text-primary rounded-lg transition-all"><Edit2 className="w-3.5 h-3.5" /></button>
+                    <button onClick={() => onEditUser(user)} className="p-2 hover:bg-primary-subtle text-muted hover:text-primary rounded-lg transition-all"><Edit2 className="w-3.5 h-3.5" /></button>
                     <button className="p-2 hover:bg-destructive/10 text-muted hover:text-destructive rounded-lg transition-all"><Trash2 className="w-3.5 h-3.5" /></button>
                   </div>
                 </td>
@@ -249,16 +270,6 @@ const UsersTab = ({ onEditUser }: { onEditUser: (user: any) => void }) => {
           </tbody>
         </table>
       </div>
-      {selectedUser && (
-        <EditUserModal 
-          user={selectedUser} 
-          onClose={() => setSelectedUser(null)} 
-          onSave={() => {
-            setSelectedUser(null);
-            fetchUsers();
-          }} 
-        />
-      )}
     </div>
   );
 };
@@ -294,6 +305,15 @@ const EditUserModal = ({ user, onClose, onSave }: any) => {
     if (error) {
       toast.error('Erro ao salvar: ' + error.message);
     } else {
+      if (user.requestId) {
+        await supabase
+          .from('access_requests')
+          .update({ 
+            status: 'approved', 
+            resolved_at: new Date().toISOString() 
+          })
+          .eq('id', user.requestId);
+      }
       toast.success('Usuário atualizado!');
       onSave();
     }
@@ -401,10 +421,9 @@ const EditUserModal = ({ user, onClose, onSave }: any) => {
   );
 };
 
-const RequestsTab = () => {
+const RequestsTab = ({ onApprove }: { onApprove: (req: any) => void }) => {
   const [requests, setRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedRequest, setSelectedRequest] = useState<any>(null);
 
   const fetchRequests = async () => {
     const { data } = await supabase
