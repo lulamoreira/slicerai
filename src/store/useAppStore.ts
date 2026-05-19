@@ -10,6 +10,47 @@ import {
   GeometryStats 
 } from "../lib/types";
 
+interface SettingsStore {
+  apiKey: string;
+  costPerKg: number;
+  defaultPrinter: string;
+  language: 'pt-BR' | 'en';
+  theme: 'dark' | 'light';
+  history: HistoryEntry[];
+  
+  setApiKey: (apiKey: string) => void;
+  setCostPerKg: (cost: number) => void;
+  setDefaultPrinter: (printer: string) => void;
+  setLanguage: (lang: 'pt-BR' | 'en') => void;
+  setTheme: (theme: 'dark' | 'light') => void;
+  addToHistory: (entry: HistoryEntry) => void;
+}
+
+export const useSettingsStore = create<SettingsStore>()(
+  persist(
+    (set) => ({
+      apiKey: "",
+      costPerKg: 120,
+      defaultPrinter: "X1C",
+      language: "pt-BR",
+      theme: "dark",
+      history: [],
+
+      setApiKey: (apiKey) => set({ apiKey }),
+      setCostPerKg: (costPerKg) => set({ costPerKg }),
+      setDefaultPrinter: (defaultPrinter) => set({ defaultPrinter }),
+      setLanguage: (language) => set({ language }),
+      setTheme: (theme) => set({ theme }),
+      addToHistory: (entry) => set((state) => ({
+        history: [entry, ...state.history].slice(0, 5)
+      })),
+    }),
+    {
+      name: "slicerai-settings",
+    }
+  )
+);
+
 interface WizardState {
   step: number;
   printer: PrinterModel;
@@ -122,43 +163,3 @@ export const useAppStore = create<AppStore>((set) => ({
   }),
 }));
 
-interface SettingsStore {
-  apiKey: string;
-  costPerKg: number;
-  defaultPrinter: string;
-  language: 'pt-BR' | 'en';
-  theme: 'dark' | 'light';
-  history: HistoryEntry[];
-  
-  setApiKey: (apiKey: string) => void;
-  setCostPerKg: (cost: number) => void;
-  setDefaultPrinter: (printer: string) => void;
-  setLanguage: (lang: 'pt-BR' | 'en') => void;
-  setTheme: (theme: 'dark' | 'light') => void;
-  addToHistory: (entry: HistoryEntry) => void;
-}
-
-export const useSettingsStore = create<SettingsStore>()(
-  persist(
-    (set) => ({
-      apiKey: "",
-      costPerKg: 120,
-      defaultPrinter: "X1C",
-      language: "pt-BR",
-      theme: "dark",
-      history: [],
-
-      setApiKey: (apiKey) => set({ apiKey }),
-      setCostPerKg: (costPerKg) => set({ costPerKg }),
-      setDefaultPrinter: (defaultPrinter) => set({ defaultPrinter }),
-      setLanguage: (language) => set({ language }),
-      setTheme: (theme) => set({ theme }),
-      addToHistory: (entry) => set((state) => ({
-        history: [entry, ...state.history].slice(0, 5)
-      })),
-    }),
-    {
-      name: "slicerai-settings",
-    }
-  )
-);
