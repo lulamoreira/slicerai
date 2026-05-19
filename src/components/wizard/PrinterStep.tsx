@@ -34,7 +34,7 @@ export const PrinterStep: React.FC = () => {
   return (
     <div className="space-y-10 animate-in fade-in slide-in-from-right-4 duration-300">
       <section>
-        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted mb-5">
+        <h3 className="card-section-title mb-5">
           Selecione sua Impressora
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -43,25 +43,25 @@ export const PrinterStep: React.FC = () => {
               key={p.id}
               onClick={() => updateWizard({ printer: p.id })}
               className={cn(
-                "p-5 rounded-3xl border flex flex-col items-start gap-4 transition-all relative group text-left",
+                "p-5 rounded-xl border flex flex-col items-start gap-4 transition-all relative group text-left",
                 wizard.printer === p.id
-                  ? "border-primary bg-primary/10 ring-1 ring-primary shadow-lg shadow-primary/5"
-                  : "border-white/5 bg-surface-raised hover:bg-white/[0.05]"
+                  ? "border-primary bg-primary-subtle shadow-[var(--primary-glow)]"
+                  : "border-border bg-surface hover:bg-surface-hover hover:border-border-strong"
               )}
             >
               <div className={cn(
-                "w-12 h-12 rounded-2xl flex items-center justify-center transition-all",
-                wizard.printer === p.id ? "bg-primary text-white shadow-lg" : "bg-white/5 text-muted group-hover:text-white"
+                "w-12 h-12 rounded-lg flex items-center justify-center transition-all",
+                wizard.printer === p.id ? "bg-primary text-[#0d0d14]" : "bg-surface-raised text-muted group-hover:text-foreground"
               )}>
                 <p.icon className="w-6 h-6" />
               </div>
               <div className="space-y-1">
-                <span className={cn("text-sm font-black italic uppercase tracking-tight", wizard.printer === p.id ? "text-primary" : "text-white")}>
+                <span className={cn("text-sm font-bold uppercase tracking-tight", wizard.printer === p.id ? "text-primary" : "text-foreground")}>
                   {p.name}
                 </span>
                 <div className="flex flex-wrap gap-1 mt-1">
                   {p.badges.map(b => (
-                    <span key={b} className="text-[8px] font-black uppercase tracking-tighter bg-white/5 px-1.5 py-0.5 rounded text-muted-foreground">
+                    <span key={b} className="text-[0.65rem] font-medium tracking-tight bg-primary-subtle px-2 py-0.5 rounded-full text-primary border border-primary/30">
                       {b}
                     </span>
                   ))}
@@ -74,19 +74,19 @@ export const PrinterStep: React.FC = () => {
 
       <section className="grid grid-cols-1 md:grid-cols-2 gap-10">
         <div>
-          <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted mb-5">
+          <h3 className="card-section-title mb-5">
             Diâmetro do Bocal (Nozzle)
           </h3>
-          <div className="flex gap-2 bg-surface-raised p-1.5 rounded-2xl border border-white/5">
+          <div className="flex gap-2 bg-surface-raised p-1 rounded-xl border border-border">
             {NOZZLES.map((n) => (
               <button
                 key={n}
                 onClick={() => handleNozzleChange(n)}
                 className={cn(
-                  "flex-1 py-3 rounded-xl text-[10px] font-black tracking-widest transition-all",
+                  "flex-1 py-2 rounded-lg text-[10px] font-bold tracking-widest transition-all",
                   wizard.nozzle === n
-                    ? "bg-primary text-white shadow-lg"
-                    : "text-muted hover:text-white hover:bg-white/5"
+                    ? "bg-primary text-[#0d0d14] shadow-md"
+                    : "text-muted hover:text-foreground hover:bg-surface-hover"
                 )}
               >
                 {n}mm
@@ -96,16 +96,16 @@ export const PrinterStep: React.FC = () => {
         </div>
 
         <div>
-          <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted mb-5">
+          <h3 className="card-section-title mb-5">
             Tem AMS acoplado?
           </h3>
           <div className="space-y-4">
-            <div className="flex bg-surface-raised p-1.5 rounded-2xl border border-white/5">
+            <div className="flex bg-surface-raised p-1 rounded-xl border border-border">
                 <button
                 onClick={() => updateWizard({ hasAMS: false })}
                 className={cn(
-                    "flex-1 py-3 rounded-xl text-[10px] font-black tracking-widest transition-all",
-                    !wizard.hasAMS ? "bg-white/10 text-white" : "text-muted hover:text-white"
+                    "flex-1 py-2 rounded-lg text-[10px] font-bold tracking-widest transition-all",
+                    !wizard.hasAMS ? "bg-primary text-[#0d0d14]" : "text-muted hover:text-foreground"
                 )}
                 >
                 NÃO
@@ -113,8 +113,8 @@ export const PrinterStep: React.FC = () => {
                 <button
                 onClick={() => updateWizard({ hasAMS: true })}
                 className={cn(
-                    "flex-1 py-3 rounded-xl text-[10px] font-black tracking-widest transition-all",
-                    wizard.hasAMS ? "bg-primary text-white shadow-lg" : "text-muted hover:text-white"
+                    "flex-1 py-2 rounded-lg text-[10px] font-bold tracking-widest transition-all",
+                    wizard.hasAMS ? "bg-primary text-[#0d0d14]" : "text-muted hover:text-foreground"
                 )}
                 >
                 SIM
@@ -123,7 +123,7 @@ export const PrinterStep: React.FC = () => {
             
             {wizard.hasAMS && (
               <div className="space-y-2 animate-in fade-in slide-in-from-top-2 duration-300">
-                <p className="text-[9px] font-black uppercase tracking-widest text-muted/50">Quantidade de Slots</p>
+                <p className="text-[9px] font-bold uppercase tracking-widest text-muted">Quantidade de Slots</p>
                 <div className="flex gap-2">
                   {[4, 8, 12, 16].map((count) => {
                     const isLocked = (wizard.printer === 'A1' || wizard.printer === 'A1-Mini') && count > 4;
@@ -133,10 +133,10 @@ export const PrinterStep: React.FC = () => {
                         disabled={isLocked}
                         onClick={() => updateWizard({ amsSlotCount: count as any })}
                         className={cn(
-                          "flex-1 py-2 rounded-lg text-[10px] font-black transition-all border",
+                          "flex-1 py-2 rounded-lg text-[10px] font-bold transition-all border",
                           wizard.amsSlotCount === count 
-                            ? "border-primary bg-primary/10 text-primary" 
-                            : isLocked ? "opacity-20 cursor-not-allowed border-transparent" : "border-white/5 bg-white/5 text-muted hover:text-white"
+                            ? "border-primary bg-primary-subtle text-primary" 
+                            : isLocked ? "opacity-20 cursor-not-allowed border-transparent" : "border-border bg-surface-raised text-muted hover:text-foreground"
                         )}
                       >
                         {count}
