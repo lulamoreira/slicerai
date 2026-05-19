@@ -1,6 +1,6 @@
-import React, { useRef, useEffect, useState, useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import { useDropzone } from "react-dropzone";
-import { Box, Upload, AlertCircle } from "lucide-react";
+import { Box, AlertCircle } from "lucide-react";
 import { useAppStore } from "../store/useAppStore";
 import { cn } from "../lib/utils";
 
@@ -44,7 +44,7 @@ export const Dropzone: React.FC = () => {
       >
         <input {...getInputProps()} />
         
-        <Box size={64} color="var(--primary)" />
+        <Box size={64} className="text-primary" />
 
         <div className="text-center space-y-2">
           <p className="text-2xl font-bold text-foreground mt-4">
@@ -58,8 +58,6 @@ export const Dropzone: React.FC = () => {
             ou clique para selecionar
           </button>
         </div>
-      </div>
-    </div>
 
         {error && (
           <div className="absolute -bottom-16 flex items-center gap-2 text-destructive font-bold animate-in fade-in slide-in-from-top-2">

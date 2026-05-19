@@ -35,26 +35,26 @@ export const Navbar: React.FC<NavbarProps> = ({ onShowSettings, onShowHistory })
       <div className="flex items-center gap-1 sm:gap-2">
         <button 
           onClick={onShowHistory}
-          className="p-2 hover:bg-white/5 rounded-lg transition-colors text-muted hover:text-white relative"
+          className="p-1.5 hover:bg-primary-subtle rounded-lg transition-all text-muted hover:text-primary relative"
         >
           <HistoryIcon className="w-5 h-5" />
           {history.length > 0 && (
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary rounded-full shadow-[0_0_5px_#00c8b4]" />
+            <span className="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full" />
           )}
         </button>
         
         <button 
           onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-          className="p-2 hover:bg-white/5 rounded-lg transition-colors text-muted hover:text-white"
+          className="p-1.5 hover:bg-primary-subtle rounded-lg transition-all text-muted hover:text-primary"
         >
           {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
         </button>
 
         <button 
           onClick={() => setLanguage(language === 'pt-BR' ? 'en' : 'pt-BR')}
-          className="flex items-center gap-2 px-3 py-1.5 hover:bg-white/5 rounded-lg transition-colors text-muted hover:text-white text-[10px] font-black tracking-widest"
+          className="flex items-center gap-2 px-1.5 py-0.5 border border-border-strong hover:bg-primary-subtle rounded-md transition-all text-foreground-soft hover:text-primary text-[0.7rem]"
         >
-          <Languages className="w-4 h-4" />
+          <Languages className="w-3.5 h-3.5" />
           {language === 'pt-BR' ? 'PT-BR' : 'EN'}
         </button>
 
@@ -62,18 +62,18 @@ export const Navbar: React.FC<NavbarProps> = ({ onShowSettings, onShowHistory })
           href="https://github.com" 
           target="_blank" 
           rel="noreferrer"
-          className="p-2 hover:bg-white/5 rounded-lg transition-colors text-muted hover:text-white hidden sm:block"
+          className="p-1.5 hover:bg-primary-subtle rounded-lg transition-all text-muted hover:text-primary hidden sm:block"
         >
           <Github className="w-5 h-5" />
         </a>
 
-        <div className="w-px h-6 bg-white/10 mx-1 sm:mx-2" />
+        <div className="w-px h-6 bg-border mx-1 sm:mx-2" />
 
         <button 
           onClick={onShowSettings}
           className={cn(
-            "p-2 hover:bg-white/5 rounded-lg transition-colors",
-            !apiKey ? "text-destructive animate-pulse" : "text-muted hover:text-white"
+            "p-1.5 hover:bg-primary-subtle rounded-lg transition-all",
+            !apiKey ? "text-destructive animate-pulse" : "text-muted hover:text-primary"
           )}
         >
           <SettingsIcon className="w-5 h-5" />

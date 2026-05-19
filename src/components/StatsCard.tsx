@@ -1,6 +1,6 @@
 import React from "react";
 import { useAppStore, useSettingsStore } from "../store/useAppStore";
-import { Box, Ruler, Weight, Triangle, AlertTriangle, Layers, Palette, Info } from "lucide-react";
+import { Box, Ruler, Weight, Layers, Info } from "lucide-react";
 import { cn } from "../lib/utils";
 import { MATERIAL_DENSITIES } from "../lib/geometry";
 
@@ -46,7 +46,7 @@ export const StatsCard: React.FC = () => {
         />
       </div>
 
-      <div className="pt-4 border-t border-white/5 grid grid-cols-2 gap-3">
+      <div className="pt-4 border-t border-border grid grid-cols-2 gap-3">
         <StatusBadge 
           label="Overhangs > 45°" 
           active={geometry.overhangsDetected} 
@@ -81,11 +81,11 @@ export const StatsCard: React.FC = () => {
 
 const StatItem = ({ icon: Icon, label, value }: { icon: any, label: string, value: string }) => (
   <div className="space-y-1">
-    <div className="flex items-center gap-2 text-[10px] uppercase font-black text-muted tracking-wider">
+    <div className="flex items-center gap-2 card-section-title">
       <Icon className="w-3 h-3" />
       {label}
     </div>
-    <div className="text-sm text-foreground font-bold">{value}</div>
+    <div className="card-value mono">{value}</div>
   </div>
 );
 
@@ -96,9 +96,9 @@ const StatusBadge = ({ label, active, value, warning }: { label: string, active:
       ? warning 
         ? "bg-destructive/10 border-destructive/20 text-destructive" 
         : "bg-primary/10 border-primary/20 text-primary"
-      : "bg-white/5 border-transparent text-muted/50"
+      : "bg-surface-raised border-border text-muted"
   )}>
-    <span className="text-[9px] font-black uppercase tracking-widest leading-none">{label}</span>
+    <span className="text-[9px] font-semibold uppercase tracking-widest leading-none">{label}</span>
     <span className="text-xs font-bold leading-none">{value}</span>
   </div>
 );
