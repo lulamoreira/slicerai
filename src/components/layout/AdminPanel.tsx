@@ -16,7 +16,13 @@ import {
   AlertCircle,
   Calendar,
   Lock,
-  ChevronRight
+  ChevronRight,
+  ShieldCheck,
+  Clock,
+  Send,
+  UserCheck,
+  UserX,
+  History
 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -28,15 +34,28 @@ export const AdminPanel: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'users' | 'requests' | 'subs'>('users');
   const [requestCount, setRequestCount] = useState(0);
 
+  const fetchCount = async () => {
+    const { count } = await supabase
+      .from('access_requests')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'pending');
+    setRequestCount(count || 0);
+  };
+
   useEffect(() => {
-    const fetchCount = async () => {
-      const { count } = await supabase
-        .from('access_requests')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'pending');
-      setRequestCount(count || 0);
-    };
     fetchCount();
+    
+    // Realtime subscription for request count
+    const channel = supabase
+      .channel('admin_requests')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'access_requests' }, () => {
+        fetchCount();
+      })
+      .subscribe();
+      
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   return (
