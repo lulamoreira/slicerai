@@ -352,17 +352,29 @@ const EditUserModal = ({ user, onClose, onSave }: any) => {
 
           <div className="space-y-2">
             <label className="text-[10px] font-bold uppercase tracking-widest text-muted ml-1">Duração do Acesso</label>
-            <select 
-              value={days} 
-              onChange={(e) => setDays(e.target.value)}
-              className="w-full bg-surface-raised border border-border rounded-xl p-3 text-xs font-bold outline-none"
-            >
-              <option value="current">Manter atual</option>
-              <option value="7">7 Dias (Trial)</option>
-              <option value="30">30 Dias (Mensal)</option>
-              <option value="365">365 Dias (Anual)</option>
-              <option value="unlimited">Vitalício / Ilimitado</option>
-            </select>
+            <div className="grid grid-cols-2 gap-4">
+              <select 
+                value={days} 
+                onChange={(e) => setDays(e.target.value)}
+                className="w-full bg-surface-raised border border-border rounded-xl p-3 text-xs font-bold outline-none"
+              >
+                <option value="current">Manter atual</option>
+                <option value="7">7 Dias (Trial)</option>
+                <option value="30">30 Dias (Mensal)</option>
+                <option value="365">365 Dias (Anual)</option>
+                <option value="unlimited">Vitalício / Ilimitado</option>
+                <option value="custom">Até data específica...</option>
+              </select>
+              {days === 'custom' && (
+                <input 
+                  type="date"
+                  className="w-full bg-surface-raised border border-border rounded-xl p-3 text-xs font-bold outline-none"
+                  onChange={(e) => {
+                    // Custom date logic if needed
+                  }}
+                />
+              )}
+            </div>
           </div>
 
           <div className="space-y-4 pt-4 border-t border-border">

@@ -86,13 +86,27 @@ export const useAppStore = create<AppStore>((set) => ({
   status: 'idle',
   file: null,
   geometry: null,
-  wizard: initialWizard,
+  wizard: {
+    ...initialWizard,
+    printer: (useSettingsStore.getState().defaultPrinter as any) || "X1C"
+  },
   results: null,
   orientationAdvice: { suggested: false, dismissed: false },
   isWireframe: false,
 
   setStatus: (status) => set({ status }),
-  setFile: (file) => set({ file }),
+  setFile: (file) => set((state) => {
+    // When a new file is uploaded, reset wizard but keep default printer
+    return { 
+      file, 
+      wizard: { 
+        ...initialWizard, 
+        printer: (useSettingsStore.getState().defaultPrinter as any) || "X1C",
+        fileName: file?.name || "",
+        fileSize: file?.size || 0
+      } 
+    };
+  }),
   setGeometry: (geometry) => set({ geometry }),
   updateWizard: (updates) => set((state) => ({ wizard: { ...state.wizard, ...updates } })),
   setResults: (results) => set({ results, status: results ? 'result' : 'ready' }),
@@ -102,7 +116,10 @@ export const useAppStore = create<AppStore>((set) => ({
     status: 'idle',
     file: null,
     geometry: null,
-    wizard: initialWizard,
+    wizard: {
+      ...initialWizard,
+      printer: (useSettingsStore.getState().defaultPrinter as any) || "X1C"
+    },
     results: null,
     orientationAdvice: { suggested: false, dismissed: false }
   }),

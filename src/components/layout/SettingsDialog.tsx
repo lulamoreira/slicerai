@@ -31,6 +31,8 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
     theme, setTheme,
     defaultPrinter, setDefaultPrinter
   } = useSettingsStore();
+  
+  const printers = ["X1C", "X1E", "P1S", "P1P", "A1", "A1-Mini"];
 
   const [showKey, setShowKey] = useState(false);
   const [testing, setTesting] = useState(false);
@@ -204,6 +206,19 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+            {/* Default Printer */}
+            <div className="space-y-4">
+                <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted px-1">Impressora Padrão</label>
+                <select 
+                    value={defaultPrinter}
+                    onChange={(e) => setDefaultPrinter(e.target.value)}
+                    className="w-full bg-surface-raised border border-border-strong rounded-xl p-3.5 text-xs font-bold outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-foreground"
+                >
+                    {printers.map(p => (
+                        <option key={p} value={p}>{p.replace('X1C', 'X1 Carbon').replace('A1-Mini', 'A1 Mini')}</option>
+                    ))}
+                </select>
+            </div>
              {/* Filament Cost */}
             <div className="space-y-4">
                 <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted px-1">Custo do Filamento (R$/kg)</label>
