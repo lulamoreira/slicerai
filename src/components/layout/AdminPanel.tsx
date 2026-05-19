@@ -229,22 +229,6 @@ const UsersTab = () => {
                   </Badge>
                 </td>
                 <td className="px-6 py-4">
-                  <Badge 
-                    variant="outline" 
-                    className={cn(
-                      "text-[8px] font-black uppercase tracking-[0.1em] py-0.5",
-                      user.api_key_mode === 'centralized' ? "border-teal-500/50 text-teal-500 bg-teal-500/5" : "border-muted text-muted"
-                    )}
-                  >
-                    {user.api_key_mode === 'centralized' ? 'Chave Central' : 'Chave Pessoal'}
-                  </Badge>
-                </td>
-                <td className="px-6 py-4">
-                  <span className="text-[10px] font-bold text-foreground">
-                    {user.access_end ? new Date(user.access_end).toLocaleDateString() : 'Indefinido'}
-                  </span>
-                </td>
-                <td className="px-6 py-4">
                   <span className="text-[10px] font-bold text-foreground">
                     {user.access_end ? new Date(user.access_end).toLocaleDateString() : 'Indefinido'}
                   </span>
@@ -253,6 +237,12 @@ const UsersTab = () => {
                   <span className="text-[10px] font-bold text-muted uppercase">
                     {user.last_login ? new Date(user.last_login).toLocaleString() : '—'}
                   </span>
+                </td>
+                <td className="px-6 py-4 text-right">
+                  <div className="flex justify-end gap-2">
+                    <button onClick={() => setSelectedUser(user)} className="p-2 hover:bg-primary-subtle text-muted hover:text-primary rounded-lg transition-all"><Edit2 className="w-3.5 h-3.5" /></button>
+                    <button className="p-2 hover:bg-destructive/10 text-muted hover:text-destructive rounded-lg transition-all"><Trash2 className="w-3.5 h-3.5" /></button>
+                  </div>
                 </td>
               </tr>
             ))}
