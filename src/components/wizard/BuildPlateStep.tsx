@@ -1,42 +1,100 @@
 import React from "react";
-import { useStore } from "../../lib/store";
+import { useAppStore, useSettingsStore } from "../../store/useAppStore";
 import { cn } from "../../lib/utils";
 
 const PLATES = [
-  { id: "Cool Plate / PEI Plate", name: "Cool Plate / Smooth PEI", desc: "Melhor para PLA, acabamento liso." },
-  { id: "Engineering Plate", name: "Engineering Plate", desc: "Para materiais técnicos (PA, PC, TPU)." },
-  { id: "High Temperature Plate", name: "High Temperature Plate", desc: "PEI liso para altas temperaturas." },
-  { id: "Textured PEI Plate", name: "Textured PEI Plate", desc: "Acabamento texturizado, alta adesão." },
+  { 
+    id: "Cool Plate / PEI", 
+    name: "Cool Plate / Smooth PEI", 
+    temp: "35–55°C",
+    mats: ["PLA", "PLA Silk", "PLA Matte", "PETG", "TPU"],
+    desc: "Melhor para PLA, acabamento liso." 
+  },
+  { 
+    id: "Engineering Plate", 
+    name: "Engineering Plate", 
+    temp: "90–110°C",
+    mats: ["ABS", "ASA", "PC", "PETG", "PA"],
+    desc: "Para materiais técnicos (PA, PC, TPU)." 
+  },
+  { 
+    id: "High Temperature Plate", 
+    name: "High Temperature Plate", 
+    temp: "100–120°C",
+    mats: ["PA-CF", "PC", "ABS", "ASA"],
+    desc: "PEI liso para altas temperaturas." 
+  },
+  { 
+    id: "Textured PEI Plate", 
+    name: "Textured PEI Plate", 
+    temp: "35–110°C",
+    mats: ["PLA", "PETG", "ABS", "ASA", "PA", "TPU"],
+    desc: "Acabamento texturizado, universal (alta adesão)." 
+  },
 ];
 
 export const BuildPlateStep: React.FC = () => {
-  const { wizard, updateWizard } = useStore();
+  const { wizard, updateWizard } = useAppStore();
+
+  const isCompatible = (mats: string[]) => {
+    if (wizard.hasAMS) {
+        return wizard.amsSlots.slice(0, wizard.amsSlotCount).every(s => mats.some(m => s.material.includes(m)));
+    }
+    return mats.some(m => wizard.material.includes(m));
+  };
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-      <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4">
+    <div className="space-y-10 animate-in fade-in slide-in-from-right-4 duration-300">
+      <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted mb-6">
         Placa de Impressão (Build Plate)
       </h3>
-      <div className="space-y-3">
-        {PLATES.map((p) => (
-          <button
-            key={p.id}
-            onClick={() => updateWizard({ buildPlate: p.id })}
-            className={cn(
-              "w-full p-4 rounded-xl border flex flex-col items-start gap-1 transition-all text-left",
-              wizard.buildPlate === p.id
-                ? "border-primary bg-primary/10 ring-1 ring-primary"
-                : "border-white/10 bg-surface hover:bg-surface-raised"
-            )}
-          >
-            <span className={cn("text-sm font-bold", wizard.buildPlate === p.id ? "text-primary" : "text-foreground")}>
-              {p.name}
-            </span>
-            <span className="text-xs text-muted-foreground">
-              {p.desc}
-            </span>
-          </button>
-        ))}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {PLATES.map((p) => {
+          const compatible = isCompatible(p.mats);
+          const isSelected = wizard.buildPlate === p.id;
+          return (
+            <button
+              key={p.id}
+              onClick={() => updateWizard({ buildPlate: p.id })}
+              className={cn(
+                "w-full p-6 rounded-3xl border flex flex-col items-start gap-4 transition-all text-left relative overflow-hidden group",
+                isSelected
+                  ? "border-primary bg-primary/10 ring-1 ring-primary shadow-lg"
+                  : "border-white/5 bg-surface-raised hover:bg-white/[0.05]"
+              )}
+            >
+              <div className="flex justify-between w-full items-start">
+                <span className={cn("text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded bg-white/5", isSelected ? "text-primary" : "text-muted/50")}>
+                    {p.temp}
+                </span>
+                <div className="flex gap-1">
+                    {compatible ? (
+                         <span className="text-[8px] font-black uppercase tracking-tighter bg-green-500/20 text-green-500 px-1.5 py-0.5 rounded">Recomendado</span>
+                    ) : (
+                         <span className="text-[8px] font-black uppercase tracking-tighter bg-red-500/20 text-red-500 px-1.5 py-0.5 rounded">Incompatível</span>
+                    )}
+                </div>
+              </div>
+              
+              <div className="space-y-1">
+                <span className={cn("text-xs font-black uppercase italic tracking-tight", isSelected ? "text-primary" : "text-white")}>
+                  {p.name}
+                </span>
+                <p className="text-[9px] leading-tight text-muted/70 font-bold uppercase tracking-tighter">
+                  {p.desc}
+                </p>
+              </div>
+
+              <div className="flex flex-wrap gap-1 mt-1">
+                {p.mats.slice(0, 4).map(m => (
+                    <span key={m} className="text-[7px] font-black uppercase text-muted/30">
+                        {m}
+                    </span>
+                ))}
+              </div>
+            </button>
+          )
+        })}
       </div>
     </div>
   );
