@@ -119,7 +119,7 @@ export const ModelViewer: React.FC<ModelViewerProps> = ({ file: fileProp }) => {
   const storeFile = useAppStore((s) => s.file);
   const file = fileProp || storeFile || undefined;
   return (
-    <div className="w-full h-full bg-[#0d0d14] relative rounded-xl overflow-hidden border border-white/5">
+    <div className="w-full h-full bg-[var(--background)] relative rounded-xl overflow-hidden border border-border">
       <Canvas shadows dpr={[1, 2]} camera={{ position: [150, 150, 150], fov: 45 }}>
         <Stage 
           environment="city" 
@@ -146,7 +146,7 @@ export const ModelViewer: React.FC<ModelViewerProps> = ({ file: fileProp }) => {
       
       <button 
         onClick={() => useAppStore.getState().toggleWireframe()}
-        className="absolute top-4 right-4 p-2 bg-surface-raised border border-white/10 rounded-lg text-[10px] font-black tracking-widest hover:bg-white/10 transition-colors z-10"
+        className="absolute top-4 right-4 p-2 bg-surface-raised border border-border rounded-lg text-[10px] font-bold tracking-widest text-muted hover:text-foreground hover:bg-surface-hover transition-colors z-10"
       >
         WIREFRAME
       </button>

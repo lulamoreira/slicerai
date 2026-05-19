@@ -36,7 +36,7 @@ export const FileDrop: React.FC<FileDropProps> = ({ onFileChange }) => {
 
   if (wizard.fileName) {
     return (
-      <div className="flex items-center gap-3 p-4 bg-surface-raised border border-white/10 rounded-lg w-full max-w-md mx-auto">
+      <div className="flex items-center gap-3 p-4 bg-surface-raised border border-border-strong rounded-xl w-full max-w-md mx-auto">
         <FileCode className="w-8 h-8 text-primary" />
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium truncate">{wizard.fileName}</p>
@@ -62,7 +62,7 @@ export const FileDrop: React.FC<FileDropProps> = ({ onFileChange }) => {
         ${
           isDragActive
             ? "border-primary bg-primary/10"
-            : "border-white/10 hover:border-primary/50 hover:bg-white/5"
+            : "border-border hover:border-primary/50 hover:bg-surface-raised"
         }
       `}
     >

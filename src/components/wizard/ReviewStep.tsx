@@ -69,17 +69,17 @@ export const ReviewStep: React.FC = () => {
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300 pb-10">
-      <div className="p-8 bg-surface-raised border border-white/10 rounded-[2rem] space-y-8 shadow-2xl relative overflow-hidden">
+      <div className="p-8 bg-surface border border-border-strong rounded-xl space-y-8 shadow-sm relative overflow-hidden">
         <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-3xl" />
 
-        <div className="flex items-center justify-between border-b border-white/5 pb-6">
-          <h3 className="text-[10px] font-black uppercase tracking-[0.3em] text-muted flex items-center gap-3">
+        <div className="flex items-center justify-between border-b border-border pb-6">
+          <h3 className="card-section-title flex items-center gap-3">
             <Box className="w-3.5 h-3.5 text-primary" />
             Resumo da Configuração
           </h3>
-          <div className="flex items-center gap-2 px-3 py-1 bg-primary/10 rounded-full border border-primary/20">
+          <div className="flex items-center gap-2 px-3 py-1 bg-primary-subtle rounded-full border border-primary/30">
             <CheckCircle2 className="w-3 h-3 text-primary" />
-            <span className="text-[8px] font-black text-primary uppercase">Validado</span>
+            <span className="text-[0.65rem] font-bold text-primary uppercase">Validado</span>
           </div>
         </div>
 
@@ -90,19 +90,19 @@ export const ReviewStep: React.FC = () => {
           <Row icon={Layers} label="Layer Height" value={`${wizard.layerHeight.toFixed(2)}mm`} />
           <Row icon={Target} label="Propósito" value={wizard.purposes.join(', ')} />
           <Row icon={Scale} label="Peso estimado" value={estimatedWeight} highlight />
-          <Row icon={Clock} label="Tempo estimado" value={`~${Math.floor(estimatedTime / 60)}h ${estimatedTime % 60}min`} />
+          <Row icon={Clock} label="Tempo estimado" value={estimatedWeight === "—" ? estimatedWeight : `~${Math.floor(estimatedTime / 60)}h ${estimatedTime % 60}min`} mono />
           <Row icon={Triangle} label="Suporte" value={wizard.supportEnabled ? wizard.supportType : "Sem suporte"} />
           <Row icon={Wrench} label="Nozzle" value={`${wizard.nozzle}mm`} />
           <div className="flex items-center gap-3 min-w-0">
             <Palette className="w-4 h-4 text-primary shrink-0" />
             <div className="flex flex-col gap-1 min-w-0">
-              <span className="text-[9px] text-muted uppercase font-black tracking-widest opacity-60">Cor</span>
+               <span className="text-[0.8rem] text-muted font-medium opacity-60">Cor</span>
               <div className="flex items-center gap-2">
                 <span
-                  className="inline-block w-5 h-5 rounded-full border border-white/20 shadow-inner shrink-0"
+                  className="inline-block w-4 h-4 rounded-full border border-border-strong shadow-inner shrink-0"
                   style={{ backgroundColor: reviewColor }}
                 />
-                <span className="text-xs font-mono font-bold text-white uppercase truncate">{reviewColor}</span>
+                <span className="text-sm font-bold text-foreground uppercase truncate">{reviewColor}</span>
               </div>
             </div>
           </div>
@@ -111,14 +111,13 @@ export const ReviewStep: React.FC = () => {
 
       <div className="space-y-4">
         {!apiKey && (
-          <div className="p-4 rounded-2xl flex items-center justify-between gap-3 border" style={{ backgroundColor: 'color-mix(in oklab, var(--warning) 12%, transparent)', borderColor: 'color-mix(in oklab, var(--warning) 30%, transparent)' }}>
-            <span className="text-[11px] font-black tracking-wide" style={{ color: 'var(--warning)' }}>
+          <div className="p-3 bg-[rgba(255,180,84,0.1)] border border-[rgba(255,180,84,0.3)] rounded-lg flex items-center justify-between gap-3">
+            <span className="text-[0.85rem] font-medium text-warning">
               ⚠️ Configure sua chave Gemini nas ⚙️ Configurações para continuar
             </span>
             <button
               onClick={openSettings}
-              className="px-4 py-2 rounded-xl text-[10px] font-black tracking-widest text-white whitespace-nowrap shadow"
-              style={{ backgroundColor: 'var(--warning)' }}
+              className="px-4 py-2 rounded-lg text-[10px] font-bold tracking-widest text-warning border border-warning bg-transparent hover:bg-warning/10 transition-all whitespace-nowrap"
             >
               Abrir Configurações →
             </button>
@@ -129,26 +128,26 @@ export const ReviewStep: React.FC = () => {
           onClick={handleGenerate}
           disabled={isGenerating || !apiKey}
           className={cn(
-            "w-full py-10 rounded-[2rem] flex flex-col items-center justify-center gap-3 transition-all relative overflow-hidden group",
+            "w-full py-10 rounded-xl flex flex-col items-center justify-center gap-3 transition-all relative overflow-hidden group",
             isGenerating
               ? "bg-surface-raised cursor-wait"
               : !apiKey
-                ? "bg-surface-raised opacity-50 cursor-not-allowed"
-                : "bg-primary text-white hover:bg-primary-hover shadow-[0_0_40px_rgba(0,200,180,0.2)] hover:shadow-[0_0_60px_rgba(0,200,180,0.4)]"
+                ? "bg-surface-raised opacity-[0.35] cursor-not-allowed pointer-events-none"
+                : "bg-primary text-[#0d0d14] hover:bg-primary-hover shadow-[var(--primary-glow)]"
           )}
         >
-          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:animate-shimmer" />
+          <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/20 to-transparent -translate-x-full group-hover:animate-shimmer" />
 
           {isGenerating ? (
             <GeneratingState />
           ) : (
             <>
-              <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mb-1 group-hover:scale-110 transition-transform shadow-inner border border-white/10">
-                <Sparkles className="w-8 h-8 fill-white" />
+              <div className="w-16 h-16 bg-[#0d0d14]/10 rounded-xl flex items-center justify-center mb-1 group-hover:scale-110 transition-transform shadow-inner border border-[#0d0d14]/10">
+                <Sparkles className="w-8 h-8 fill-[#0d0d14]" />
               </div>
               <div className="text-center space-y-1">
-                <span className="text-2xl font-black tracking-tighter italic uppercase block">Gerar com SlicerAI</span>
-                <span className="text-[10px] opacity-70 font-black uppercase tracking-[0.4em] block pl-1">Otimização Gemini 1.5 Flash</span>
+                <span className="text-2xl font-bold tracking-tight uppercase block text-[#0d0d14]">Gerar com SlicerAI</span>
+                <span className="text-[10px] opacity-70 font-bold uppercase tracking-[0.4em] block pl-1 text-[#0d0d14]">Otimização Gemini 1.5 Flash</span>
               </div>
             </>
           )}
@@ -158,12 +157,12 @@ export const ReviewStep: React.FC = () => {
   );
 };
 
-const Row = ({ icon: Icon, label, value, highlight }: { icon: any; label: string; value: string; highlight?: boolean }) => (
+const Row = ({ icon: Icon, label, value, highlight, mono }: { icon: any; label: string; value: string; highlight?: boolean; mono?: boolean }) => (
   <div className="flex items-center gap-3 min-w-0">
-    <Icon className={cn("w-4 h-4 shrink-0", highlight ? "text-primary" : "text-primary/80")} />
+    <Icon className={cn("w-4 h-4 shrink-0", highlight ? "text-primary" : "text-primary/70")} />
     <div className="flex flex-col gap-1 min-w-0">
-      <span className="text-[9px] text-muted uppercase font-black tracking-widest opacity-60">{label}</span>
-      <span className={cn("text-sm font-bold truncate italic", highlight ? "text-primary" : "text-white")}>{value}</span>
+      <span className="text-[0.8rem] text-muted font-medium opacity-60">{label}</span>
+      <span className={cn("text-sm font-bold truncate", highlight ? "text-primary" : "text-foreground", mono && "mono")}>{value}</span>
     </div>
   </div>
 );
@@ -188,10 +187,10 @@ const GeneratingState = () => {
   return (
     <div className="flex flex-col items-center gap-5">
       <div className="relative">
-        <div className="w-12 h-12 border-4 border-white/10 border-t-white rounded-full animate-spin" />
-        <Sparkles className="w-5 h-5 text-white absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-pulse" />
+        <div className="w-12 h-12 border-4 border-foreground/10 border-t-foreground rounded-full animate-spin" />
+        <Sparkles className="w-5 h-5 text-foreground absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-pulse" />
       </div>
-      <span className="text-xs font-black uppercase tracking-[0.2em] animate-pulse text-white/80">{messages[msgIndex]}</span>
+      <span className="text-xs font-bold uppercase tracking-[0.2em] animate-pulse text-foreground/80">{messages[msgIndex]}</span>
     </div>
   );
 };

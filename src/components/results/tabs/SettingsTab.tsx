@@ -75,22 +75,22 @@ const ConfigSection = ({ section }: { section: any }) => {
   };
 
   return (
-    <div className="bg-surface-raised border border-white/5 rounded-2xl overflow-hidden group shadow-xl transition-all hover:border-primary/10">
-      <div className="bg-white/[0.03] px-6 py-3 flex items-center justify-between border-b border-white/5">
-        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">{section.title}</h3>
+    <div className="bg-surface-raised border border-border-strong rounded-lg overflow-hidden group shadow-sm transition-all hover:border-primary">
+      <div className="bg-surface px-6 py-3 flex items-center justify-between border-b border-border-strong">
+        <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">{section.title}</h3>
         <button 
           onClick={handleCopy}
-          className="p-2 hover:bg-white/5 rounded-lg text-muted hover:text-white transition-all"
+          className="p-1.5 hover:bg-primary-subtle rounded-lg text-muted hover:text-primary transition-all"
         >
           {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
         </button>
       </div>
-      <div className="p-6 font-mono text-[11px] leading-relaxed">
+      <div className="p-6 mono text-[0.8rem] leading-relaxed text-foreground-soft">
         {section.params.map((p: any, i: number) => (
           <div key={i} className="flex gap-4">
             <span className="text-muted w-48 shrink-0">{p.key}</span>
-            <span className="text-white font-bold italic">=</span>
-            <span className="text-primary font-black italic">{p.value.toString()}</span>
+            <span className="text-foreground font-bold">=</span>
+            <span className="text-primary font-bold">{p.value.toString()}</span>
           </div>
         ))}
       </div>

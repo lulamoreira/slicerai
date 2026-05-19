@@ -50,7 +50,7 @@ const Model = ({ file }: { file: File }) => {
 
 export const Viewer3D: React.FC<Viewer3DProps> = ({ file }) => {
   return (
-    <div className="w-full h-full bg-[#0d0d14] relative rounded-lg overflow-hidden border border-white/10">
+    <div className="w-full h-full bg-[var(--background)] relative rounded-xl overflow-hidden border border-border">
       <Canvas shadows dpr={[1, 2]} camera={{ position: [100, 100, 100], fov: 45 }}>
         <Stage 
           environment="city" 

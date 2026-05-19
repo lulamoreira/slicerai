@@ -128,7 +128,7 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
                     )}
                 >
                     {testing ? (
-                        <div className="w-4 h-4 border-2 border-white/20 border-t-white rounded-full animate-spin mx-auto" />
+                        <div className="w-4 h-4 border-2 border-primary/20 border-t-primary rounded-full animate-spin mx-auto" />
                     ) : testResult === 'success' ? (
                         <CheckCircle2 className="w-4 h-4" />
                     ) : (
