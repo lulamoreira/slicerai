@@ -103,7 +103,34 @@ export const Navbar: React.FC<NavbarProps> = ({ onShowSettings, onShowHistory })
         >
           <SettingsIcon className="w-5 h-5" />
         </button>
+
+        <div className="w-px h-6 bg-border mx-1 sm:mx-2" />
+
+        {user ? (
+          <div className="flex items-center gap-2">
+            <div className="flex flex-col items-end hidden md:flex">
+              <span className="text-[10px] font-bold text-foreground leading-none">{user.email?.split('@')[0]}</span>
+              <span className="text-[8px] font-bold text-primary uppercase tracking-widest mt-1">Status: Ativo</span>
+            </div>
+            <button 
+              onClick={handleLogout}
+              className="p-1.5 hover:bg-destructive/10 rounded-lg transition-all text-muted hover:text-destructive group"
+              title="Sair"
+            >
+              <LogOut className="w-5 h-5 group-hover:scale-110 transition-transform" />
+            </button>
+          </div>
+        ) : (
+          <button 
+            onClick={() => setShowAuthModal(true)}
+            className="flex items-center gap-2 px-3 py-1.5 bg-primary text-[#0d0d14] rounded-lg text-[10px] font-bold tracking-widest hover:bg-primary-hover transition-all shadow-lg"
+          >
+            <UserIcon className="w-3.5 h-3.5" />
+            ENTRAR
+          </button>
+        )}
       </div>
+      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />
     </header>
   );
 };
