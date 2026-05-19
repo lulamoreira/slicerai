@@ -73,7 +73,12 @@ function LoginComponent() {
           data: { full_name: fullName },
         },
       })
-      if (error) throw error
+      if (error) {
+        if (error.message.includes('User already registered')) {
+          throw new Error('Este email já tem uma conta. Tente fazer login.')
+        }
+        throw error
+      }
 
       if (data.user) {
         // Initial request will be handled by the trigger in DB
@@ -86,16 +91,12 @@ function LoginComponent() {
             message: 'Novo cadastro realizado pelo formulário.'
           }
         })
-
-        // If user is the admin, redirect immediately (since auto-confirm is enabled)
-        if (email.toLowerCase() === 'lula1973@gmail.com') {
-          toast.success('✅ Entrando...')
-          setTimeout(() => {
-            navigate({ to: '/' })
-          }, 1000)
-        } else {
-          setSignedUp(true)
-        }
+        
+        // Auto-login since email confirmation is disabled
+        toast.success('✅ Conta criada! Entrando...')
+        setTimeout(() => {
+          navigate({ to: '/' })
+        }, 1500)
       }
     } catch (error: any) {
       console.error('Signup error:', error)
