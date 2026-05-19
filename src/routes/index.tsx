@@ -63,6 +63,13 @@ function HomeComponent() {
     }
   }, [theme])
 
+  // Allow children to open Settings via a custom event
+  React.useEffect(() => {
+    const open = () => setShowSettings(true)
+    window.addEventListener('slicerai:open-settings', open)
+    return () => window.removeEventListener('slicerai:open-settings', open)
+  }, [])
+
   // Rehydrate from URL
   React.useEffect(() => {
     const params = new URLSearchParams(window.location.search)

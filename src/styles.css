@@ -47,28 +47,31 @@
 
 :root {
   --radius: 0.625rem;
-  --background: #ffffff;
+  --background: #f4f6f9;
   --foreground: #0d0d14;
-  --card: #f8f9fa;
+  --card: #ffffff;
   --card-foreground: #0d0d14;
   --popover: #ffffff;
   --popover-foreground: #0d0d14;
-  --primary: #00ADB5;
+  --primary: #008a7e;
   --primary-foreground: #ffffff;
-  --primary-glow: #00e5ce;
-  --secondary: #e9ecef;
-  --secondary-foreground: #00ADB5;
-  --muted: #f1f3f5;
-  --muted-foreground: #6c757d;
-  --accent: #00c8b4;
+  --primary-hover: #00a896;
+  --primary-glow: #00c8b4;
+  --secondary: #eef1f5;
+  --secondary-foreground: #008a7e;
+  --muted: #4a5568;
+  --muted-foreground: #4a5568;
+  --accent: #d97706;
   --accent-foreground: #ffffff;
-  --destructive: #ff5c7a;
+  --destructive: #dc2626;
   --destructive-foreground: #ffffff;
-  --border: #dee2e6;
-  --input: #dee2e6;
-  --ring: #00ADB5;
-  --surface: #f8f9fa;
-  --surface-raised: #ffffff;
+  --success: #16a34a;
+  --warning: #d97706;
+  --border: rgba(0, 0, 0, 0.12);
+  --input: rgba(0, 0, 0, 0.12);
+  --ring: #008a7e;
+  --surface: #ffffff;
+  --surface-raised: #eef1f5;
 }
 
 .dark {
@@ -155,4 +158,51 @@
     rgba(255, 255, 255, 0)
   );
   animation: shimmer 2s infinite;
+}
+
+/* ============================================================
+   Light mode contrast overrides
+   Many components use hardcoded white/black utility classes.
+   In light mode, remap them to legible tokens.
+   ============================================================ */
+:root:not(.dark) {
+  color-scheme: light;
+}
+
+:root:not(.dark) .text-white { color: var(--foreground) !important; }
+:root:not(.dark) .text-muted { color: var(--muted) !important; }
+
+:root:not(.dark) .bg-white\/5  { background-color: var(--surface-raised) !important; }
+:root:not(.dark) .bg-white\/10 { background-color: var(--surface-raised) !important; }
+:root:not(.dark) .bg-black\/40 { background-color: var(--surface-raised) !important; }
+
+:root:not(.dark) .border-white\/5,
+:root:not(.dark) .border-white\/10,
+:root:not(.dark) .border-white\/20 {
+  border-color: var(--border) !important;
+}
+
+:root:not(.dark) .ring-white\/5,
+:root:not(.dark) .ring-white\/10 {
+  --tw-ring-color: var(--border) !important;
+}
+
+:root:not(.dark) .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+}
+:root:not(.dark) .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* Form inputs in light mode */
+:root:not(.dark) input,
+:root:not(.dark) select,
+:root:not(.dark) textarea {
+  background-color: var(--surface-raised);
+  border-color: var(--border);
+  color: var(--foreground);
+}
+
+:root:not(.dark) label {
+  color: var(--foreground);
 }
