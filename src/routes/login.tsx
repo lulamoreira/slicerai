@@ -25,6 +25,7 @@ function LoginComponent() {
   
   const navigate = useNavigate()
   const { user } = useAuthStore()
+  const [error, setError] = React.useState('')
 
   React.useEffect(() => {
     if (user) {
@@ -34,20 +35,26 @@ function LoginComponent() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (!email || !password) {
+      setError('Preencha email e senha.')
+      return
+    }
     setLoading(true)
+    setError('')
     try {
-      const { error } = await supabase.auth.signInWithPassword({ email, password })
-      if (error) {
-        throw error
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password })
+      if (signInError) {
+        if (signInError.message.includes('Invalid login')) setError('Email ou senha incorretos.')
+        else if (signInError.message.includes('Email not confirmed')) setError('Email não confirmado. Verifique sua caixa de entrada.')
+        else setError(`Erro: ${signInError.message}`)
+        return
       }
-      toast.success('✅ Entrando...')
-      // Small delay to show the success toast before redirecting
-      setTimeout(() => {
-        navigate({ to: '/' })
-      }, 1000)
-    } catch (error: any) {
-      console.error('Login error:', error)
-      toast.error(error.message || 'Erro ao entrar')
+      if (data.user) {
+        toast.success('✅ Entrando...')
+        window.location.href = '/'
+      }
+    } catch (e: any) {
+      setError(`Erro inesperado: ${e.message}`)
     } finally {
       setLoading(false)
     }
@@ -55,58 +62,49 @@ function LoginComponent() {
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (password !== confirmPassword) {
-      toast.error('As senhas não coincidem')
+    if (!fullName || !email || !password || password !== confirmPassword) {
+      setError('Preencha todos os campos corretamente.')
       return
     }
     if (password.length < 8) {
-      toast.error('A senha deve ter pelo menos 8 caracteres')
+      setError('A senha deve ter pelo menos 8 caracteres')
       return
     }
 
     setLoading(true)
+    setError('')
     try {
-      const { data, error } = await supabase.auth.signUp({
+      const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: { full_name: fullName },
         },
       })
-      if (error) {
-        if (error.message.includes('User already registered')) {
-          throw new Error('Este email já tem uma conta. Tente fazer login.')
+      
+      if (signUpError) {
+        if (signUpError.message.includes('already registered') || signUpError.message.includes('already exists')) {
+          setError('Este email já tem uma conta. Vá para a aba Entrar.')
+        } else {
+          setError(`Erro: ${signUpError.message}`)
         }
-        throw error
+        return
       }
 
       if (data.user) {
-        // Initial request will be handled by the trigger in DB
-        // But we explicitly call notify-admin for UX
-        await supabase.functions.invoke('notify-admin', {
-          body: {
-            user_email: email,
-            user_name: fullName,
-            type: 'new_access',
-            message: 'Novo cadastro realizado pelo formulário.'
-          }
-        })
-        
-        // Auto-login since email confirmation is disabled
-        toast.success('✅ Conta criada! Entrando...')
-        setTimeout(() => {
-          navigate({ to: '/' })
-        }, 1500)
+        // success — profile trigger will handle role assignment
+        toast.success('✅ Conta criada!')
+        window.location.href = '/'
       }
-    } catch (error: any) {
-      console.error('Signup error:', error)
-      toast.error(error.message || 'Erro ao criar conta')
+    } catch (e: any) {
+      setError(`Erro inesperado: ${e.message}`)
     } finally {
       setLoading(false)
     }
   }
 
   const handleGoogleLogin = async () => {
+    setError('')
     try {
       const result = await lovable.auth.signInWithOAuth('google', {
         redirect_uri: window.location.origin,
@@ -189,6 +187,11 @@ function LoginComponent() {
 
         {activeTab === 'login' ? (
           <form onSubmit={handleLogin} className="space-y-6">
+            {error && (
+              <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-[11px] font-bold text-center animate-in fade-in zoom-in duration-300">
+                {error}
+              </div>
+            )}
             <div className="space-y-2">
               <Label htmlFor="email" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">E-mail</Label>
               <div className="relative group">
@@ -238,6 +241,11 @@ function LoginComponent() {
           </form>
         ) : (
           <form onSubmit={handleSignup} className="space-y-5">
+            {error && (
+              <div className="p-3 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-[11px] font-bold text-center animate-in fade-in zoom-in duration-300">
+                {error}
+              </div>
+            )}
             <div className="space-y-2">
               <Label htmlFor="fullName" className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground ml-1">Nome Completo</Label>
               <div className="relative group">
