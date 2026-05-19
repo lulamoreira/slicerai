@@ -14,16 +14,23 @@ interface WizardState {
   step: number;
   printer: PrinterModel;
   nozzle: NozzleDiameter;
+  layerHeight: number;
   hasAMS: boolean;
+  amsSlotCount: 4 | 8 | 12 | 16;
   amsSlots: AMSSlot[];
   flushStrategy: FlushStrategy;
   wipeTower: boolean;
   material: string;
   variant: string;
   baseColor: string;
+  spoolWeight: number;
   buildPlate: string;
-  priority: number;
-  useCase: string;
+  purposes: string[];
+  ironing: boolean;
+  seamPosition: string;
+  supportEnabled: boolean;
+  supportType: string;
+  supportInterface: string;
   fileName: string;
   fileSize: number;
   geometryStats?: GeometryStats;
@@ -53,16 +60,23 @@ const initialWizard: WizardState = {
   step: 1,
   printer: "X1C",
   nozzle: 0.4,
+  layerHeight: 0.20,
   hasAMS: false,
-  amsSlots: Array(4).fill(null).map(() => ({ material: "PLA", color: "#00c8b4" })),
+  amsSlotCount: 4,
+  amsSlots: Array(4).fill(null).map((_, i) => ({ slot: i + 1, material: "PLA", color: "#00c8b4" })),
   flushStrategy: "Automático",
   wipeTower: true,
   material: "PLA",
   variant: "Basic",
   baseColor: "#00c8b4",
+  spoolWeight: 1000,
   buildPlate: "Textured PEI Plate",
-  priority: 50,
-  useCase: "Functional",
+  purposes: ["Funcional"],
+  ironing: false,
+  seamPosition: "Alinhada",
+  supportEnabled: false,
+  supportType: "Tree (Auto)",
+  supportInterface: "Mesmo material",
   fileName: "",
   fileSize: 0,
   shouldRotate90X: false,
