@@ -18,170 +18,68 @@ import {
   RotateCcw,
   Wind,
   Droplets,
-  Wand2
+  Wand2,
+  Layers,
+  Palette,
+  Download,
+  Share
 } from "lucide-react";
 import { toast } from "sonner";
+import { SummaryTab } from "./results/tabs/SummaryTab";
+import { SettingsTab } from "./results/tabs/SettingsTab";
+import { ExplanationTab } from "./results/tabs/ExplanationTab";
+import { ChecklistTab } from "./results/tabs/ChecklistTab";
 
 export const ResultsPanel: React.FC = () => {
   const { results, resetApp, wizard } = useAppStore();
   const [activeTab, setActiveTab] = useState(0);
-  const [copiedSection, setCopiedSection] = useState<string | null>(null);
+  const [copiedAll, setCopiedAll] = useState(false);
 
   if (!results) return null;
 
   const tabs = [
-    { id: 0, label: "Resumo", icon: LayoutDashboard },
+    { id: 0, label: "Resumo Visual", icon: LayoutDashboard },
     { id: 1, label: "Configurações", icon: Settings },
-    { id: 2, label: "Explicação", icon: MessageSquare },
+    { id: 2, label: "Explicação IA", icon: MessageSquare },
     { id: 3, label: "Checklist", icon: CheckSquare },
   ];
 
-  const copyToClipboard = (text: string, section: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedSection(section);
-    toast.success("Copiado!");
-    setTimeout(() => setCopiedSection(null), 2000);
+  const handleCopyAll = () => {
+    const configText = generateFullConfigText(results);
+    navigator.clipboard.writeText(configText);
+    setCopiedAll(true);
+    toast.success("Todas as configurações copiadas!");
+    setTimeout(() => setCopiedAll(false), 2000);
+  };
+
+  const handleDownload = () => {
+    const configText = generateFullConfigText(results);
+    const blob = new Blob([configText], { type: "text/plain" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `SlicerAI_${results.profile_name_suggestion}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleShare = () => {
+    const url = new URL(window.location.href);
+    const cfg = btoa(JSON.stringify({ wizard, results }));
+    url.searchParams.set("cfg", cfg);
+    navigator.clipboard.writeText(url.toString());
+    toast.success("Link compartilhado copiado!");
   };
 
   const renderTabContent = () => {
     switch (activeTab) {
-      case 0:
-        return (
-          <div className="grid grid-cols-2 gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <ResultCard 
-              icon={Layers} 
-              label="Qualidade" 
-              value={`${results.quality.layer_height}mm`} 
-              sub={`${results.quality.seam_position} seam`}
-            />
-            <ResultCard 
-              icon={Shield} 
-              label="Resistência" 
-              value={`${results.strength.infill_density}%`} 
-              sub={results.strength.infill_pattern}
-            />
-            <ResultCard 
-              icon={Thermometer} 
-              label="Temperaturas" 
-              value={`${results.temperature.nozzle}°C / ${results.temperature.bed}°C`} 
-              sub={`Câmara: ${results.temperature.chamber}°C`}
-            />
-            <ResultCard 
-              icon={Gauge} 
-              label="Velocidade" 
-              value={`${results.speed.infill}mm/s`} 
-              sub={`1ª camada: ${results.speed.first_layer}mm/s`}
-            />
-            <ResultCard 
-              icon={Clock} 
-              label="Estimativas" 
-              value={`${results.estimates.print_time_minutes} min`} 
-              sub={`${results.estimates.filament_grams}g (${results.estimates.filament_meters}m)`}
-              full
-            />
-          </div>
-        );
-      case 1:
-        const configText = `[Quality]
-layer_height=${results.quality.layer_height}
-first_layer_height=${results.quality.first_layer_height}
-seam_position=${results.quality.seam_position}
-ironing=${results.quality.ironing}
-ironing_flow=${results.quality.ironing_flow}
-ironing_speed=${results.quality.ironing_speed}
-
-[Strength]
-infill_density=${results.strength.infill_density}
-infill_pattern=${results.strength.infill_pattern}
-wall_loops=${results.strength.wall_loops}
-top_layers=${results.strength.top_layers}
-bottom_layers=${results.strength.bottom_layers}
-
-[Support]
-needed=${results.support.needed}
-type=${results.support.type}
-threshold_angle=${results.support.threshold_angle}
-
-[Temperature]
-nozzle=${results.temperature.nozzle}
-bed=${results.temperature.bed}
-chamber=${results.temperature.chamber}
-
-[Speed]
-mode=${results.speed.mode}
-outer_wall=${results.speed.outer_wall}
-inner_wall=${results.speed.inner_wall}
-infill=${results.speed.infill}
-travel=${results.speed.travel}
-
-[Advanced]
-elephant_foot_compensation=${results.advanced.elephant_foot_compensation}
-enable_overhang_speed=${results.advanced.enable_overhang_speed}
-bridge_flow=${results.advanced.bridge_flow}`;
-
-        return (
-          <div className="space-y-4 animate-in fade-in duration-500 font-mono">
-            <div className="bg-[#0d0d14] p-6 rounded-2xl border border-white/5 text-[11px] overflow-x-auto whitespace-pre leading-relaxed text-muted-foreground custom-scrollbar max-h-[400px]">
-              {configText}
-            </div>
-            <button
-              onClick={() => copyToClipboard(configText, "all")}
-              className="w-full flex items-center justify-center gap-2 py-4 bg-primary text-white text-[12px] font-black tracking-widest rounded-xl hover:bg-primary-hover transition-all shadow-lg"
-            >
-              {copiedSection === "all" ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-              COPIAR TODAS AS CONFIGURAÇÕES
-            </button>
-          </div>
-        );
-      case 2:
-        return (
-          <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-500">
-            {Object.entries(results.explanation).filter(([k]) => typeof results.explanation[k as keyof typeof results.explanation] === 'string').map(([key, value]) => (
-              <div key={key} className="p-5 bg-surface-raised border border-white/5 rounded-2xl shadow-sm">
-                <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-2">{key.replace(/_/g, ' ')}</p>
-                <p className="text-sm leading-relaxed text-muted-foreground">{value as string}</p>
-              </div>
-            ))}
-            {results.explanation.warnings.length > 0 && (
-              <div className="p-5 bg-destructive/5 border border-destructive/10 rounded-2xl">
-                <p className="text-[10px] font-black text-destructive uppercase tracking-widest mb-3 flex items-center gap-2">
-                  <AlertTriangle className="w-3 h-3" />
-                  Avisos da IA
-                </p>
-                <ul className="space-y-2">
-                  {results.explanation.warnings.map((w, i) => (
-                    <li key={i} className="text-xs text-muted-foreground flex gap-2">
-                      <span className="text-destructive font-black">•</span>
-                      {w}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-        );
-      case 3:
-        const baseChecklist = [
-          "Limpar mesa com Álcool Isopropílico",
-          "Verificar se o filamento está seco",
-          "Limpar bico (cold pull se necessário)",
-          ...(wizard.printer.startsWith("X1") ? ["Calibração de Lidar ativada", "Calibração de Flow ativada"] : [])
-        ];
-        const fullChecklist = [...baseChecklist, ...results.explanation.pre_print_checklist_extra];
-        return (
-          <div className="space-y-3 animate-in fade-in duration-500">
-            {fullChecklist.map((item, i) => (
-              <div key={i} className="flex items-center gap-4 p-5 bg-surface-raised border border-white/5 rounded-2xl group hover:border-primary/20 transition-all cursor-pointer">
-                <div className="w-6 h-6 rounded-lg border border-white/10 flex items-center justify-center group-hover:border-primary group-hover:bg-primary/5 transition-all">
-                  <Check className="w-3.5 h-3.5 text-primary opacity-0 group-hover:opacity-100 transition-all scale-50 group-hover:scale-100" />
-                </div>
-                <span className="text-sm font-bold text-muted-foreground group-hover:text-white transition-colors">{item}</span>
-              </div>
-            ))}
-          </div>
-        );
-      default:
-        return null;
+      case 0: return <SummaryTab results={results} />;
+      case 1: return <SettingsTab results={results} />;
+      case 2: return <ExplanationTab results={results} />;
+      case 3: return <ChecklistTab results={results} printer={wizard.printer} />;
+      default: return null;
     }
   };
 
@@ -189,28 +87,13 @@ bridge_flow=${results.advanced.bridge_flow}`;
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-between mb-8">
         <h2 className="text-2xl font-black italic tracking-tighter text-white uppercase">Resultados <span className="text-primary">SlicerAI</span></h2>
-        <div className="flex gap-2">
-          <button 
-            onClick={() => {
-              const url = new URL(window.location.href);
-              const cfg = btoa(JSON.stringify({ wizard, results }));
-              url.searchParams.set("cfg", cfg);
-              navigator.clipboard.writeText(url.toString());
-              toast.success("Link compartilhado copiado!");
-            }}
-            className="p-3 bg-surface-raised border border-white/5 rounded-xl hover:text-primary transition-all hover:scale-105 active:scale-95 shadow-lg"
-            title="Compartilhar"
-          >
-            <Share2 className="w-5 h-5" />
-          </button>
-          <button 
-            onClick={resetApp}
-            className="flex items-center gap-2 px-5 py-3 bg-white/5 border border-white/5 rounded-xl text-[10px] font-black tracking-widest text-muted hover:text-white transition-all hover:bg-white/10"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-            NOVO PROJETO
-          </button>
-        </div>
+        <button 
+          onClick={handleCopyAll}
+          className="flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/20 rounded-xl text-[10px] font-black tracking-widest text-primary hover:bg-primary/20 transition-all"
+        >
+          {copiedAll ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+          COPIAR TUDO
+        </button>
       </div>
 
       {/* Tabs */}
@@ -222,7 +105,7 @@ bridge_flow=${results.advanced.bridge_flow}`;
             className={cn(
               "flex items-center gap-2 px-5 py-3 rounded-xl text-[10px] font-black tracking-widest transition-all whitespace-nowrap",
               activeTab === tab.id 
-                ? "bg-primary text-white shadow-lg" 
+                ? "bg-primary text-white shadow-lg shadow-primary/20" 
                 : "text-muted hover:text-white hover:bg-white/5"
             )}
           >
@@ -233,43 +116,125 @@ bridge_flow=${results.advanced.bridge_flow}`;
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar min-h-0">
         {renderTabContent()}
       </div>
 
-      {/* Profile Name Suggestion */}
-      <div className="mt-8 pt-8 border-t border-white/5">
-        <p className="text-[10px] font-black text-muted uppercase tracking-[0.2em] mb-3">Sugestão de Nome de Perfil</p>
-        <div className="flex items-center gap-3 p-3 bg-surface-raised border border-white/5 rounded-2xl group shadow-inner">
-          <code className="flex-1 text-xs font-mono font-bold text-primary truncate pl-2">
-            {results.profile_name_suggestion}
-          </code>
+      {/* Bottom Bar */}
+      <div className="mt-8 pt-8 border-t border-white/5 space-y-6">
+        <div className="flex flex-wrap gap-3">
           <button 
-            onClick={() => copyToClipboard(results.profile_name_suggestion, "profile")}
-            className="p-2.5 hover:bg-primary/10 text-muted group-hover:text-primary rounded-xl transition-all active:scale-90"
+            onClick={resetApp}
+            className="flex-1 min-w-[120px] flex items-center justify-center gap-2 px-4 py-3.5 bg-white/5 border border-white/5 rounded-2xl text-[10px] font-black tracking-widest text-muted hover:text-white transition-all hover:bg-white/10"
           >
-            {copiedSection === "profile" ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+            <RotateCcw className="w-3.5 h-3.5" />
+            REFAZER
           </button>
+          <button 
+            onClick={handleDownload}
+            className="flex-1 min-w-[120px] flex items-center justify-center gap-2 px-4 py-3.5 bg-white/5 border border-white/5 rounded-2xl text-[10px] font-black tracking-widest text-muted hover:text-white transition-all hover:bg-white/10"
+          >
+            <Download className="w-3.5 h-3.5" />
+            BAIXAR .TXT
+          </button>
+          <button 
+            onClick={handleShare}
+            className="flex-1 min-w-[120px] flex items-center justify-center gap-2 px-4 py-3.5 bg-white/5 border border-white/5 rounded-2xl text-[10px] font-black tracking-widest text-muted hover:text-white transition-all hover:bg-white/10"
+          >
+            <Share className="w-3.5 h-3.5" />
+            COMPARTILHAR
+          </button>
+        </div>
+
+        {/* Profile Name Suggestion */}
+        <div className="space-y-3">
+          <p className="text-[10px] font-black text-muted uppercase tracking-[0.2em] opacity-50">Sugestão de Nome de Perfil</p>
+          <div className="flex items-center gap-3 p-3 bg-surface-raised border border-white/5 rounded-2xl group shadow-inner">
+            <code className="flex-1 text-xs font-mono font-bold text-primary truncate pl-2">
+              {results.profile_name_suggestion}
+            </code>
+            <button 
+              onClick={() => {
+                navigator.clipboard.writeText(results.profile_name_suggestion);
+                toast.success("Nome do perfil copiado!");
+              }}
+              className="p-2.5 hover:bg-primary/10 text-muted group-hover:text-primary rounded-xl transition-all active:scale-90"
+            >
+              <Copy className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </div>
     </div>
   );
 };
 
-const ResultCard = ({ icon: Icon, label, value, sub, full }: any) => (
-  <div className={cn(
-    "p-5 bg-surface-raised border border-white/5 rounded-2xl flex flex-col gap-1 transition-all hover:border-primary/20 group",
-    full ? "col-span-2" : ""
-  )}>
-    <div className="flex items-center gap-2 mb-1">
-      <Icon className="w-3.5 h-3.5 text-primary group-hover:scale-110 transition-transform" />
-      <span className="text-[9px] font-black text-muted uppercase tracking-[0.2em]">{label}</span>
-    </div>
-    <p className="text-lg font-black tracking-tight text-white">{value}</p>
-    <p className="text-[10px] text-muted font-bold">{sub}</p>
-  </div>
-);
+function generateFullConfigText(results: any) {
+  return `[Quality]
+layer_height = ${results.quality.layer_height}
+initial_layer_height = ${results.quality.first_layer_height}
+seam_position = ${results.quality.seam_position}
+ironing = ${results.quality.ironing}
+ironing_flow = ${results.quality.ironing_flow}%
+ironing_speed = ${results.quality.ironing_speed} mm/s
 
-const Layers = (props: any) => (
-  <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12.83 2.18a2 2 0 0 0-1.66 0L2.6 6.27a2 2 0 0 0 0 3.66l8.57 4.09a2 2 0 0 0 1.66 0l8.57-4.09a2 2 0 0 0 0-3.66Z"/><path d="m2.6 13.73 8.57 4.09a2 2 0 0 0 1.66 0l8.57-4.09"/><path d="m2.6 17.73 8.57 4.09a2 2 0 0 0 1.66 0l8.57-4.09"/></svg>
-);
+[Strength]
+wall_loops = ${results.strength.wall_loops}
+top_layers = ${results.strength.top_layers}
+bottom_layers = ${results.strength.bottom_layers}
+infill_density = ${results.strength.infill_density}%
+infill_pattern = ${results.strength.infill_pattern}
+top_surface_pattern = ${results.strength.top_surface_pattern}
+bottom_surface_pattern = ${results.strength.bottom_surface_pattern}
+
+[Support]
+enable_support = ${results.support.needed}
+support_type = ${results.support.type}
+threshold_angle = ${results.support.threshold_angle}
+top_z_distance = ${results.support.top_z_distance} mm
+bottom_z_distance = ${results.support.bottom_z_distance} mm
+xy_distance = ${results.support.xy_distance} mm
+interface_layers = ${results.support.interface_layers}
+interface_pattern = ${results.support.interface_pattern}
+tree_support_angle = ${results.support.tree_support_angle}
+on_build_plate_only = ${results.support.on_build_plate_only}
+
+[Temperature]
+nozzle_temperature = ${results.temperature.nozzle} °C
+nozzle_temperature_initial_layer = ${results.temperature.nozzle_first_layer} °C
+hot_plate_temp = ${results.temperature.bed} °C
+hot_plate_temp_initial_layer = ${results.temperature.bed_first_layer} °C
+chamber_temperature = ${results.temperature.chamber} °C
+part_cooling_fan_speed = ${results.temperature.part_cooling_fan}%
+
+[Speed]
+outer_wall_speed = ${results.speed.outer_wall} mm/s
+inner_wall_speed = ${results.speed.inner_wall} mm/s
+top_surface_speed = ${results.speed.top_surface} mm/s
+bottom_surface_speed = ${results.speed.bottom_surface} mm/s
+sparse_infill_speed = ${results.speed.infill} mm/s
+travel_speed = ${results.speed.travel} mm/s
+initial_layer_speed = ${results.speed.first_layer} mm/s
+bridge_speed = ${results.speed.bridge} mm/s
+overhang_slowdown = ${results.speed.overhang_slow} mm/s
+
+[AMS]
+wipe_tower_enabled = ${results.ams.wipe_tower_enabled}
+wipe_tower_width = ${results.ams.wipe_tower_width} mm
+flush_multiplier = ${results.ams.flush_multiplier}
+flush_into_infill = ${results.ams.flush_into_infill}
+flush_into_objects = ${results.ams.flush_into_objects}
+
+[Adhesion]
+brim_type = ${results.adhesion.brim_type}
+brim_width = ${results.adhesion.brim_width} mm
+skirt_loops = ${results.adhesion.skirt_loops}
+
+[Advanced]
+elephant_foot_compensation = ${results.advanced.elephant_foot_compensation} mm
+enable_overhang_speed = ${results.advanced.enable_overhang_speed}
+bridge_flow = ${results.advanced.bridge_flow}
+precise_outer_wall = ${results.advanced.precise_outer_wall}
+thick_bridges = ${results.advanced.thick_bridges}
+small_perimeter_speed = ${results.advanced.small_perimeter_speed} mm/s`;
+}

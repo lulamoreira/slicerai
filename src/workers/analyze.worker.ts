@@ -3,14 +3,12 @@ import * as THREE from 'three';
 self.onmessage = (e: MessageEvent) => {
   const { geometryData } = e.data;
   
-  // Reconstruct BufferGeometry from data
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute('position', new THREE.BufferAttribute(geometryData.position, 3));
   if (geometryData.index) {
     geometry.setIndex(new THREE.BufferAttribute(geometryData.index, 1));
   }
 
-  // Calculate Volume and Surface Area
   let volume = 0;
   let surfaceArea = 0;
   const position = geometry.attributes.position;
@@ -26,7 +24,7 @@ self.onmessage = (e: MessageEvent) => {
 
   const overhangThreshold = Math.PI / 4; // 45 degrees
   let maxOverhangAngle = 0;
-  let hasOverhangs = false;
+  let overhangArea = 0;
   let bridgingDetected = false;
 
   for (let i = 0; i < faces; i++) {
@@ -40,30 +38,23 @@ self.onmessage = (e: MessageEvent) => {
       p3.fromBufferAttribute(position, i * 3 + 2);
     }
 
-    // Signed volume
     volume += p1.dot(p2.cross(p3)) / 6.0;
 
-    // Surface Area
     edge1.subVectors(p2, p1);
     edge2.subVectors(p3, p1);
     normal.crossVectors(edge1, edge2);
     const area = normal.length() / 2.0;
     surfaceArea += area;
 
-    // Overhang Analysis
     normal.normalize();
-    // Assuming Z is up
     const angle = normal.angleTo(new THREE.Vector3(0, 0, -1));
     if (angle < overhangThreshold) {
-      hasOverhangs = true;
+      overhangArea += area;
       const deg = (angle * 180) / Math.PI;
       if (deg > maxOverhangAngle) maxOverhangAngle = deg;
     }
 
-    // Heuristic for bridging: near-horizontal faces (looking down)
-    // Actually bridging is usually horizontal faces looking down with no support
-    const upwardAngle = normal.angleTo(new THREE.Vector3(0, 0, -1));
-    if (upwardAngle < 0.17) { // within ~10 degrees of flat down
+    if (normal.angleTo(new THREE.Vector3(0, 0, -1)) < 0.17) {
         bridgingDetected = true;
     }
   }
@@ -75,12 +66,14 @@ self.onmessage = (e: MessageEvent) => {
 
   const result = {
     height: size.z,
-    volume: Math.max(0, Math.abs(volume) / 1000), // cm³
-    surfaceArea: surfaceArea / 100, // cm²
-    overhangsDetected: hasOverhangs,
+    volume: Math.max(0, Math.abs(volume) / 1000),
+    surfaceArea: surfaceArea / 100,
+    overhangsDetected: overhangArea > 0,
     maxOverhangAngle: maxOverhangAngle,
-    thinWalls: false, // sampled heuristic would be too heavy here
+    overhangPercentage: (overhangArea / surfaceArea) * 100,
+    thinWalls: false,
     bridging: bridgingDetected,
+    isTall: size.z > 150,
     boundingBox: { x: size.x, y: size.y, z: size.z },
     parts: 1,
     colors: 1
