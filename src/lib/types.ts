@@ -38,7 +38,7 @@ export interface WizardState {
   fileName: string;
   fileSize: number;
   geometryStats?: GeometryStats;
-  shouldRotate90X?: boolean;
+  shouldRotate90X: boolean;
 }
 
 export interface AIResponse {
