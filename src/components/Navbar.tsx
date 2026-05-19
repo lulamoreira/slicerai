@@ -35,11 +35,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onShowSettings, onShowHistory })
   
   useEffect(() => {
     if (profile) {
-      console.log('Navbar Debug - User:', user?.email);
-      console.log('Navbar Debug - Profile Role:', profile.role);
-      console.log('Navbar Debug - Profile Full Name:', profile.full_name);
+      console.log('Navbar profile role:', profile?.role);
     }
-  }, [profile, user]);
+  }, [profile]);
   const [showDropdown, setShowDropdown] = useState(false);
   const [showAccountModal, setShowAccountModal] = useState(false);
   const [showHelpModal, setShowHelpModal] = useState(false);
@@ -163,7 +161,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onShowSettings, onShowHistory })
                     <p className="text-xs font-bold text-foreground truncate">
                       {profile?.full_name || user.email}
                     </p>
-                    {profile?.full_name && profile.full_name !== user.email && (
+                     {profile?.full_name && profile.full_name.trim() !== (user.email || '').trim() && (
                       <p className="text-[10px] text-muted font-medium truncate mt-0.5">{user.email}</p>
                     )}
                   </div>
