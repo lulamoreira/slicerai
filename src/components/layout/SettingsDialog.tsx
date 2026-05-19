@@ -25,7 +25,9 @@ interface SettingsDialogProps {
 
 export const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
   const { 
-    apiKey, setApiKey, 
+    apiKey, setApiKey,
+    aiProvider, setAiProvider,
+    groqApiKey, setGroqApiKey,
     costPerKg, setCostPerKg, 
     language, setLanguage,
     theme, setTheme,
@@ -79,14 +81,39 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
   }
 
   const handleTest = async () => {
-    if (!apiKey) {
+    const currentKey = aiProvider === 'gemini' ? apiKey : groqApiKey;
+    if (!currentKey) {
       toast.error("Insira uma chave API primeiro");
       return;
     }
     setTesting(true);
     setTestResult('idle');
     
-    const result = await testGeminiConnection(apiKey);
+    let result;
+    if (aiProvider === 'gemini') {
+      result = await testGeminiConnection(currentKey);
+    } else {
+      try {
+        const response = await fetch(
+          "https://api.groq.com/openai/v1/models",
+          {
+            method: "GET",
+            headers: { 
+              "Authorization": `Bearer ${currentKey}`,
+              "Content-Type": "application/json" 
+            }
+          }
+        );
+        if (response.ok) {
+          result = { ok: true, message: '✅ Groq conectado com sucesso!' };
+        } else {
+          const err = await response.json().catch(() => ({}));
+          result = { ok: false, message: `Erro Groq: ${err?.error?.message || response.statusText}` };
+        }
+      } catch (e: any) {
+        result = { ok: false, message: `Erro de rede: ${e.message}` };
+      }
+    }
     
     setTesting(false);
     if (result.ok) {
@@ -126,10 +153,45 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
         </h2>
 
         <div className="space-y-10 custom-scrollbar max-h-[60vh] pr-2 overflow-y-auto">
-          {/* Gemini Key */}
+          {/* AI Provider Selector */}
+          <div className="space-y-4">
+            <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted px-1">
+              PROVEDOR DE IA
+            </label>
+            <div className="flex p-1 bg-surface-raised rounded-xl border border-border-strong gap-1 shadow-inner max-w-sm">
+              <button 
+                onClick={() => {
+                  setAiProvider('gemini');
+                  setTestResult('idle');
+                }}
+                className={cn(
+                  "flex-1 py-2.5 rounded-lg text-[10px] font-bold tracking-[0.2em] transition-all",
+                  aiProvider === 'gemini' ? "bg-primary text-[#0d0d14] shadow-md" : "text-muted hover:text-primary hover:bg-primary-subtle"
+                )}
+              >
+                GEMINI
+              </button>
+              <button 
+                onClick={() => {
+                  setAiProvider('groq');
+                  setTestResult('idle');
+                }}
+                className={cn(
+                  "flex-1 py-2.5 rounded-lg text-[10px] font-bold tracking-[0.2em] transition-all",
+                  aiProvider === 'groq' ? "bg-primary text-[#0d0d14] shadow-md" : "text-muted hover:text-primary hover:bg-primary-subtle"
+                )}
+              >
+                GROQ
+              </button>
+            </div>
+          </div>
+
+          {/* AI Key Section */}
           <div className="space-y-4">
             <div className="flex justify-between items-center px-1">
-                <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-primary">Google Gemini 2.0 Flash API Key</label>
+                <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-primary">
+                  {aiProvider === 'gemini' ? 'Google Gemini 2.0 Flash API Key' : 'Groq API Key'}
+                </label>
                 <div className="flex items-center gap-1 opacity-50">
                     <Wifi className="w-2.5 h-2.5" />
                     <span className="text-[8px] font-bold uppercase tracking-widest">Conexão Segura</span>
@@ -152,12 +214,13 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
                     <div className="relative flex-1">
                         <input 
                         type={showKey ? "text" : "password"}
-                        value={apiKey}
+                        value={aiProvider === 'gemini' ? apiKey : groqApiKey}
                         onChange={(e) => {
                           const newKey = e.target.value;
-                          setApiKey(newKey);
+                          if (aiProvider === 'gemini') setApiKey(newKey);
+                          else setGroqApiKey(newKey);
                         }}
-                        placeholder="AIza..."
+                        placeholder={aiProvider === 'gemini' ? "AIza..." : "gsk_..."}
                         className="w-full bg-surface-raised border border-border-strong rounded-xl p-3.5 text-xs font-mono font-bold outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-foreground pr-12"
                         />
                         <button 
@@ -189,7 +252,7 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
                     </button>
                 </div>
                 <a
-                  href="https://aistudio.google.com/apikey"
+                  href={aiProvider === 'gemini' ? "https://aistudio.google.com/apikey" : "https://console.groq.com/keys"}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 text-[10px] font-bold tracking-widest text-primary hover:underline px-1"
@@ -198,8 +261,12 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
                 </a>
                 <p className="text-[9px] text-muted font-bold uppercase tracking-widest px-2 leading-relaxed italic opacity-50">
                     {language === 'pt-BR' 
-                        ? "Obtenha sua chave gratuita em aistudio.google.com/apikey. Não é necessário cartão de crédito. Sua chave é salva localmente." 
-                        : "Get your free key at aistudio.google.com/apikey. No credit card required. Your key is saved locally."}
+                        ? (aiProvider === 'gemini' 
+                            ? "Obtenha sua chave gratuita em aistudio.google.com/apikey. Não é necessário cartão de crédito." 
+                            : "Obtenha sua chave gratuita em console.groq.com. Sua chave é salva localmente.")
+                        : (aiProvider === 'gemini'
+                            ? "Get your free key at aistudio.google.com/apikey. No credit card required."
+                            : "Get your free key at console.groq.com. Your key is saved locally.")}
                 </p>
               </>
             )}

@@ -172,7 +172,9 @@ Retorne este JSON exato (todos os campos obrigatórios):
     maxOutputTokens: 4096,
   };
 
-  if (userProfile?.api_key_mode === 'centralized') {
+  const aiProvider = useSettingsStore.getState().aiProvider;
+
+  if (userProfile?.api_key_mode === 'centralized' && aiProvider === 'gemini') {
     const { data: { session } } = await supabase.auth.getSession();
     response = await fetch(
       `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/gemini-proxy`,
@@ -185,6 +187,27 @@ Retorne este JSON exato (todos os campos obrigatórios):
         body: JSON.stringify({
           contents: [{ parts: [{ text: fullPrompt }] }],
           generationConfig,
+        }),
+      }
+    );
+  } else if (aiProvider === 'groq') {
+    const groqApiKey = useSettingsStore.getState().groqApiKey;
+    if (!groqApiKey) throw new Error('NO_API_KEY');
+
+    response = await fetch(
+      "https://api.groq.com/openai/v1/chat/completions",
+      {
+        method: "POST",
+        headers: { 
+          "Authorization": `Bearer ${groqApiKey}`,
+          "Content-Type": "application/json" 
+        },
+        body: JSON.stringify({
+          model: "llama-3.3-70b-versatile",
+          messages: [{ role: "user", content: fullPrompt }],
+          temperature: 0.2,
+          max_tokens: 8192,
+          response_format: { type: "json_object" }
         }),
       }
     );
@@ -207,13 +230,16 @@ Retorne este JSON exato (todos os campos obrigatórios):
 
   if (!response.ok) {
     const errBody = await response.json().catch(() => ({}));
+    const providerName = aiProvider === 'groq' ? 'Groq' : 'Gemini';
     throw new Error(
-      `Gemini ${response.status}: ${errBody?.error?.message || response.statusText}`
+      `${providerName} ${response.status}: ${errBody?.error?.message || response.statusText}`
     );
   }
 
   const data = await response.json();
-  const content = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+  const content = aiProvider === 'groq' 
+    ? data?.choices?.[0]?.message?.content 
+    : data?.candidates?.[0]?.content?.parts?.[0]?.text;
   if (!content) throw new Error("Empty response from Gemini");
   const repaired = repairJSON(content);
   return aiResponseSchema.parse(JSON.parse(repaired));
@@ -246,6 +272,24 @@ export const testConnectionDetailed = async (apiKey: string): Promise<Connection
     if (response.status === 429) return "rate_limited";
     if (response.status === 400 || response.status === 403) return "invalid";
     return "error";
+  } catch {
+    return "error";
+  }
+};
+
+export const testGroqKey = async (apiKey: string): Promise<ConnectionResult> => {
+  try {
+    const response = await fetch(
+      "https://api.groq.com/openai/v1/models",
+      {
+        method: "GET",
+        headers: { 
+          "Authorization": `Bearer ${apiKey}`,
+          "Content-Type": "application/json" 
+        }
+      }
+    );
+    return response.ok ? "ok" : "invalid";
   } catch {
     return "error";
   }
