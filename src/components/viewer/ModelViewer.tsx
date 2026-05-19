@@ -108,7 +108,9 @@ const Model = ({ file }: { file: File }) => {
   return <primitive object={modelObject} />;
 };
 
-export const ModelViewer: React.FC<ModelViewerProps> = ({ file }) => {
+export const ModelViewer: React.FC<ModelViewerProps> = ({ file: fileProp }) => {
+  const storeFile = useAppStore((s) => s.file);
+  const file = fileProp || storeFile || undefined;
   return (
     <div className="w-full h-full bg-[#0d0d14] relative rounded-xl overflow-hidden border border-white/5">
       <Canvas shadows dpr={[1, 2]} camera={{ position: [150, 150, 150], fov: 45 }}>

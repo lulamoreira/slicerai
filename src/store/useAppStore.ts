@@ -39,7 +39,7 @@ interface WizardState {
 
 interface AppStore {
   status: 'idle' | 'parsing' | 'parse_error' | 'ready' | 'generating' | 'result' | 'api_error' | 'no_api_key';
-  file: { name: string; size: number; type: string } | null;
+  file: File | null;
   geometry: GeometryStats | null;
   wizard: WizardState;
   results: AIResponse | null;

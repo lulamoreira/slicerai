@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useAppStore, useSettingsStore } from "../../store/useAppStore";
-import { cn } from "../../../lib/utils";
+import { cn } from "../../lib/utils";
 import { 
   LayoutDashboard, 
   Settings, 
@@ -25,7 +25,7 @@ import {
   Share
 } from "lucide-react";
 import { toast } from "sonner";
-import { AIResponse } from "../../../lib/types";
+import { AIResponse } from "../../lib/types";
 
 export const ExportBar = ({ results, onReset }: { results: AIResponse, onReset: () => void }) => {
   const { wizard } = useAppStore();

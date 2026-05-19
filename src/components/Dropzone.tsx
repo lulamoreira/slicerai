@@ -16,11 +16,8 @@ export const Dropzone: React.FC = () => {
         return;
       }
       setError(null);
-      setFile({
-        name: file.name,
-        size: file.size,
-        type: file.name.toLowerCase().endsWith('.stl') ? 'stl' : '3mf'
-      });
+      setFile(file);
+      useAppStore.getState().updateWizard({ fileName: file.name, fileSize: file.size });
       setStatus('parsing');
     }
   }, [setFile, setStatus]);
