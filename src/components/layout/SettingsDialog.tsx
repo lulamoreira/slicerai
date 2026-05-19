@@ -190,7 +190,7 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
           <div className="space-y-4">
             <div className="flex justify-between items-center px-1">
                 <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-primary">
-                  {aiProvider === 'gemini' ? 'Google Gemini 2.0 Flash API Key' : 'Groq API Key'}
+                  {aiProvider === 'gemini' ? 'Google Gemini 2.0 Flash API Key' : 'GROQ API KEY'}
                 </label>
                 <div className="flex items-center gap-1 opacity-50">
                     <Wifi className="w-2.5 h-2.5" />
@@ -252,12 +252,14 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
                     </button>
                 </div>
                 <a
-                  href={aiProvider === 'gemini' ? "https://aistudio.google.com/apikey" : "https://console.groq.com/keys"}
+                  href={aiProvider === 'gemini' ? "https://aistudio.google.com/apikey" : "https://console.groq.com"}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 text-[10px] font-bold tracking-widest text-primary hover:underline px-1"
                 >
-                  {language === 'pt-BR' ? 'OBTER CHAVE GRÁTIS' : 'GET FREE KEY'} <ExternalLink className="w-3 h-3" />
+                  {language === 'pt-BR' 
+                    ? (aiProvider === 'gemini' ? 'OBTER CHAVE GRÁTIS' : 'Obter chave grátis em console.groq.com') 
+                    : (aiProvider === 'gemini' ? 'GET FREE KEY' : 'Get free key at console.groq.com')} <ExternalLink className="w-3 h-3" />
                 </a>
                 <p className="text-[9px] text-muted font-bold uppercase tracking-widest px-2 leading-relaxed italic opacity-50">
                     {language === 'pt-BR' 
