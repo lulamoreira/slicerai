@@ -23,6 +23,7 @@ import { HistorySidebar } from '../components/layout/HistorySidebar'
 
 export const Route = createFileRoute('/')({
   component: HomeComponent,
+  ssr: false,
 })
 
 function HomeComponent() {
