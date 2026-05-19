@@ -43,7 +43,7 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
 
     try {
       const response = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey.trim()}`,
+        `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${apiKey.trim()}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -126,7 +126,7 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
           {/* Gemini Key */}
           <div className="space-y-4">
             <div className="flex justify-between items-center px-1">
-                <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-primary">Google Gemini API Key</label>
+                <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-primary">Google Gemini 2.0 Flash API Key</label>
                 <div className="flex items-center gap-1 opacity-50">
                     <Wifi className="w-2.5 h-2.5" />
                     <span className="text-[8px] font-bold uppercase tracking-widest">Conexão Segura</span>
