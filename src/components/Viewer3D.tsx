@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Grid, Stage, PerspectiveCamera } from "@react-three/drei";
 import * as THREE from "three";
-import { STLLoader } from "three/examples/jsm/loaders/STLLoader";
+import { STLLoader } from "three-stdlib";
 import { useStore } from "../lib/store";
 import { analyzeGeometry } from "../lib/geometry";
 
@@ -25,10 +25,10 @@ const Model = ({ file }: { file: File }) => {
       const result = e.target?.result;
       if (result) {
         const geom = loader.parse(result as ArrayBuffer);
-        geom.center(); // Center the model
+        geom.computeVertexNormals();
+        geom.center(); 
         setGeometry(geom);
 
-        // Analyze
         const tempMesh = new THREE.Mesh(geom);
         const stats = analyzeGeometry(tempMesh);
         updateWizard({ geometryStats: stats });
@@ -48,13 +48,15 @@ const Model = ({ file }: { file: File }) => {
 };
 
 export const Viewer3D: React.FC<Viewer3DProps> = ({ file }) => {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
   return (
     <div className="w-full h-full bg-[#0d0d14] relative rounded-lg overflow-hidden border border-white/10">
-      <Canvas shadows dpr={[1, 2]}>
-        <PerspectiveCamera makeDefault position={[100, 100, 100]} />
-        <Stage environment="city" intensity={0.5} contactShadow={false}>
+      <Canvas shadows dpr={[1, 2]} camera={{ position: [100, 100, 100], fov: 45 }}>
+        <Stage 
+          environment="city" 
+          intensity={0.5} 
+          shadows={{ type: 'contact', opacity: 0.2 }}
+          adjustCamera={true}
+        >
           {file && <Model file={file} />}
         </Stage>
         <OrbitControls makeDefault minDistance={10} maxDistance={500} />
