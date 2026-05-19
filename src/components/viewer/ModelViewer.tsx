@@ -141,6 +141,9 @@ export const ModelViewer: React.FC<ModelViewerProps> = ({ file: fileProp }) => {
         >
           {file && <Model file={file} />}
         </Stage>
+        <ambientLight intensity={1.5} />
+        <pointLight position={[100, 100, 100]} intensity={2.0} />
+        <pointLight position={[-100, -100, -100]} intensity={1.0} />
         <OrbitControls makeDefault />
         <Grid
           infiniteGrid
