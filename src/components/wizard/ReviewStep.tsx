@@ -61,9 +61,10 @@ export const ReviewStep: React.FC = () => {
         results,
         wizardState: wizard as any,
       });
-    } catch (error) {
-      console.error(error);
-      alert("Erro ao gerar configurações. Verifique sua chave API.");
+    } catch (error: any) {
+      console.error('Gemini error:', error);
+      const msg = error?.message || String(error);
+      alert("Erro ao gerar configurações:\n\n" + msg);
       useAppStore.setState({ status: 'ready' });
     }
   };

@@ -207,8 +207,10 @@ Retorne este JSON exato (todos os campos obrigatórios):
   }
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({}));
-    throw new Error(error.error?.message || "Failed to generate settings");
+    const errBody = await response.json().catch(() => ({}));
+    throw new Error(
+      `Gemini ${response.status}: ${errBody?.error?.message || response.statusText}`
+    );
   }
 
   const data = await response.json();
