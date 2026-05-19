@@ -5,7 +5,7 @@ import { lovable } from '../integrations/lovable/index'
 import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
 import { Label } from '../components/ui/label'
-import { Hexagon, Mail, Lock, User, Eye, EyeOff, Send, CheckCircle2 } from 'lucide-react'
+import { Hexagon, Mail, Lock, User, Eye, EyeOff, Send, CheckCircle2, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useAuthStore } from '../store/useAuthStore'
 
@@ -38,18 +38,16 @@ function LoginComponent() {
     try {
       const { error } = await supabase.auth.signInWithPassword({ email, password })
       if (error) {
-        if (error.message.includes('Invalid login credentials')) {
-          throw new Error('Email ou senha incorretos')
-        }
-        if (error.message.includes('Email not confirmed')) {
-          throw new Error('Confirme seu email antes de entrar')
-        }
         throw error
       }
-      toast.success('Bem-vindo de volta!')
-      navigate({ to: '/' })
+      toast.success('✅ Entrando...')
+      // Small delay to show the success toast before redirecting
+      setTimeout(() => {
+        navigate({ to: '/' })
+      }, 1000)
     } catch (error: any) {
-      toast.error(error.message)
+      console.error('Login error:', error)
+      toast.error(error.message || 'Erro ao entrar')
     } finally {
       setLoading(false)
     }
@@ -88,10 +86,20 @@ function LoginComponent() {
             message: 'Novo cadastro realizado pelo formulário.'
           }
         })
-        setSignedUp(true)
+
+        // If user is the admin, redirect immediately (since auto-confirm is enabled)
+        if (email.toLowerCase() === 'lula1973@gmail.com') {
+          toast.success('✅ Entrando...')
+          setTimeout(() => {
+            navigate({ to: '/' })
+          }, 1000)
+        } else {
+          setSignedUp(true)
+        }
       }
     } catch (error: any) {
-      toast.error(error.message)
+      console.error('Signup error:', error)
+      toast.error(error.message || 'Erro ao criar conta')
     } finally {
       setLoading(false)
     }
@@ -222,7 +230,8 @@ function LoginComponent() {
               </div>
             </div>
 
-            <Button type="submit" className="w-full h-12 bg-primary text-[#0d0d14] font-black tracking-widest uppercase hover:bg-primary-hover shadow-lg shadow-primary/20 rounded-xl" disabled={loading}>
+            <Button type="submit" className="w-full h-12 bg-primary text-[#0d0d14] font-black tracking-widest uppercase hover:bg-primary-hover shadow-lg shadow-primary/20 rounded-xl flex items-center justify-center gap-2" disabled={loading}>
+              {loading && <Loader2 className="w-4 h-4 animate-spin" />}
               {loading ? 'Entrando...' : 'Entrar'}
             </Button>
           </form>
@@ -286,7 +295,8 @@ function LoginComponent() {
               </div>
             </div>
 
-            <Button type="submit" className="w-full h-12 bg-primary text-[#0d0d14] font-black tracking-widest uppercase hover:bg-primary-hover shadow-lg shadow-primary/20 rounded-xl mt-2" disabled={loading}>
+            <Button type="submit" className="w-full h-12 bg-primary text-[#0d0d14] font-black tracking-widest uppercase hover:bg-primary-hover shadow-lg shadow-primary/20 rounded-xl mt-2 flex items-center justify-center gap-2" disabled={loading}>
+              {loading && <Loader2 className="w-4 h-4 animate-spin" />}
               {loading ? 'Criando Conta...' : 'Criar Conta'}
             </Button>
           </form>
