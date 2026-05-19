@@ -147,7 +147,7 @@ export const ReviewStep: React.FC = () => {
               </div>
               <div className="text-center space-y-1">
                 <span className="text-2xl font-bold tracking-tight uppercase block text-[#0d0d14]">Gerar com SlicerAI</span>
-                <span className="text-[10px] opacity-70 font-bold uppercase tracking-[0.4em] block pl-1 text-[#0d0d14]">Otimização Gemini 1.5 Flash</span>
+                <span className="text-[10px] opacity-70 font-bold uppercase tracking-[0.4em] block pl-1 text-[#0d0d14]">Otimização Gemini 2.0 Flash</span>
               </div>
             </>
           )}
