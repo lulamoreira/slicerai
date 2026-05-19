@@ -47,7 +47,13 @@ function ResetPasswordComponent() {
       })
 
       if (updateError) {
-        setError(`Erro: ${updateError.message}`)
+        if (updateError.message.includes('weak') || updateError.message.includes('easy to guess')) {
+          setError('Senha muito fraca ou comum. Use letras, números e símbolos únicos.')
+        } else if (updateError.message.includes('Password should be')) {
+          setError('A senha deve ter pelo menos 6 caracteres.')
+        } else {
+          setError(`Erro: ${updateError.message}`)
+        }
         return
       }
 

@@ -44,9 +44,13 @@ function LoginComponent() {
     try {
       const { data, error: signInError } = await supabase.auth.signInWithPassword({ email, password })
       if (signInError) {
-        if (signInError.message.includes('Invalid login')) setError('Email ou senha incorretos.')
-        else if (signInError.message.includes('Email not confirmed')) setError('Email não confirmado. Verifique sua caixa de entrada.')
-        else setError(`Erro: ${signInError.message}`)
+        if (signInError.message.includes('Invalid login credentials') || signInError.message.includes('Invalid login')) {
+          setError('Email ou senha incorretos.')
+        } else if (signInError.message.includes('Email not confirmed')) {
+          setError('Email não confirmado. Contate o administrador.')
+        } else {
+          setError(`Erro: ${signInError.message}`)
+        }
         return
       }
       if (data.user) {
@@ -85,6 +89,10 @@ function LoginComponent() {
       if (signUpError) {
         if (signUpError.message.includes('already registered') || signUpError.message.includes('already exists')) {
           setError('Este email já tem uma conta. Vá para a aba Entrar.')
+        } else if (signUpError.message.includes('weak') || signUpError.message.includes('easy to guess')) {
+          setError('Senha muito fraca ou comum. Use letras, números e símbolos únicos.')
+        } else if (signUpError.message.includes('Password should be')) {
+          setError('A senha deve ter pelo menos 6 caracteres.')
         } else {
           setError(`Erro: ${signUpError.message}`)
         }
