@@ -34,7 +34,7 @@ import { Badge } from '../ui/badge';
 import { toast } from 'sonner';
 import { cn } from '../../lib/utils';
 
-export const AdminPanel: React.FC = () => {
+export function AdminPanel() {
   const [activeTab, setActiveTab] = useState<'users' | 'requests' | 'subs' | 'settings'>('users');
   const [requestCount, setRequestCount] = useState(0);
   const [selectedUser, setSelectedUser] = useState<any>(null);
