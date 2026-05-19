@@ -100,9 +100,15 @@ export const AdminPanel: React.FC = () => {
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         <header className="h-16 border-b border-border bg-surface flex items-center justify-between px-8">
-          <h1 className="text-sm font-bold uppercase tracking-widest text-foreground">
-            {activeTab === 'users' ? 'Gestão de Usuários' : activeTab === 'requests' ? 'Solicitações de Acesso' : 'Assinaturas (Em Breve)'}
-          </h1>
+          <Link to="/" className="text-[10px] font-bold uppercase tracking-widest text-muted hover:text-primary transition-all">
+            ← Voltar ao app
+          </Link>
+          <div className="flex items-center gap-4">
+            <h1 className="text-sm font-black uppercase tracking-widest text-foreground flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-primary" />
+              Painel Admin
+            </h1>
+          </div>
           <div className="flex items-center gap-4">
             {activeTab === 'users' && (
               <Button size="sm" className="h-9 px-4 text-[10px] font-bold tracking-widest uppercase">
