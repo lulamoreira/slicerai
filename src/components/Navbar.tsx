@@ -2,7 +2,6 @@ import React from "react";
 import { useAppStore, useSettingsStore } from "../store/useAppStore";
 import { useTranslation } from "../lib/i18n";
 import { 
-  Maximize2, 
   Settings as SettingsIcon, 
   History as HistoryIcon, 
   Moon, 
