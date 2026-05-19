@@ -7,11 +7,13 @@ import { ResultsPanel } from '../components/ResultsPanel'
 import { Navbar } from '../components/Navbar'
 import { StatsCard } from '../components/StatsCard'
 import { useAppStore, useSettingsStore } from '../store/useAppStore'
-import { translations, useTranslation } from '../lib/i18n'
+import { useTranslation } from '../lib/i18n'
 import { 
   Info,
-  ChevronDown,
-  X
+  X,
+  Settings as SettingsIcon,
+  History as HistoryIcon,
+  Box
 } from 'lucide-react'
 import { Toaster } from 'sonner'
 import { cn } from '../lib/utils'
@@ -24,20 +26,17 @@ function HomeComponent() {
   const { 
     status, 
     wizard, 
-    currentResults, 
+    results, 
     updateWizard, 
     geometry,
     orientationAdvice,
     setOrientationAdvice,
-    resetApp
   } = useAppStore()
   
-  const { language, theme, apiKey, setApiKey, costPerKg, setCostPerKg } = useSettingsStore()
-  const t = useTranslation(language)
+  const { language, theme, apiKey, costPerKg, setCostPerKg } = useSettingsStore()
   
   const [showSettings, setShowSettings] = React.useState(false)
   const [showHistory, setShowHistory] = React.useState(false)
-  const [uploadedFile, setUploadedFile] = React.useState<File | undefined>()
 
   // Rehydrate from URL
   React.useEffect(() => {
@@ -48,7 +47,8 @@ function HomeComponent() {
         const decoded = JSON.parse(atob(cfg))
         useAppStore.setState({ 
           wizard: decoded.wizard, 
-          results: decoded.results 
+          results: decoded.results,
+          status: 'result'
         })
       } catch (e) {
         console.error('Failed to rehydrate from URL', e)
@@ -56,13 +56,9 @@ function HomeComponent() {
     }
   }, [])
 
-  const handleFileDrop = (file: File) => {
-    // This is handled by useAppStore's logic in Dropzone/ModelViewer now
-  }
-
   if (status === 'idle') {
     return (
-      <div className="min-h-screen bg-background text-foreground flex flex-col">
+      <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">
         <Toaster position="top-center" theme={theme} />
         <Navbar onShowSettings={() => setShowSettings(true)} onShowHistory={() => setShowHistory(true)} />
         <main className="flex-1 flex items-center justify-center p-6">
@@ -188,7 +184,6 @@ function SettingsModal({ onClose }: { onClose: () => void }) {
 
 function HistoryDrawer({ onClose }: { onClose: () => void }) {
   const { history } = useSettingsStore()
-  const { setResults, updateWizard } = useAppStore()
 
   return (
     <div 
@@ -210,7 +205,7 @@ function HistoryDrawer({ onClose }: { onClose: () => void }) {
           Histórico
         </h2>
 
-        <div className="space-y-4">
+        <div className="space-y-4 overflow-y-auto max-h-[calc(100vh-150px)] custom-scrollbar pr-2">
           {history.length === 0 ? (
             <div className="py-20 text-center space-y-4">
               <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto">
@@ -250,7 +245,3 @@ function HistoryDrawer({ onClose }: { onClose: () => void }) {
     </div>
   )
 }
-
-const SettingsIconComp = (props: any) => <SettingsIcon {...props} />;
-const HistoryIconComp = (props: any) => <HistoryIcon {...props} />;
-const BoxIconComp = (props: any) => <Box {...props} />;
