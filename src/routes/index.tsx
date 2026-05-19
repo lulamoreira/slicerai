@@ -1,20 +1,17 @@
 import * as React from 'react'
 import { createFileRoute } from '@tanstack/react-router'
-import { Viewer3D } from '../components/Viewer3D'
-import { FileDrop } from '../components/FileDrop'
+import { ModelViewer } from '../components/viewer/ModelViewer'
+import { Dropzone } from '../components/Dropzone'
 import { Wizard } from '../components/Wizard'
 import { ResultsPanel } from '../components/ResultsPanel'
-import { useStore } from '../lib/store'
+import { Navbar } from '../components/Navbar'
+import { StatsCard } from '../components/StatsCard'
+import { useAppStore, useSettingsStore } from '../store/useAppStore'
 import { translations, useTranslation } from '../lib/i18n'
 import { 
-  Settings, 
-  History, 
-  Moon, 
-  Sun, 
-  Languages, 
-  Github,
-  Maximize2,
-  Info
+  Info,
+  ChevronDown,
+  X
 } from 'lucide-react'
 import { Toaster } from 'sonner'
 import { cn } from '../lib/utils'
@@ -24,8 +21,20 @@ export const Route = createFileRoute('/')({
 })
 
 function HomeComponent() {
-  const { wizard, currentResults, updateWizard, app, toggleTheme, setLanguage, setOpenAIKey, loadFromHistory, history } = useStore()
-  const t = useTranslation(app.language)
+  const { 
+    status, 
+    wizard, 
+    currentResults, 
+    updateWizard, 
+    geometry,
+    orientationAdvice,
+    setOrientationAdvice,
+    resetApp
+  } = useAppStore()
+  
+  const { language, theme, apiKey, setApiKey, costPerKg, setCostPerKg } = useSettingsStore()
+  const t = useTranslation(language)
+  
   const [showSettings, setShowSettings] = React.useState(false)
   const [showHistory, setShowHistory] = React.useState(false)
   const [uploadedFile, setUploadedFile] = React.useState<File | undefined>()
@@ -37,10 +46,9 @@ function HomeComponent() {
     if (cfg) {
       try {
         const decoded = JSON.parse(atob(cfg))
-        // We can't rehydrate the File object, but we can rehydrate the state
-        useStore.setState({ 
+        useAppStore.setState({ 
           wizard: decoded.wizard, 
-          currentResults: decoded.results 
+          results: decoded.results 
         })
       } catch (e) {
         console.error('Failed to rehydrate from URL', e)
@@ -49,94 +57,57 @@ function HomeComponent() {
   }, [])
 
   const handleFileDrop = (file: File) => {
-    setUploadedFile(file)
+    // This is handled by useAppStore's logic in Dropzone/ModelViewer now
+  }
+
+  if (status === 'idle') {
+    return (
+      <div className="min-h-screen bg-background text-foreground flex flex-col">
+        <Toaster position="top-center" theme={theme} />
+        <Navbar onShowSettings={() => setShowSettings(true)} onShowHistory={() => setShowHistory(true)} />
+        <main className="flex-1 flex items-center justify-center p-6">
+          <Dropzone />
+        </main>
+        {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
+      </div>
+    )
   }
 
   return (
-    <div className="min-h-screen flex flex-col font-sans">
-      <Toaster position="top-center" theme={app.theme} />
-      
-      {/* Navbar */}
-      <header className="h-16 border-b border-white/5 bg-background/50 backdrop-blur-xl sticky top-0 z-40 px-6 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-            <Maximize2 className="w-5 h-5 text-white" />
-          </div>
-          <h1 className="font-black italic tracking-tighter text-xl text-white hidden sm:block">
-            SlicerAI <span className="text-primary">for Bambu</span>
-          </h1>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <button 
-            onClick={() => setShowHistory(true)}
-            className="p-2 hover:bg-white/5 rounded-lg transition-colors text-muted-foreground hover:text-white relative"
-          >
-            <History className="w-5 h-5" />
-            {history.length > 0 && <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary rounded-full" />}
-          </button>
-          
-          <button 
-            onClick={toggleTheme}
-            className="p-2 hover:bg-white/5 rounded-lg transition-colors text-muted-foreground hover:text-white"
-          >
-            {app.theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-          </button>
-
-          <button 
-            onClick={() => setLanguage(app.language === 'pt-BR' ? 'en' : 'pt-BR')}
-            className="flex items-center gap-2 px-3 py-1.5 hover:bg-white/5 rounded-lg transition-colors text-muted-foreground hover:text-white text-xs font-bold"
-          >
-            <Languages className="w-4 h-4" />
-            {app.language === 'pt-BR' ? 'PT-BR' : 'EN'}
-          </button>
-
-          <div className="w-px h-6 bg-white/10 mx-2" />
-
-          <button 
-            onClick={() => setShowSettings(true)}
-            className={cn(
-              "p-2 hover:bg-white/5 rounded-lg transition-colors",
-              !app.openaiKey ? "text-destructive animate-pulse" : "text-muted-foreground hover:text-white"
-            )}
-          >
-            <Settings className="w-5 h-5" />
-          </button>
-        </div>
-      </header>
+    <div className="min-h-screen bg-background text-foreground flex flex-col font-sans overflow-hidden">
+      <Toaster position="top-center" theme={theme} />
+      <Navbar onShowSettings={() => setShowSettings(true)} onShowHistory={() => setShowHistory(true)} />
 
       <main className="flex-1 flex flex-col md:flex-row h-[calc(100vh-64px)] overflow-hidden">
         {/* Left Panel: Preview */}
-        <div className="w-full md:w-3/5 p-4 md:p-6 flex flex-col gap-4 bg-[#0d0d14]">
+        <div className="w-full md:w-[40%] p-4 md:p-6 flex flex-col gap-4 bg-[#0d0d14] relative border-r border-white/5">
           <div className="flex-1 relative min-h-[300px]">
-            {wizard.fileName ? (
-              <Viewer3D file={uploadedFile} />
-            ) : (
-              <div className="w-full h-full flex flex-col items-center justify-center">
-                <FileDrop onFileChange={handleFileDrop} />
-              </div>
-            )}
+            <ModelViewer />
 
-            {/* Orientation Advisor */}
-            {wizard.geometryStats && wizard.geometryStats.overhangsDetected && !wizard.shouldRotate90X && (
-              <div className="absolute top-4 left-4 right-4 animate-in slide-in-from-top-4 duration-500">
+            {/* Orientation Advisor Banner */}
+            {orientationAdvice.suggested && !orientationAdvice.dismissed && (
+              <div className="absolute top-4 left-4 right-4 animate-in slide-in-from-top-4 duration-500 z-20">
                 <div className="p-4 bg-primary/20 backdrop-blur-md border border-primary/30 rounded-xl flex items-center justify-between shadow-2xl">
                   <div className="flex items-center gap-3">
                     <Info className="w-5 h-5 text-primary" />
                     <div>
-                      <p className="text-sm font-bold text-white">Dica de Orientação</p>
-                      <p className="text-xs text-white/70">Rotar 90° no eixo X pode reduzir suportes significativamente.</p>
+                      <p className="text-sm font-black text-white italic">💡 Orientação Otimizada</p>
+                      <p className="text-xs text-white/70">Rotar 90° no eixo X pode eliminar suportes. Considerar?</p>
                     </div>
                   </div>
                   <div className="flex gap-2">
                     <button 
-                      onClick={() => updateWizard({ shouldRotate90X: true })}
-                      className="px-4 py-1.5 bg-primary text-white text-xs font-bold rounded-lg"
+                      onClick={() => {
+                        updateWizard({ shouldRotate90X: true })
+                        setOrientationAdvice({ dismissed: true })
+                      }}
+                      className="px-4 py-1.5 bg-primary text-white text-[10px] font-black tracking-widest rounded-lg hover:bg-primary-hover transition-colors shadow-lg"
                     >
                       SIM
                     </button>
                     <button 
-                      className="px-4 py-1.5 bg-white/10 text-white text-xs font-bold rounded-lg hover:bg-white/20"
+                      onClick={() => setOrientationAdvice({ dismissed: true })}
+                      className="px-4 py-1.5 bg-white/10 text-white text-[10px] font-black tracking-widest rounded-lg hover:bg-white/20 transition-colors"
                     >
                       IGNORAR
                     </button>
@@ -146,131 +117,140 @@ function HomeComponent() {
             )}
           </div>
 
-          {/* Extended Stats */}
-          {wizard.geometryStats && (
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <StatCard label="Altura" value={`${wizard.geometryStats.height.toFixed(1)}mm`} />
-              <StatCard label="Volume" value={`${wizard.geometryStats.volume.toFixed(1)}cm³`} />
-              <StatCard label="Área Sup." value={`${wizard.geometryStats.surfaceArea.toFixed(1)}cm²`} />
-              <StatCard 
-                label="Câmara" 
-                value={wizard.geometryStats.height > 100 ? "Recomendada" : "Opcional"} 
-                warning={wizard.geometryStats.height > 150}
-              />
-            </div>
-          )}
+          {/* Extended Stats Card */}
+          <div className="animate-in slide-in-from-bottom-4 duration-500">
+            <StatsCard />
+          </div>
         </div>
 
-        {/* Right Panel: Controls / Results */}
-        <div className="w-full md:w-2/5 p-6 md:p-8 bg-surface border-l border-white/5 overflow-y-auto overflow-x-hidden">
-          {currentResults ? <ResultsPanel /> : <Wizard />}
+        {/* Right Panel: Wizard / Results */}
+        <div className="w-full md:w-[60%] p-6 md:p-10 bg-surface overflow-y-auto custom-scrollbar">
+          {status === 'result' ? <ResultsPanel /> : <Wizard />}
         </div>
       </main>
 
-      {/* Settings Modal */}
-      {showSettings && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in duration-300">
-          <div className="w-full max-w-md bg-surface-raised border border-white/10 rounded-3xl p-8 shadow-2xl">
-            <h2 className="text-xl font-black mb-6 flex items-center gap-2">
-              <Settings className="w-5 h-5 text-primary" />
-              Configurações
-            </h2>
-            <div className="space-y-6">
-              <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">OpenAI API Key</label>
-                <input 
-                  type="password"
-                  value={app.openaiKey || ''}
-                  onChange={(e) => setOpenAIKey(e.target.value)}
-                  placeholder="sk-..."
-                  className="w-full bg-surface border border-white/10 rounded-xl p-4 text-sm outline-none focus:border-primary transition-colors"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Custo por KG (R$)</label>
-                <input 
-                  type="number"
-                  value={app.costPerKg}
-                  onChange={(e) => useStore.getState().setCostPerKg(parseInt(e.target.value) || 0)}
-                  className="w-full bg-surface border border-white/10 rounded-xl p-4 text-sm outline-none focus:border-primary transition-colors"
-                />
-              </div>
-              <button 
-                onClick={() => setShowSettings(false)}
-                className="w-full py-4 bg-primary text-white font-bold rounded-xl hover:bg-primary-glow transition-all"
-              >
-                SALVAR E FECHAR
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* History Drawer */}
-      {showHistory && (
-        <div 
-          className="fixed inset-0 z-50 flex justify-end bg-background/60 backdrop-blur-sm animate-in fade-in duration-300"
-          onClick={() => setShowHistory(false)}
-        >
-          <div 
-            className="w-full max-w-sm h-full bg-surface border-l border-white/10 p-8 shadow-2xl animate-in slide-in-from-right-full duration-500"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between mb-8">
-              <h2 className="text-xl font-black flex items-center gap-2">
-                <History className="w-5 h-5 text-primary" />
-                Histórico
-              </h2>
-              <button onClick={() => setShowHistory(false)} className="text-muted-foreground hover:text-white">
-                <Maximize2 className="w-5 h-5 rotate-45" />
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              {history.length === 0 ? (
-                <div className="py-20 text-center">
-                  <p className="text-muted-foreground text-sm italic">Nenhum projeto recente</p>
-                </div>
-              ) : (
-                history.map((entry) => (
-                  <button
-                    key={entry.id}
-                    onClick={() => {
-                      loadFromHistory(entry)
-                      setShowHistory(false)
-                    }}
-                    className="w-full p-4 bg-surface-raised border border-white/10 rounded-xl hover:border-primary/50 transition-all text-left flex items-center gap-4 group"
-                  >
-                    <div className="w-12 h-12 bg-white/5 rounded-lg flex items-center justify-center overflow-hidden">
-                      {entry.thumbnail ? <img src={entry.thumbnail} alt="" /> : <Box className="w-6 h-6 text-muted-foreground" />}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold truncate group-hover:text-primary transition-colors">{entry.fileName}</p>
-                      <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-tighter">
-                        {entry.printer} • {entry.material} • {new Date(entry.timestamp).toLocaleDateString()}
-                      </p>
-                    </div>
-                  </button>
-                ))
-              )}
-            </div>
-          </div>
-        </div>
-      )}
+      {showSettings && <SettingsModal onClose={() => setShowSettings(false)} />}
+      {showHistory && <HistoryDrawer onClose={() => setShowHistory(false)} />}
     </div>
   )
 }
 
-const StatCard = ({ label, value, warning }: { label: string; value: string; warning?: boolean }) => (
-  <div className={cn(
-    "p-4 rounded-xl border flex flex-col gap-0.5",
-    warning ? "bg-destructive/10 border-destructive/30" : "bg-surface-raised border-white/10"
-  )}>
-    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{label}</span>
-    <span className={cn("text-base font-black tracking-tight", warning ? "text-destructive" : "text-white")}>{value}</span>
-  </div>
-)
+function SettingsModal({ onClose }: { onClose: () => void }) {
+  const { apiKey, setApiKey, costPerKg, setCostPerKg } = useSettingsStore()
+  
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in duration-300">
+      <div className="w-full max-w-md bg-surface-raised border border-white/10 rounded-3xl p-8 shadow-2xl relative overflow-hidden">
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-accent opacity-50" />
+        <button onClick={onClose} className="absolute top-4 right-4 p-2 text-muted hover:text-white transition-colors">
+          <X className="w-5 h-5" />
+        </button>
+        
+        <h2 className="text-xl font-black italic tracking-tighter mb-8 flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
+            <SettingsIcon className="w-4 h-4 text-primary" />
+          </div>
+          Configurações
+        </h2>
 
-const Box = (props: any) => (
-  <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></svg>
-)
+        <div className="space-y-6">
+          <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase tracking-widest text-muted">OpenAI API Key</label>
+            <input 
+              type="password"
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+              placeholder="sk-..."
+              className="w-full bg-surface border border-white/5 rounded-xl p-4 text-sm outline-none focus:border-primary/50 transition-colors font-mono"
+            />
+            <p className="text-[10px] text-muted/50">Sua chave é salva apenas no seu navegador (localStorage).</p>
+          </div>
+          <div className="space-y-2">
+            <label className="text-[10px] font-black uppercase tracking-widest text-muted">Custo por KG (R$)</label>
+            <input 
+              type="number"
+              value={costPerKg}
+              onChange={(e) => setCostPerKg(parseFloat(e.target.value) || 0)}
+              className="w-full bg-surface border border-white/5 rounded-xl p-4 text-sm outline-none focus:border-primary/50 transition-colors font-mono"
+            />
+          </div>
+          <button 
+            onClick={onClose}
+            className="w-full py-4 bg-primary text-white text-[12px] font-black tracking-widest rounded-xl hover:bg-primary-hover transition-all shadow-lg"
+          >
+            SALVAR E FECHAR
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function HistoryDrawer({ onClose }: { onClose: () => void }) {
+  const { history } = useSettingsStore()
+  const { setResults, updateWizard } = useAppStore()
+
+  return (
+    <div 
+      className="fixed inset-0 z-50 flex justify-end bg-background/60 backdrop-blur-sm animate-in fade-in duration-300"
+      onClick={onClose}
+    >
+      <div 
+        className="w-full max-w-sm h-full bg-surface border-l border-white/10 p-8 shadow-2xl animate-in slide-in-from-right-full duration-500 relative"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button onClick={onClose} className="absolute top-4 right-4 p-2 text-muted hover:text-white transition-colors">
+          <X className="w-5 h-5" />
+        </button>
+
+        <h2 className="text-xl font-black italic tracking-tighter mb-8 flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
+            <HistoryIcon className="w-4 h-4 text-primary" />
+          </div>
+          Histórico
+        </h2>
+
+        <div className="space-y-4">
+          {history.length === 0 ? (
+            <div className="py-20 text-center space-y-4">
+              <div className="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center mx-auto">
+                <Box className="w-8 h-8 text-muted/30" />
+              </div>
+              <p className="text-muted text-xs italic">Nenhum projeto recente</p>
+            </div>
+          ) : (
+            history.map((entry) => (
+              <button
+                key={entry.id}
+                onClick={() => {
+                  useAppStore.setState({ 
+                    wizard: entry.wizardState, 
+                    results: entry.results,
+                    status: 'result'
+                  })
+                  onClose()
+                }}
+                className="w-full p-4 bg-surface-raised border border-white/5 rounded-2xl hover:border-primary/50 transition-all text-left flex items-center gap-4 group hover:bg-white/[0.02]"
+              >
+                <div className="w-12 h-12 bg-white/5 rounded-xl flex items-center justify-center overflow-hidden border border-white/5">
+                  <Box className="w-6 h-6 text-muted-foreground group-hover:text-primary transition-colors" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold truncate group-hover:text-primary transition-colors">{entry.fileName}</p>
+                  <p className="text-[10px] text-muted font-black uppercase tracking-tighter flex items-center gap-2">
+                    {entry.printer} <span className="w-1 h-1 bg-white/20 rounded-full" /> {entry.material}
+                  </p>
+                  <p className="text-[9px] text-muted/50 mt-1">{new Date(entry.timestamp).toLocaleDateString()}</p>
+                </div>
+              </button>
+            ))
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const SettingsIconComp = (props: any) => <SettingsIcon {...props} />;
+const HistoryIconComp = (props: any) => <HistoryIcon {...props} />;
+const BoxIconComp = (props: any) => <Box {...props} />;
