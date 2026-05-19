@@ -53,6 +53,7 @@ const initialWizard: WizardState = {
   useCase: "Functional",
   fileName: "",
   fileSize: 0,
+  shouldRotate90X: false,
 };
 
 export const useStore = create<SlicerStore>()(
