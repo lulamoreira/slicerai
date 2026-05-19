@@ -254,6 +254,132 @@ const UsersTab = () => {
   );
 };
 
+const EditUserModal = ({ user, onClose, onSave }: any) => {
+  const [status, setStatus] = useState(user.access_status);
+  const [mode, setMode] = useState(user.api_key_mode || 'personal');
+  const [days, setDays] = useState('30');
+  const [saving, setSaving] = useState(false);
+
+  const handleSave = async () => {
+    setSaving(true);
+    let access_end = user.access_end;
+    if (days && days !== 'current') {
+      const d = new Date();
+      d.setDate(d.getDate() + parseInt(days));
+      access_end = d.toISOString();
+    } else if (days === 'unlimited') {
+      access_end = null;
+    }
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({ 
+        access_status: status,
+        api_key_mode: mode,
+        access_end
+      })
+      .eq('id', user.id);
+
+    if (error) {
+      toast.error('Erro ao salvar: ' + error.message);
+    } else {
+      toast.success('Usuário atualizado!');
+      onSave();
+    }
+    setSaving(false);
+  };
+
+  return (
+    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="w-full max-w-md bg-surface border border-border rounded-[2rem] p-8 shadow-2xl space-y-8 overflow-y-auto max-h-[90vh]">
+        <div className="flex justify-between items-center">
+          <h3 className="text-sm font-black uppercase tracking-widest text-foreground">Editar Acesso</h3>
+          <button onClick={onClose} className="p-2 hover:bg-surface-raised rounded-lg"><X className="w-4 h-4" /></button>
+        </div>
+
+        <div className="space-y-6">
+          <div className="space-y-2">
+            <label className="text-[10px] font-bold uppercase tracking-widest text-muted ml-1">Status de Acesso</label>
+            <div className="grid grid-cols-2 gap-2">
+              {['active', 'pending', 'expired', 'blocked'].map((s) => (
+                <button
+                  key={s}
+                  onClick={() => setStatus(s)}
+                  className={cn(
+                    "py-2.5 rounded-xl text-[9px] font-black uppercase tracking-widest border transition-all",
+                    status === s ? "bg-primary border-primary text-[#0d0d14]" : "bg-surface-raised border-border text-muted hover:border-primary/50"
+                  )}
+                >
+                  {s === 'active' ? 'Ativo' : s === 'pending' ? 'Pendente' : s === 'expired' ? 'Expirado' : 'Bloqueado'}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-[10px] font-bold uppercase tracking-widest text-muted ml-1">Duração do Acesso</label>
+            <select 
+              value={days} 
+              onChange={(e) => setDays(e.target.value)}
+              className="w-full bg-surface-raised border border-border rounded-xl p-3 text-xs font-bold outline-none"
+            >
+              <option value="current">Manter atual</option>
+              <option value="7">7 Dias (Trial)</option>
+              <option value="30">30 Dias (Mensal)</option>
+              <option value="365">365 Dias (Anual)</option>
+              <option value="unlimited">Vitalício / Ilimitado</option>
+            </select>
+          </div>
+
+          <div className="space-y-4 pt-4 border-t border-border">
+            <label className="text-[10px] font-bold uppercase tracking-widest text-primary ml-1">Modo de API Gemini</label>
+            <div className="space-y-3">
+              <button 
+                onClick={() => setMode('personal')}
+                className={cn(
+                  "w-full p-4 rounded-2xl border text-left transition-all flex items-start gap-4",
+                  mode === 'personal' ? "border-primary bg-primary/5 shadow-inner" : "border-border bg-surface-raised hover:border-primary/30"
+                )}
+              >
+                <div className={cn("w-4 h-4 rounded-full border-2 mt-0.5 shrink-0 flex items-center justify-center", mode === 'personal' ? "border-primary" : "border-muted")}>
+                  {mode === 'personal' && <div className="w-2 h-2 rounded-full bg-primary" />}
+                </div>
+                <div>
+                  <p className="text-[10px] font-black uppercase tracking-widest text-foreground">Chave Pessoal</p>
+                  <p className="text-[10px] text-muted-foreground mt-1 leading-relaxed">O usuário configura a própria chave gratuita do Google AI Studio.</p>
+                </div>
+              </button>
+
+              <button 
+                onClick={() => setMode('centralized')}
+                className={cn(
+                  "w-full p-4 rounded-2xl border text-left transition-all flex items-start gap-4",
+                  mode === 'centralized' ? "border-teal-500 bg-teal-500/5 shadow-inner" : "border-border bg-surface-raised hover:border-teal-500/30"
+                )}
+              >
+                <div className={cn("w-4 h-4 rounded-full border-2 mt-0.5 shrink-0 flex items-center justify-center", mode === 'centralized' ? "border-teal-500" : "border-muted")}>
+                  {mode === 'centralized' && <div className="w-2 h-2 rounded-full bg-teal-500" />}
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-foreground">Chave Centralizada</p>
+                    <Badge className="bg-teal-500/10 text-teal-500 border-teal-500/20 text-[7px] font-black tracking-tighter uppercase px-1.5 py-0">Requer Créditos</Badge>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground mt-1 leading-relaxed">O usuário utiliza a chave do administrador. Não precisa configurar nada.</p>
+                </div>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <Button onClick={handleSave} disabled={saving} className="w-full h-12 text-[10px] font-black tracking-widest uppercase">
+          {saving ? 'Salvando...' : 'Salvar Alterações'}
+        </Button>
+      </div>
+    </div>
+  );
+};
+
 const RequestsTab = () => {
   const [requests, setRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
