@@ -16,9 +16,9 @@ export const Route = createRootRouteWithContext()({
       {
         title: 'SlicerAI for Bambu Studio',
       },
-      { title: "Meu Guia 3d" },
-      { property: "og:title", content: "Meu Guia 3d" },
-      { name: "twitter:title", content: "Meu Guia 3d" },
+      { title: "SliceAIBambu" },
+      { property: "og:title", content: "SliceAIBambu" },
+      { name: "twitter:title", content: "SliceAIBambu" },
       { name: "description", content: "AI Print Optimizer generates optimized Bambu Studio slicer settings for 3D prints." },
       { property: "og:description", content: "AI Print Optimizer generates optimized Bambu Studio slicer settings for 3D prints." },
       { name: "twitter:description", content: "AI Print Optimizer generates optimized Bambu Studio slicer settings for 3D prints." },
