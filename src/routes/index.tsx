@@ -189,7 +189,7 @@ function HomeComponent() {
                 <input 
                   type="number"
                   value={app.costPerKg}
-                  onChange={(e) => setOpenAIKey(e.target.value)} // Wait, this is wrong, should be setCostPerKg
+                  onChange={(e) => useStore.getState().setCostPerKg(parseInt(e.target.value) || 0)}
                   className="w-full bg-surface border border-white/10 rounded-xl p-4 text-sm outline-none focus:border-primary transition-colors"
                 />
               </div>
