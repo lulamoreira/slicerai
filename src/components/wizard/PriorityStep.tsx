@@ -1,7 +1,7 @@
 import React from "react";
 import { useAppStore, useSettingsStore } from "../../store/useAppStore";
 import { cn } from "../../lib/utils";
-import { Eye, Shield, Zap, Settings, Target, Info, Sparkles, Layers } from "lucide-react";
+import { Eye, Shield, Zap, Settings, Target, Info, Sparkles, Layers, Droplets, Box } from "lucide-react";
 import { Purpose } from "../../lib/types";
 
 const USE_CASES: { id: Purpose; name: string; icon: any; desc: string }[] = [
@@ -11,8 +11,6 @@ const USE_CASES: { id: Purpose; name: string; icon: any; desc: string }[] = [
   { id: "Alta Resistência", name: "Alta Resistência", icon: Target, desc: "Máximo infill e paredes grossas para uso extremo." },
   { id: "Velocidade", name: "Velocidade", icon: Zap, desc: "Prioriza tempo e eficiência em protótipos rápidos." },
 ];
-
-const Droplets = (props: any) => <Zap {...props} />; // Placeholder
 
 export const PriorityStep: React.FC = () => {
   const { wizard, updateWizard } = useAppStore();
@@ -120,13 +118,13 @@ export const PriorityStep: React.FC = () => {
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                         <span className="text-[10px] font-black uppercase tracking-widest text-white">Ironing (Topo Plano)</span>
-                        <Info className="w-3 h-3 text-muted/30" title="Alisamento térmico da camada superior" />
+                        <Info className="w-3 h-3 text-muted/30" />
                     </div>
                     <button
                         onClick={() => updateWizard({ ironing: !wizard.ironing })}
                         className={cn(
                             "w-10 h-5 rounded-full relative transition-colors",
-                            wizard.ironing ? "bg-primary" : "bg-white/5"
+                            wizard.ironing ? "bg-primary shadow-[0_0_10px_rgba(0,200,180,0.4)]" : "bg-white/5"
                         )}
                         >
                         <div className={cn(
@@ -165,7 +163,7 @@ export const PriorityStep: React.FC = () => {
                         onClick={() => updateWizard({ supportEnabled: !wizard.supportEnabled })}
                         className={cn(
                             "w-10 h-5 rounded-full relative transition-colors",
-                            wizard.supportEnabled ? "bg-primary" : "bg-white/5"
+                            wizard.supportEnabled ? "bg-primary shadow-[0_0_10px_rgba(0,200,180,0.4)]" : "bg-white/5"
                         )}
                         >
                         <div className={cn(
