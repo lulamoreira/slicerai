@@ -36,30 +36,63 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
   const [testResult, setTestResult] = useState<'idle' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState('');
 
+  async function testGeminiConnection(apiKey: string): Promise<{ ok: boolean; message: string }> {
+    if (!apiKey || apiKey.trim().length < 20) {
+      return { ok: false, message: 'Chave inválida — deve começar com "AIza..."' }
+    }
+
+    try {
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey.trim()}`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: 'hi' }] }],
+            generationConfig: { maxOutputTokens: 1 }
+          })
+        }
+      )
+
+      if (response.ok) {
+        return { ok: true, message: '✅ Conectado com sucesso!' }
+      }
+
+      const error = await response.json().catch(() => ({}))
+      const msg = error?.error?.message || response.statusText
+
+      if (response.status === 400) return { ok: false, message: `Chave inválida: ${msg}` }
+      if (response.status === 403) return { ok: false, message: 'Acesso negado — verifique se a API está ativa no Google AI Studio' }
+      if (response.status === 429) return { ok: false, message: '⚠️ Limite atingido — aguarde alguns minutos' }
+
+      return { ok: false, message: `Erro ${response.status}: ${msg}` }
+
+    } catch (e: any) {
+      if (e?.message?.includes('fetch')) {
+        return { ok: false, message: 'Sem conexão com a internet ou CORS bloqueado' }
+      }
+      return { ok: false, message: `Erro inesperado: ${e?.message}` }
+    }
+  }
+
   const handleTest = async () => {
     if (!apiKey) {
-        toast.error("Insira uma chave API primeiro");
-        return;
+      toast.error("Insira uma chave API primeiro");
+      return;
     }
     setTesting(true);
     setTestResult('idle');
-    const result = await testConnectionDetailed(apiKey);
+    
+    const result = await testGeminiConnection(apiKey);
+    
     setTesting(false);
-    if (result === "ok") {
+    if (result.ok) {
       setTestResult('success');
-      toast.success("✅ Conectado");
-    } else if (result === "rate_limited") {
-      setTestResult('error');
-      setErrorMessage("Limite atingido");
-      toast.error("⚠️ Limite atingido — aguarde alguns minutos");
-    } else if (result === "invalid") {
-      setTestResult('error');
-      setErrorMessage("Chave inválida");
-      toast.error("❌ Chave inválida");
+      toast.success(result.message);
     } else {
       setTestResult('error');
-      setErrorMessage("Erro de rede");
-      toast.error("❌ Erro na conexão");
+      setErrorMessage(result.message);
+      toast.error(result.message);
     }
   };
 
