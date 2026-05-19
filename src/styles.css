@@ -159,3 +159,50 @@
   );
   animation: shimmer 2s infinite;
 }
+
+/* ============================================================
+   Light mode contrast overrides
+   Many components use hardcoded white/black utility classes.
+   In light mode, remap them to legible tokens.
+   ============================================================ */
+:root:not(.dark) {
+  color-scheme: light;
+}
+
+:root:not(.dark) .text-white { color: var(--foreground) !important; }
+:root:not(.dark) .text-muted { color: var(--muted) !important; }
+
+:root:not(.dark) .bg-white\/5  { background-color: var(--surface-raised) !important; }
+:root:not(.dark) .bg-white\/10 { background-color: var(--surface-raised) !important; }
+:root:not(.dark) .bg-black\/40 { background-color: var(--surface-raised) !important; }
+
+:root:not(.dark) .border-white\/5,
+:root:not(.dark) .border-white\/10,
+:root:not(.dark) .border-white\/20 {
+  border-color: var(--border) !important;
+}
+
+:root:not(.dark) .ring-white\/5,
+:root:not(.dark) .ring-white\/10 {
+  --tw-ring-color: var(--border) !important;
+}
+
+:root:not(.dark) .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+}
+:root:not(.dark) .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+/* Form inputs in light mode */
+:root:not(.dark) input,
+:root:not(.dark) select,
+:root:not(.dark) textarea {
+  background-color: var(--surface-raised);
+  border-color: var(--border);
+  color: var(--foreground);
+}
+
+:root:not(.dark) label {
+  color: var(--foreground);
+}
