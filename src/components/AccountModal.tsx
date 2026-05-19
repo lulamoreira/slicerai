@@ -2,6 +2,7 @@ import React from "react";
 import { useAuthStore } from "../store/useAuthStore";
 import { X, User, Mail, Calendar, Key, ShieldCheck, CheckCircle2 } from "lucide-react";
 import { cn } from "../lib/utils";
+import { Button } from "./ui/button";
 
 interface AccountModalProps {
   onClose: () => void;
