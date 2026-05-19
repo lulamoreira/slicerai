@@ -154,16 +154,18 @@ const NavItem = ({ icon, label, active, onClick, badge, disabled }: any) => (
 const UsersTab = () => {
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedUser, setSelectedUser] = useState<any>(null);
+
+  const fetchUsers = async () => {
+    const { data } = await supabase
+      .from('profiles')
+      .select('*')
+      .order('created_at', { ascending: false });
+    setUsers(data || []);
+    setLoading(false);
+  };
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      const { data } = await supabase
-        .from('profiles')
-        .select('*')
-        .order('created_at', { ascending: false });
-      setUsers(data || []);
-      setLoading(false);
-    };
     fetchUsers();
   }, []);
 

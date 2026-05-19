@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useSettingsStore } from "../../store/useAppStore";
+import { useAuthStore } from "../../store/useAuthStore";
 import { 
   X, 
   Settings, 

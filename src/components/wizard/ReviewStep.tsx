@@ -1,6 +1,7 @@
 import React from "react";
 import { useAppStore, useSettingsStore } from "../../store/useAppStore";
 import { generateSettings } from "../../lib/ai";
+import { useAuthStore } from "../../store/useAuthStore";
 import { 
   Sparkles, Printer, Box, Layers, Play, CheckCircle2,
   Package, Grid3x3, Target, Scale, Clock, Triangle, Palette, Wrench, Settings as SettingsIcon
@@ -10,6 +11,7 @@ import { MATERIAL_DENSITIES } from "../../lib/geometry";
 
 export const ReviewStep: React.FC = () => {
   const { wizard, setResults, status, geometry } = useAppStore();
+  const { profile } = useAuthStore();
   const { apiKey, addToHistory } = useSettingsStore();
 
   // Reactive weight: prefer live geometry from store; fallback to PLA density placeholder.
@@ -31,14 +33,15 @@ export const ReviewStep: React.FC = () => {
   };
 
   const handleGenerate = async () => {
-    if (!apiKey) {
+    const isCentralized = profile?.api_key_mode === 'centralized';
+    if (!apiKey && !isCentralized) {
       openSettings();
       return;
     }
 
     useAppStore.setState({ status: 'generating' });
     try {
-      const results = await generateSettings(apiKey, wizard as any);
+      const results = await generateSettings(wizard as any, profile);
       setResults(results);
 
       let thumbnail = "";
