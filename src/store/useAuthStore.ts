@@ -61,6 +61,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       
       let profileData = data as unknown as Profile;
 
+      // Normalize role to lowercase
+      if (profileData.role) {
+        profileData.role = profileData.role.toLowerCase() as 'admin' | 'user';
+      }
+
       // Ensure full_name is populated from metadata or email as fallback
       if (!profileData.full_name) {
         profileData.full_name = user.user_metadata?.full_name || user.email || null;
@@ -73,7 +78,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           .eq('id', user.id);
       }
 
-      console.log('Profile role:', profileData?.role);
+      console.log('Fetched profile role:', profileData?.role);
 
       // Check for automatic expiry
       if (profileData.access_status === 'active' && profileData.access_end && new Date(profileData.access_end) < new Date()) {
