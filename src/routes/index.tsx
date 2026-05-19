@@ -106,13 +106,13 @@ function HomeComponent() {
 
       <main className="flex-1 flex flex-col md:flex-row h-[calc(100vh-64px)] overflow-hidden">
         {/* Left Panel: Preview */}
-        <div className="w-full md:w-[40%] p-4 md:p-6 flex flex-col gap-4 bg-[#0d0d14] relative border-r border-white/5">
-          <div className="flex-1 relative min-h-[300px]">
+        <div className="w-full md:w-[40%] h-[240px] md:h-auto p-4 md:p-6 flex flex-col gap-4 bg-[#0d0d14] relative border-r border-white/5 shrink-0">
+          <div className="flex-1 relative min-h-[160px]">
             <ModelViewer />
 
-            {/* Orientation Advisor Banner */}
+            {/* Orientation Advisor Banner — desktop only */}
             {orientationAdvice.suggested && !orientationAdvice.dismissed && (
-              <div className="absolute top-4 left-4 right-4 animate-in slide-in-from-top-4 duration-500 z-20">
+              <div className="hidden md:block absolute top-4 left-4 right-4 animate-in slide-in-from-top-4 duration-500 z-20">
                 <div className="p-4 bg-primary/20 backdrop-blur-md border border-primary/30 rounded-xl flex items-center justify-between shadow-2xl">
                   <div className="flex items-center gap-3">
                     <Info className="w-5 h-5 text-primary" />
