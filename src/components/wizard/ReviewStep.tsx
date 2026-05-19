@@ -1,12 +1,12 @@
 import React from "react";
-import { useAppStore, useSettingsStore } from "../store/useAppStore";
-import { generateSettings } from "../lib/ai";
+import { useAppStore, useSettingsStore } from "../../store/useAppStore";
+import { generateSettings } from "../../lib/ai";
 import { Sparkles, Printer, Box, Layers, Play } from "lucide-react";
-import { cn } from "../lib/utils";
-import { MATERIAL_DENSITIES } from "../lib/geometry";
+import { cn } from "../../lib/utils";
+import { MATERIAL_DENSITIES } from "../../lib/geometry";
 
 export const ReviewStep: React.FC = () => {
-  const { wizard, setResults, setStatus, status, addToHistory } = useAppStore();
+  const { wizard, setResults, setStatus, status } = useAppStore();
   const { apiKey } = useSettingsStore();
   
   const estimatedWeight = wizard.geometryStats 
