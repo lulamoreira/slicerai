@@ -32,30 +32,34 @@ export const Dropzone: React.FC = () => {
   });
 
   return (
-    <div className="w-full h-full flex items-center justify-center p-6 bg-background">
+    <div className="w-full h-full flex items-center justify-center p-6 bg-background dropzone-radial-gradient">
       <div
         {...getRootProps()}
         className={cn(
-          "relative w-full max-w-2xl aspect-video rounded-3xl border-2 border-dashed flex flex-col items-center justify-center gap-6 cursor-pointer transition-all duration-300",
+          "relative w-full max-w-2xl min-h-[400px] aspect-video rounded-[2rem] border-2 border-dashed flex flex-col items-center justify-center gap-6 cursor-pointer transition-all duration-300",
           isDragActive 
-            ? "border-primary bg-primary/5 scale-[1.02]" 
-            : "border-white/10 hover:border-primary/50 hover:bg-white/5"
+            ? "border-primary/80 bg-primary/5 scale-[1.02]" 
+            : "border-primary/35 hover:border-primary/80 hover:bg-primary/5"
         )}
       >
         <input {...getInputProps()} />
         
-        <div className="w-24 h-24 bg-surface-raised rounded-3xl flex items-center justify-center shadow-2xl animate-bounce">
-          <Box className={cn("w-12 h-12 transition-colors", isDragActive ? "text-primary" : "text-muted")} />
-        </div>
+        <Box size={64} color="var(--primary)" />
 
         <div className="text-center space-y-2">
-          <p className="text-2xl font-black text-white">
+          <p className="text-2xl font-bold text-foreground mt-4">
             {isDragActive ? "Solte para analisar" : "Arraste seu arquivo aqui"}
           </p>
-          <p className="text-muted font-medium">
-            Suporte para arquivos <span className="text-white">.STL</span> ou <span className="text-white">.3MF</span>
+          <p className="text-muted text-sm">
+            Suporte para arquivos <span className="text-primary font-bold">.STL</span> ou <span className="text-primary font-bold">.3MF</span>
           </p>
+          
+          <button className="border border-primary text-primary bg-transparent rounded-full px-5 py-1.5 text-sm mt-3 hover:bg-primary-subtle transition-colors">
+            ou clique para selecionar
+          </button>
         </div>
+      </div>
+    </div>
 
         {error && (
           <div className="absolute -bottom-16 flex items-center gap-2 text-destructive font-bold animate-in fade-in slide-in-from-top-2">

@@ -22,13 +22,13 @@ export const Navbar: React.FC<NavbarProps> = ({ onShowSettings, onShowHistory })
   const t = useTranslation(language);
 
   return (
-    <header className="h-16 border-b border-white/5 bg-background/50 backdrop-blur-xl sticky top-0 z-40 px-6 flex items-center justify-between">
+    <header className="h-[52px] border-b border-border bg-surface sticky top-0 z-40 px-6 flex items-center justify-between">
       <div className="flex items-center gap-3">
-        <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center shadow-[0_0_15px_rgba(0,200,180,0.3)]">
-          <Hexagon className="w-5 h-5 text-white fill-white/20" />
+        <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+          <Hexagon className="w-5 h-5 text-[#0d0d14] fill-[#0d0d14]/20" />
         </div>
-        <h1 className="font-black italic tracking-tighter text-xl text-white hidden sm:block">
-          SlicerAI <span className="text-primary">for Bambu</span>
+        <h1 className="font-extrabold tracking-tight text-lg text-foreground hidden sm:block">
+          SlicerAI <span className="text-primary font-normal italic">for Bambu</span>
         </h1>
       </div>
 
