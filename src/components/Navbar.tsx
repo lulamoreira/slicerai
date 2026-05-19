@@ -152,7 +152,6 @@ export const Navbar: React.FC<NavbarProps> = ({ onShowSettings, onShowHistory })
                 <div className="fixed inset-0 z-40" onClick={() => setShowDropdown(false)} />
                 <div className="absolute right-0 mt-3 w-64 bg-surface border border-border rounded-2xl shadow-2xl z-50 p-2 animate-in fade-in slide-in-from-top-4 duration-300">
                   <div className="px-4 py-3 border-b border-border mb-2">
-                    {console.log('Rendering dropdown with role:', profile?.role)}
                     <p className="text-xs font-bold text-foreground truncate">{profile?.full_name || user.email}</p>
                     {profile?.full_name && profile.full_name !== user.email && (
                       <p className="text-[10px] text-muted font-medium truncate mt-0.5">{user.email}</p>
