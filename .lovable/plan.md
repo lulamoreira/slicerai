@@ -1,89 +1,91 @@
-# SlicerAI for Bambu Studio
+# SlicerAI for Bambu Studio — Enhanced Plan
 
-A dark-themed web app that analyzes 3D models and recommends optimized Bambu Studio slicer settings via AI.
+A modern web app that analyzes 3D models and recommends optimized Bambu Studio slicer settings via AI.
 
-## User flow
+## User Flow & UI Structure
 
-1. Land on app → drag/drop or pick a `.stl` / `.3mf` file
-2. Left panel renders a 3D preview with orbit controls and detected geometry stats
-3. Right panel walks through a 4-step wizard (Printer → Material/Color → Build Plate → Priority/Use-case)
-4. On submit, the app sends geometry + answers to OpenAI and shows a structured settings panel with reasoning
-5. User copies settings to clipboard or exports a `.3mf` profile-notes text file
+### Layout
+- **Topbar**: Logo, Moon/Sun toggle, PT-BR/EN toggle, Histórico (Drawer), Settings (Modal).
+- **Left Panel**: 3D Preview (R3F) + Orientation Advisor banner + Extended Geometry Stats Card.
+- **Right Panel**: 5-Step Wizard or 4-Tab Results View.
 
-## Layout
+### 1. File Upload & 3D Preview
+- **Dropzone**: Supports `.stl` and `.3mf`.
+- **3D Viewer**: Built with `@react-three/fiber` and `@react-three/drei`. Orbit controls, grid, axes.
+- **Orientation Advisor**: Banner if 90° X-rotation reduces overhang angle below 45°.
+- **Stats Card**:
+  - Height (mm), Volume (cm³), Surface Area (cm²).
+  - Estimated Weight (g): `volume * materialDensity`.
+  - Overhang angle detections.
+  - Warnings: Thin walls, bridging, "Requer câmara" (Chamber required) badge.
 
-```text
-+---------------------------------------------------+
-| Topbar: SlicerAI · Settings (API key) · GitHub    |
-+----------------------+----------------------------+
-| 3D Preview           | Wizard / Results           |
-| (orbit, grid, axes)  | Step 1..4 → Analysis panel |
-|                      |                            |
-| Geometry stats card  | Copy / Export buttons      |
-+----------------------+----------------------------+
+### 2. 5-Step Wizard
+- **Step 1 — Printer & Nozzle**:
+  - Radios: X1C, X1E, P1S, P1P, A1, A1 Mini.
+  - Nozzle: 0.2, 0.4 (default), 0.6, 0.8mm.
+- **Step 2 — Material & Color (AMS)**:
+  - Toggle: "Tem AMS acoplado?".
+  - If NO: Material (PLA, PETG, etc.), Variant, Color Picker.
+  - If YES: Slots (4, 8, 12, 16), per-slot material/color/part.
+  - Flush strategy: Automático / Conservador / Agressivo.
+  - Wipe tower toggle (default ON).
+- **Step 3 — Build Plate**: Cool/PEI, Engineering, High Temp, Textured PEI. Tooltips for material compatibility.
+- **Step 4 — Priority & Use-case**: Slider (Quality vs Speed) + Type (Decorative, Functional, etc.).
+- **Step 5 — Review**:
+  - Full summary of selections.
+  - Time estimate range based on volume + layer height.
+  - "Gerar Configurações com IA" button with animated shimmer.
+
+### 3. AI Analysis & Results (4 Tabs)
+- **OpenAI Integration**: calls GPT-4o with geometry metadata + wizard context.
+- **JSON Validation & Repair**: Brace-balancer for truncation + Zod schema validation.
+- **Tab 1 — Resumo Visual**: Grid of cards for Quality, Strength, Support, Temp, Speed, AMS, Estimates.
+- **Tab 2 — Configurações**: Monospace key=value view. Copy buttons per section + "Copiar Tudo".
+- **Tab 3 — Explicação IA**: Cards per topic (reasons for layer height, infill, etc.).
+- **Tab 4 — Checklist**: Pre-print items (IPA clean, dry filament) + AI-suggested extra items.
+- **Footer**: Profile name suggestion copy field.
+
+### 4. Persistence & Sharing
+- **History**: LocalStorage (last 5 entries). Includes 3D thumbnail and results.
+- **Share**: Base64 JSON in URL `?cfg=`. Rehydrates state on load.
+
+## Technical Details
+
+### State Management
+- `zustand` for wizard state, history, and settings.
+- `i18next` or simple object-based i18n for PT-BR/EN.
+
+### Geometry Engine
+- Mesh volume, surface area, and overhang analysis using standard Three.js geometry attributes.
+- materialDensity map for live weight calculation.
+
+### Design Tokens
+- **Background**: `#0d0d14`
+- **Surface**: `#161622` (Card), `#1e1e2e` (Elevated)
+- **Accent**: `#00ADB5` / `#00c8b4`
+- **Primary Glow**: `#00e5ce`
+- **Theme**: Dark (default) / Light.
+
+### AI Schema (Zod)
+```typescript
+{
+  quality: { layer_height: number, first_layer_height: number, seam_position: string, ironing: boolean },
+  strength: { infill_percent: number, infill_pattern: string, wall_loops: number, top_bottom_layers: number },
+  support: { enabled: boolean, type: string, threshold_angle: number, reason: string },
+  temperatures: { nozzle: number, bed: number, chamber: number },
+  speed: { print: number, first_layer: number, travel: number },
+  estimates: { time: string, filament_g: number, filament_m: number, filament_per_color: number[], cost_brl: number, chamber_temp_required: boolean },
+  advanced: { elephant_foot_compensation: number, enable_overhang_speed: boolean, bridge_speed: number },
+  explanation: { topics: Record<string, string>, warnings: string[], pre_print_checklist_extra: string[] },
+  profile_name_suggestion: string
+}
 ```
 
-Mobile: panels stack vertically, preview collapses to a fixed-height card on top.
+## Implementation Phases
 
-## Features
-
-### File upload + 3D preview
-- Dropzone accepting `.stl` and `.3mf` (3mf treated as zip → extract first model mesh)
-- Three.js scene: model centered + auto-framed, OrbitControls, grid, build-plate footprint sized to selected printer
-- Geometry analysis (client-side, on the loaded mesh):
-  - Height (mm) from bounding box
-  - Volume (cm³) via signed-tetra sum
-  - Overhang area: faces whose normal angle vs. -Z exceeds 45°
-  - Thin walls: heuristic via inward ray sampling (distance < 2× nozzle)
-  - Bridging: horizontal downward faces with no support below
-- Stats card under preview shows the numbers + small badges (e.g. "Overhangs: 12%")
-
-### 4-step wizard
-1. Printer — radio cards: X1 Carbon, X1E, P1S, P1P, A1, A1 Mini (each carries build volume + nozzle defaults)
-2. Material — material dropdown (PLA, PETG, ABS, ASA, TPU, PA/Nylon, PC, PLA-CF, PETG-CF, PA-CF), variant sub-dropdown (Standard, Matte, Silk, Galaxy, Glow, HF), color picker
-3. Build plate — Cool Plate/PEI, Engineering, High Temp, Textured PEI; tooltip lists compatible materials and warns on mismatch
-4. Priority slider (Quality ↔ Speed, 0–100) + use-case (Decorative, Functional, Flexible, High Strength)
-
-Wizard uses a stepper with Back/Next, validates each step, and persists state in React context.
-
-### AI analysis panel
-- Sends geometry summary + wizard answers to OpenAI (GPT-4o) with a system prompt requesting strict JSON
-- JSON schema groups settings: Quality, Strength, Support, Temperatures, Speed, Estimates, plus `explanation` string
-- UI renders one card per group with labeled fields; explanation shown as a highlighted paragraph
-- Loading skeleton + retry on failure; surfaces 401/429 with clear messages
-
-### Export
-- "Copy settings" → formatted plain-text block (key: value per line, grouped by section)
-- "Export .3mf profile notes" → downloads a `.txt` file with the same block plus a header noting model name, printer, material
-
-### Settings modal
-- Input for OpenAI API key, stored in `localStorage` only
-- Note: key never leaves browser, calls go directly to `api.openai.com`
-
-## Design tokens
-
-- Background `#1a1a2e`, surface `#16213e`, accent `#00ADB5`
-- Secondary text `#a8b2c1`, success `#3ddc97`, warning `#ffb454`, danger `#ff5c7a`
-- Inter for UI, JetBrains Mono for numeric stats
-- Rounded-xl cards, subtle 1px borders in `rgba(255,255,255,0.06)`, soft cyan glow on primary buttons
-
-## Technical details
-
-- Stack: React + Vite + TypeScript, Tailwind, Three.js, `three-stdlib` for `STLLoader` and `OrbitControls`, `fflate` for 3MF unzip, `zustand` for wizard/result state, `lucide-react` icons
-- Geometry analysis runs in a Web Worker to keep UI responsive on large meshes
-- OpenAI call: `fetch('https://api.openai.com/v1/chat/completions')` with `response_format: { type: 'json_object' }`, model `gpt-4o`; key read from localStorage
-- No backend, no Lovable Cloud needed
-- File structure:
-  - `src/components/Preview/` — Three canvas, stats card
-  - `src/components/Wizard/` — Step1..Step4, Stepper
-  - `src/components/Results/` — SettingCard, ExplanationBlock, ExportBar
-  - `src/lib/geometry.ts` — analysis helpers
-  - `src/lib/ai.ts` — OpenAI client + prompt + schema
-  - `src/lib/printers.ts`, `materials.ts`, `plates.ts` — static catalogs
-  - `src/store/wizard.ts` — zustand store
-
-## Out of scope (v1)
-
-- Actually generating a sliced `.3mf` file (we export notes only)
-- Account system / saving past analyses
-- Multi-object plates
+1.  **Phase 1: Foundation**: Setup Vite, Tailwind, i18n, and basic layout components (Topbar, Modal).
+2.  **Phase 2: 3D Engine**: Implement File Upload, Three.js viewer, and geometry analysis worker.
+3.  **Phase 3: Wizard**: Build the 5-step UI with validation and AMS logic.
+4.  **Phase 4: AI Logic**: OpenAI client, JSON repair, prompt engineering, and Share/History features.
+5.  **Phase 5: Results View**: 4-tab dashboard with copy/export and profile suggester.
+6.  **Phase 6: Polish**: Theme toggle, animation refinement (shimmer), and mobile responsiveness.
