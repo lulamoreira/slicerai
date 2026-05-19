@@ -8,6 +8,7 @@ interface Profile {
   full_name: string | null;
   role: 'admin' | 'user';
   access_status: 'active' | 'pending' | 'expired' | 'blocked';
+  api_key_mode: 'personal' | 'centralized';
   access_type: string;
   access_start: string;
   access_end: string | null;

@@ -1,6 +1,7 @@
 import React from "react";
 import { useAppStore, useSettingsStore } from "../../store/useAppStore";
 import { generateSettings } from "../../lib/ai";
+import { useAuthStore } from "../../store/useAuthStore";
 import { 
   Sparkles, Printer, Box, Layers, Play, CheckCircle2,
   Package, Grid3x3, Target, Scale, Clock, Triangle, Palette, Wrench, Settings as SettingsIcon
@@ -10,6 +11,7 @@ import { MATERIAL_DENSITIES } from "../../lib/geometry";
 
 export const ReviewStep: React.FC = () => {
   const { wizard, setResults, status, geometry } = useAppStore();
+  const { profile } = useAuthStore();
   const { apiKey, addToHistory } = useSettingsStore();
 
   // Reactive weight: prefer live geometry from store; fallback to PLA density placeholder.
@@ -31,14 +33,15 @@ export const ReviewStep: React.FC = () => {
   };
 
   const handleGenerate = async () => {
-    if (!apiKey) {
+    const isCentralized = profile?.api_key_mode === 'centralized';
+    if (!apiKey && !isCentralized) {
       openSettings();
       return;
     }
 
     useAppStore.setState({ status: 'generating' });
     try {
-      const results = await generateSettings(apiKey, wizard as any);
+      const results = await generateSettings(wizard as any, profile);
       setResults(results);
 
       let thumbnail = "";
@@ -110,7 +113,7 @@ export const ReviewStep: React.FC = () => {
       </div>
 
       <div className="space-y-4">
-        {!apiKey && (
+        {(!apiKey && profile?.api_key_mode !== 'centralized') && (
           <div className="p-3 bg-[rgba(255,180,84,0.1)] border border-[rgba(255,180,84,0.3)] rounded-lg flex items-center justify-between gap-3">
             <span className="text-[0.85rem] font-medium text-warning">
               ⚠️ Configure sua chave Gemini 2.0 Flash nas ⚙️ Configurações para continuar
@@ -126,12 +129,12 @@ export const ReviewStep: React.FC = () => {
 
         <button
           onClick={handleGenerate}
-          disabled={isGenerating || !apiKey}
+          disabled={isGenerating || (!apiKey && profile?.api_key_mode !== 'centralized')}
           className={cn(
             "w-full py-10 rounded-xl flex flex-col items-center justify-center gap-3 transition-all relative overflow-hidden group",
             isGenerating
               ? "bg-surface-raised cursor-wait"
-              : !apiKey
+              : (!apiKey && profile?.api_key_mode !== 'centralized')
                 ? "bg-surface-raised opacity-[0.35] cursor-not-allowed pointer-events-none"
                 : "bg-primary text-[#0d0d14] hover:bg-primary-hover shadow-[var(--primary-glow)]"
           )}

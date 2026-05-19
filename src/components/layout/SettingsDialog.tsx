@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { useSettingsStore } from "../../store/useAppStore";
+import { useAuthStore } from "../../store/useAuthStore";
 import { 
   X, 
   Settings, 
@@ -132,61 +133,74 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
                     <span className="text-[8px] font-bold uppercase tracking-widest">Conexão Segura</span>
                 </div>
             </div>
-            <div className="flex gap-3">
-                <div className="relative flex-1">
-                    <input 
-                    type={showKey ? "text" : "password"}
-                    value={apiKey}
-                    onChange={(e) => {
-                      const newKey = e.target.value;
-                      setApiKey(newKey);
-                      // Force sync to localStorage happens via persist middleware, 
-                      // but we ensure the local state is updated for the Test button.
-                    }}
-                    placeholder="AIza..."
-                    className="w-full bg-surface-raised border border-border-strong rounded-xl p-3.5 text-xs font-mono font-bold outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-foreground pr-12"
-                    />
+
+            {useAuthStore.getState().profile?.api_key_mode === 'centralized' ? (
+              <div className="p-4 bg-success/10 border border-success/20 rounded-xl flex items-start gap-3">
+                <CheckCircle2 className="w-5 h-5 text-success shrink-0 mt-0.5" />
+                <div className="space-y-1">
+                  <p className="text-[11px] font-bold text-success uppercase tracking-wider">Modo Centralizado Ativo</p>
+                  <p className="text-[10px] text-success/80 leading-relaxed font-medium">
+                    Você está usando a chave mestre do administrador. Nenhuma configuração pessoal é necessária.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="flex gap-3">
+                    <div className="relative flex-1">
+                        <input 
+                        type={showKey ? "text" : "password"}
+                        value={apiKey}
+                        onChange={(e) => {
+                          const newKey = e.target.value;
+                          setApiKey(newKey);
+                        }}
+                        placeholder="AIza..."
+                        className="w-full bg-surface-raised border border-border-strong rounded-xl p-3.5 text-xs font-mono font-bold outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-foreground pr-12"
+                        />
+                        <button 
+                            onClick={() => setShowKey(!showKey)}
+                            className="absolute right-4 top-1/2 -translate-y-1/2 text-muted hover:text-primary transition-colors"
+                        >
+                            {showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </button>
+                    </div>
                     <button 
-                        onClick={() => setShowKey(!showKey)}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-muted hover:text-primary transition-colors"
+                        onClick={handleTest}
+                        disabled={testing}
+                        className={cn(
+                            "px-6 rounded-xl text-[10px] font-bold tracking-widest transition-all shadow-sm border shrink-0",
+                            testResult === 'success' 
+                                ? "bg-success/10 border-success/20 text-success" 
+                                : testResult === 'error'
+                                ? "bg-destructive/10 border-destructive/20 text-destructive"
+                                : "bg-transparent border-border-strong text-foreground hover:bg-surface-hover hover:border-primary hover:text-primary"
+                        )}
                     >
-                        {showKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        {testing ? (
+                            <div className="w-4 h-4 border-2 border-primary/20 border-t-primary rounded-full animate-spin mx-auto" />
+                        ) : testResult === 'success' ? (
+                            <CheckCircle2 className="w-4 h-4" />
+                        ) : (
+                            language === 'pt-BR' ? 'TESTAR' : 'TEST'
+                        )}
                     </button>
                 </div>
-                <button 
-                    onClick={handleTest}
-                    disabled={testing}
-                    className={cn(
-                        "px-6 rounded-xl text-[10px] font-bold tracking-widest transition-all shadow-sm border shrink-0",
-                        testResult === 'success' 
-                            ? "bg-success/10 border-success/20 text-success" 
-                            : testResult === 'error'
-                            ? "bg-destructive/10 border-destructive/20 text-destructive"
-                            : "bg-transparent border-border-strong text-foreground hover:bg-surface-hover hover:border-primary hover:text-primary"
-                    )}
+                <a
+                  href="https://aistudio.google.com/apikey"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-[10px] font-bold tracking-widest text-primary hover:underline px-1"
                 >
-                    {testing ? (
-                        <div className="w-4 h-4 border-2 border-primary/20 border-t-primary rounded-full animate-spin mx-auto" />
-                    ) : testResult === 'success' ? (
-                        <CheckCircle2 className="w-4 h-4" />
-                    ) : (
-                        language === 'pt-BR' ? 'TESTAR' : 'TEST'
-                    )}
-                </button>
-            </div>
-            <a
-              href="https://aistudio.google.com/apikey"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-[10px] font-bold tracking-widest text-primary hover:underline px-1"
-            >
-              {language === 'pt-BR' ? 'OBTER CHAVE GRÁTIS' : 'GET FREE KEY'} <ExternalLink className="w-3 h-3" />
-            </a>
-            <p className="text-[9px] text-muted font-bold uppercase tracking-widest px-2 leading-relaxed italic opacity-50">
-                {language === 'pt-BR' 
-                    ? "Obtenha sua chave gratuita em aistudio.google.com/apikey. Não é necessário cartão de crédito. Sua chave é salva localmente." 
-                    : "Get your free key at aistudio.google.com/apikey. No credit card required. Your key is saved locally."}
-            </p>
+                  {language === 'pt-BR' ? 'OBTER CHAVE GRÁTIS' : 'GET FREE KEY'} <ExternalLink className="w-3 h-3" />
+                </a>
+                <p className="text-[9px] text-muted font-bold uppercase tracking-widest px-2 leading-relaxed italic opacity-50">
+                    {language === 'pt-BR' 
+                        ? "Obtenha sua chave gratuita em aistudio.google.com/apikey. Não é necessário cartão de crédito. Sua chave é salva localmente." 
+                        : "Get your free key at aistudio.google.com/apikey. No credit card required. Your key is saved locally."}
+                </p>
+              </>
+            )}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-10">

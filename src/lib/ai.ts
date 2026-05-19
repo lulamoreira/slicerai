@@ -1,5 +1,7 @@
 import { z } from "zod";
 import { WizardState, AIResponse } from "./types";
+import { supabase } from "../integrations/supabase/client";
+import { useSettingsStore } from "../store/useAppStore";
 
 const aiResponseSchema = z.object({
   quality: z.object({
@@ -115,8 +117,8 @@ export const repairJSON = (json: string): string => {
 };
 
 export const generateSettings = async (
-  apiKey: string,
-  wizard: WizardState
+  wizard: WizardState,
+  userProfile: any
 ): Promise<AIResponse> => {
   const systemPrompt = `
     Você é o SlicerAI, especialista sênior em impressão 3D FDM com domínio completo do Bambu Studio (versão mais recente, 2024-2025). Conhece todos os perfis, materiais, build plates, configurações AMS, suporte, velocidade, temperatura e nuances de cada impressora Bambu Lab. Responda sempre em português do Brasil (ou inglês se o usuário selecionou EN). Seja preciso, técnico e acessível. Justifique cada recomendação com base nos dados de geometria e escolhas do usuário. Retorne APENAS JSON válido conforme o schema solicitado, sem markdown, sem texto extra.
@@ -164,21 +166,45 @@ Retorne este JSON exato (todos os campos obrigatórios):
 
   const fullPrompt = `${systemPrompt}\n\n${userMessage}`;
 
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: fullPrompt }] }],
-        generationConfig: {
-          response_mime_type: "application/json",
-          temperature: 0.2,
-          maxOutputTokens: 4096,
+  let response;
+  const generationConfig = {
+    response_mime_type: "application/json",
+    temperature: 0.2,
+    maxOutputTokens: 4096,
+  };
+
+  if (userProfile?.api_key_mode === 'centralized') {
+    const { data: { session } } = await supabase.auth.getSession();
+    response = await fetch(
+      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/gemini-proxy`,
+      {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${session?.access_token}`
         },
-      }),
-    }
-  );
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: fullPrompt }] }],
+          generationConfig,
+        }),
+      }
+    );
+  } else {
+    const apiKey = useSettingsStore.getState().apiKey;
+    if (!apiKey) throw new Error('NO_API_KEY');
+
+    response = await fetch(
+      `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: fullPrompt }] }],
+          generationConfig,
+        }),
+      }
+    );
+  }
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({}));
