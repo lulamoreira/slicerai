@@ -86,10 +86,10 @@ export const ResultsPanel: React.FC = () => {
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-between mb-8">
-        <h2 className="text-2xl font-black italic tracking-tighter text-white uppercase">Resultados <span className="text-primary">SlicerAI</span></h2>
+        <h2 className="text-2xl font-bold text-foreground uppercase">Resultados <span className="text-primary">SlicerAI</span></h2>
         <button 
           onClick={handleCopyAll}
-          className="flex items-center gap-2 px-4 py-2 bg-primary/10 border border-primary/20 rounded-xl text-[10px] font-black tracking-widest text-primary hover:bg-primary/20 transition-all"
+          className="flex items-center gap-2 px-4 py-2 bg-primary-subtle border border-primary/20 rounded-lg text-[10px] font-bold tracking-widest text-primary hover:bg-primary/20 transition-all"
         >
           {copiedAll ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
           COPIAR TUDO
@@ -97,16 +97,16 @@ export const ResultsPanel: React.FC = () => {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-surface-raised p-1.5 rounded-2xl mb-8 border border-white/5 overflow-x-auto no-scrollbar shadow-inner">
+      <div className="flex gap-1 bg-surface-raised p-1.5 rounded-xl mb-8 border border-border overflow-x-auto no-scrollbar shadow-inner">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={cn(
-              "flex items-center gap-2 px-5 py-3 rounded-xl text-[10px] font-black tracking-widest transition-all whitespace-nowrap",
+              "flex items-center gap-2 px-5 py-3 rounded-lg text-[10px] font-bold tracking-widest transition-all whitespace-nowrap",
               activeTab === tab.id 
-                ? "bg-primary text-white shadow-lg shadow-primary/20" 
-                : "text-muted hover:text-white hover:bg-white/5"
+                ? "bg-primary text-[#0d0d14] shadow-lg shadow-primary/20" 
+                : "text-muted hover:text-primary hover:bg-primary-subtle"
             )}
           >
             <tab.icon className="w-3.5 h-3.5" />
@@ -121,25 +121,25 @@ export const ResultsPanel: React.FC = () => {
       </div>
 
       {/* Bottom Bar */}
-      <div className="mt-8 pt-8 border-t border-white/5 space-y-6">
+      <div className="mt-8 pt-8 border-t border-border space-y-6">
         <div className="flex flex-wrap gap-3">
           <button 
             onClick={resetApp}
-            className="flex-1 min-w-[120px] flex items-center justify-center gap-2 px-4 py-3.5 bg-white/5 border border-white/5 rounded-2xl text-[10px] font-black tracking-widest text-muted hover:text-white transition-all hover:bg-white/10"
+            className="flex-1 min-w-[120px] flex items-center justify-center gap-2 px-4 py-3.5 bg-transparent border border-border-strong rounded-xl text-[10px] font-bold tracking-widest text-foreground hover:text-primary hover:border-primary hover:bg-surface-hover transition-all"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             REFAZER
           </button>
           <button 
             onClick={handleDownload}
-            className="flex-1 min-w-[120px] flex items-center justify-center gap-2 px-4 py-3.5 bg-white/5 border border-white/5 rounded-2xl text-[10px] font-black tracking-widest text-muted hover:text-white transition-all hover:bg-white/10"
+            className="flex-1 min-w-[120px] flex items-center justify-center gap-2 px-4 py-3.5 bg-transparent border border-border-strong rounded-xl text-[10px] font-bold tracking-widest text-foreground hover:text-primary hover:border-primary hover:bg-surface-hover transition-all"
           >
             <Download className="w-3.5 h-3.5" />
             BAIXAR .TXT
           </button>
           <button 
             onClick={handleShare}
-            className="flex-1 min-w-[120px] flex items-center justify-center gap-2 px-4 py-3.5 bg-white/5 border border-white/5 rounded-2xl text-[10px] font-black tracking-widest text-muted hover:text-white transition-all hover:bg-white/10"
+            className="flex-1 min-w-[120px] flex items-center justify-center gap-2 px-4 py-3.5 bg-transparent border border-border-strong rounded-xl text-[10px] font-bold tracking-widest text-foreground hover:text-primary hover:border-primary hover:bg-surface-hover transition-all"
           >
             <Share className="w-3.5 h-3.5" />
             COMPARTILHAR
@@ -148,8 +148,8 @@ export const ResultsPanel: React.FC = () => {
 
         {/* Profile Name Suggestion */}
         <div className="space-y-3">
-          <p className="text-[10px] font-black text-muted uppercase tracking-[0.2em] opacity-50">Sugestão de Nome de Perfil</p>
-          <div className="flex items-center gap-3 p-3 bg-surface-raised border border-white/5 rounded-2xl group shadow-inner">
+          <p className="text-[10px] font-bold text-muted uppercase tracking-[0.2em] opacity-50">Sugestão de Nome de Perfil</p>
+          <div className="flex items-center gap-3 p-3 bg-surface-raised border border-border rounded-xl group shadow-inner">
             <code className="flex-1 text-xs font-mono font-bold text-primary truncate pl-2">
               {results.profile_name_suggestion}
             </code>
@@ -158,7 +158,7 @@ export const ResultsPanel: React.FC = () => {
                 navigator.clipboard.writeText(results.profile_name_suggestion);
                 toast.success("Nome do perfil copiado!");
               }}
-              className="p-2.5 hover:bg-primary/10 text-muted group-hover:text-primary rounded-xl transition-all active:scale-90"
+              className="p-2.5 hover:bg-primary-subtle text-muted group-hover:text-primary rounded-lg transition-all active:scale-90"
             >
               <Copy className="w-4 h-4" />
             </button>
