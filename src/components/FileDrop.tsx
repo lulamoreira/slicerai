@@ -3,7 +3,11 @@ import { useDropzone } from "react-dropzone";
 import { Upload, FileCode } from "lucide-react";
 import { useStore } from "../lib/store";
 
-export const FileDrop: React.FC = () => {
+interface FileDropProps {
+  onFileChange: (file: File) => void;
+}
+
+export const FileDrop: React.FC<FileDropProps> = ({ onFileChange }) => {
   const updateWizard = useStore((state) => state.updateWizard);
   const wizard = useStore((state) => state.wizard);
 
@@ -15,9 +19,10 @@ export const FileDrop: React.FC = () => {
           fileName: file.name,
           fileSize: file.size,
         });
+        onFileChange(file);
       }
     },
-    [updateWizard]
+    [updateWizard, onFileChange]
   );
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -31,7 +36,7 @@ export const FileDrop: React.FC = () => {
 
   if (wizard.fileName) {
     return (
-      <div className="flex items-center gap-3 p-4 bg-surface-raised border border-white/10 rounded-lg">
+      <div className="flex items-center gap-3 p-4 bg-surface-raised border border-white/10 rounded-lg w-full max-w-md mx-auto">
         <FileCode className="w-8 h-8 text-primary" />
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium truncate">{wizard.fileName}</p>
@@ -53,7 +58,7 @@ export const FileDrop: React.FC = () => {
     <div
       {...getRootProps()}
       className={`
-        border-2 border-dashed rounded-xl p-10 flex flex-col items-center justify-center cursor-pointer transition-all
+        w-full max-w-md mx-auto border-2 border-dashed rounded-xl p-10 flex flex-col items-center justify-center cursor-pointer transition-all
         ${
           isDragActive
             ? "border-primary bg-primary/10"
