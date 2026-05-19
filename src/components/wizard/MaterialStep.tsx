@@ -1,14 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import { useAppStore, useSettingsStore } from "../../store/useAppStore";
 import { AMSSlot, FlushStrategy } from "../../lib/types";
 import { cn } from "../../lib/utils";
-import { Plus, Minus, Info, Palette } from "lucide-react";
+import { Plus, Minus, Info, Palette, ShieldAlert } from "lucide-react";
+import { MATERIALS, MaterialName } from "../../lib/materials";
 
-const MATERIALS = [
-  "PLA", "PLA Matte", "PLA Silk", "PLA Galaxy", "PLA Glow", "PLA High Speed",
-  "PETG", "PETG-CF", "ABS", "ASA", "TPU 95A", "TPU 87A",
-  "PA (Nylon)", "PA-CF", "PC", "PLA-CF", "PVA", "HIPS"
-];
+const MATERIAL_LIST = Object.keys(MATERIALS);
 
 export const MaterialStep: React.FC = () => {
   const { wizard, updateWizard } = useAppStore();
@@ -20,6 +17,12 @@ export const MaterialStep: React.FC = () => {
   };
 
   const currentSlots = wizard.amsSlots.slice(0, wizard.amsSlotCount);
+
+  // Check compatibility with plate if plate was already chosen or use default logic
+  const isMaterialCompatible = (mat: string) => {
+      // Logic for Step 3 could be previewed here
+      return true;
+  };
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300">
@@ -34,7 +37,7 @@ export const MaterialStep: React.FC = () => {
                   onChange={(e) => updateWizard({ material: e.target.value })}
                   className="w-full bg-surface-raised border border-white/5 rounded-xl p-4 text-xs font-bold outline-none focus:border-primary/50 transition-colors"
                 >
-                  {MATERIALS.map((m) => (
+                  {MATERIAL_LIST.map((m) => (
                     <option key={m} value={m}>{m}</option>
                   ))}
                 </select>
@@ -107,7 +110,7 @@ export const MaterialStep: React.FC = () => {
                       onChange={(e) => updateAMSSlot(i, { material: e.target.value })}
                       className="w-full bg-surface border border-white/5 rounded-lg p-2.5 text-[10px] font-bold outline-none focus:border-primary/50"
                     >
-                      {MATERIALS.map((m) => (
+                      {MATERIAL_LIST.map((m) => (
                         <option key={m} value={m}>{m}</option>
                       ))}
                     </select>
