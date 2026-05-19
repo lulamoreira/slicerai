@@ -1,6 +1,6 @@
 import React from "react";
-import { useAppStore, useSettingsStore } from "../store/useAppStore";
-import { cn } from "../lib/utils";
+import { useAppStore, useSettingsStore } from "../../store/useAppStore";
+import { cn } from "../../lib/utils";
 import { 
   History, 
   Trash2, 
@@ -14,14 +14,14 @@ import {
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR, enUS } from "date-fns/locale";
+import { HistoryEntry } from "../../lib/types";
 
 interface HistorySidebarProps {
   onClose: () => void;
 }
 
 export const HistorySidebar: React.FC<HistorySidebarProps> = ({ onClose }) => {
-  const { history } = useSettingsStore();
-  const { language } = useSettingsStore();
+  const { history, language } = useSettingsStore();
   const locale = language === 'pt-BR' ? ptBR : enUS;
 
   const clearHistory = () => {
@@ -39,8 +39,8 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({ onClose }) => {
                 </div>
                 {language === 'pt-BR' ? 'Histórico' : 'History'}
             </h2>
-            <button onClick={onClose} className="p-2 text-muted hover:text-white transition-colors">
-                <X className="w-5 h-5" />
+            <button onClick={onClose} className="p-2 text-muted hover:text-white transition-colors bg-white/5 rounded-lg">
+                <X className="w-4 h-4" />
             </button>
         </div>
 
@@ -55,7 +55,7 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({ onClose }) => {
                     </p>
                 </div>
             ) : (
-                history.map((entry) => (
+                history.map((entry: HistoryEntry) => (
                     <button
                         key={entry.id}
                         onClick={() => {
