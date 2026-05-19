@@ -138,14 +138,13 @@ GEOMETRIA:
 CONFIGURAÇÕES:
 - Impressora: ${wizard.printer} | Nozzle: ${wizard.nozzle}mm
 - AMS: ${wizard.hasAMS ? "Sim" : "Não"}, ${wizard.amsSlotCount} slots
-- Material: ${wizard.material} (${wizard.variant}) | Cor: ${wizard.baseColor}
-${wizard.hasAMS ? wizard.amsSlots.slice(0, wizard.amsSlotCount).map(s => `- Slot ${s.slot}: ${s.material} / ${s.color}`).join('\n') : ''}
+- Material: ${wizard.material} (${wizard.variant})
+${wizard.hasAMS ? wizard.amsSlots.slice(0, wizard.amsSlotCount).map(s => `- Slot ${s.slot}: ${s.material}`).join('\n') : ''}
 - Flush AMS: ${wizard.flushStrategy} | Wipe tower: ${wizard.wipeTower ? "Sim" : "Não"}
 - Build plate: ${wizard.buildPlate}
 - Layer height: ${wizard.layerHeight}mm
 - Propósitos: ${wizard.purposes.join(', ')}
-- Ironing: ${wizard.ironing ? "Sim" : "Não"} | Seam: ${wizard.seamPosition}
-- Suporte: ${wizard.supportType} | Interface: ${wizard.supportInterface}
+- Seam: ${wizard.seamPosition}
 - Custo filamento: R$120/kg
 
 Retorne este JSON exato (todos os campos obrigatórios):
