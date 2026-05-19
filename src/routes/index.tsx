@@ -23,8 +23,9 @@ const toasterProps = {
   duration: 2500,
   toastOptions: {
     classNames: {
-      success: '!bg-[#4caf7d] !border-[#4caf7d] !text-white',
-      error: '!bg-[#ff4d6d] !border-[#ff4d6d] !text-white',
+      success: '!bg-[var(--surface-raised)] !border-l-3 !border-l-[var(--success)] !text-[var(--foreground)]',
+      error: '!bg-[var(--surface-raised)] !border-l-3 !border-l-[var(--destructive)] !text-[var(--foreground)]',
+      warning: '!bg-[var(--surface-raised)] !border-l-3 !border-l-[var(--warning)] !text-[var(--foreground)]',
     },
   },
 }
@@ -117,26 +118,26 @@ function HomeComponent() {
 
       {sharedBanner && (
           <div className="bg-primary px-6 py-2 flex items-center justify-center gap-3 animate-in slide-in-from-top duration-500 relative z-50">
-              <LinkIcon className="w-4 h-4 text-white" />
-              <span className="text-[10px] font-black uppercase tracking-widest text-white italic">📎 Configurações carregadas de link compartilhado</span>
+              <LinkIcon className="w-4 h-4 text-[#0d0d14]" />
+              <span className="text-[10px] font-bold uppercase tracking-widest text-[#0d0d14]">📎 Configurações carregadas de link compartilhado</span>
           </div>
       )}
 
       <main className="flex-1 flex flex-col md:flex-row h-[calc(100vh-64px)] overflow-hidden">
         {/* Left Panel: Preview */}
-        <div className="w-full md:w-[40%] h-[240px] md:h-auto p-4 md:p-6 flex flex-col gap-4 bg-[#0d0d14] relative border-r border-white/5 shrink-0">
+        <div className="w-full md:w-[40%] h-[240px] md:h-auto p-4 md:p-6 flex flex-col gap-4 bg-[var(--background)] relative border-r border-border shrink-0">
           <div className="flex-1 relative min-h-[160px]">
             <ModelViewer />
 
             {/* Orientation Advisor Banner — desktop only */}
             {orientationAdvice.suggested && !orientationAdvice.dismissed && (
               <div className="hidden md:block absolute top-4 left-4 right-4 animate-in slide-in-from-top-4 duration-500 z-20">
-                <div className="p-4 bg-primary/20 backdrop-blur-md border border-primary/30 rounded-xl flex items-center justify-between shadow-2xl">
+                <div className="p-4 bg-[var(--primary-subtle)] backdrop-blur-md border border-[var(--primary-glow)] rounded-xl flex items-center justify-between shadow-2xl">
                   <div className="flex items-center gap-3">
                     <Info className="w-5 h-5 text-primary" />
                     <div>
-                      <p className="text-sm font-black text-white italic">💡 Orientação Otimizada</p>
-                      <p className="text-xs text-white/70">Rotar 90° no eixo X pode eliminar suportes. Considerar?</p>
+                      <p className="text-sm font-bold text-foreground">💡 Orientação Otimizada</p>
+                      <p className="text-xs text-foreground-soft">Rotar 90° no eixo X pode eliminar suportes. Considerar?</p>
                     </div>
                   </div>
                   <div className="flex gap-2">
@@ -145,13 +146,13 @@ function HomeComponent() {
                         updateWizard({ shouldRotate90X: true })
                         setOrientationAdvice({ dismissed: true })
                       }}
-                      className="px-4 py-1.5 bg-primary text-white text-[10px] font-black tracking-widest rounded-lg hover:bg-primary-hover transition-colors shadow-lg"
+                      className="px-4 py-1.5 bg-primary text-[#0d0d14] text-[10px] font-bold tracking-widest rounded-lg hover:bg-primary-hover transition-colors shadow-lg"
                     >
                       SIM
                     </button>
                     <button 
                       onClick={() => setOrientationAdvice({ dismissed: true })}
-                      className="px-4 py-1.5 bg-white/10 text-white text-[10px] font-black tracking-widest rounded-lg hover:bg-white/20 transition-colors"
+                      className="px-4 py-1.5 bg-surface-raised text-foreground text-[10px] font-bold tracking-widest rounded-lg hover:bg-surface-hover transition-colors border border-border"
                     >
                       IGNORAR
                     </button>
