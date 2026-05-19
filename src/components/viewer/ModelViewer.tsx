@@ -11,8 +11,10 @@ interface ModelViewerProps {
 }
 
 const Model = ({ file }: { file: File }) => {
+  const mountRef = useRef<THREE.Group>(null);
   const [modelObject, setModelObject] = useState<THREE.Object3D | null>(null);
   const { setStatus, setGeometry: setGeoData, isWireframe, setOrientationAdvice } = useAppStore();
+  const wizard = useAppStore((s) => s.wizard);
 
   useEffect(() => {
     if (!file) return;
@@ -53,6 +55,18 @@ const Model = ({ file }: { file: File }) => {
         }
 
         if (object) {
+          // Force DoubleSide material to ensure visibility
+          object.traverse((child) => {
+            if ((child as THREE.Mesh).isMesh) {
+              (child as THREE.Mesh).material = new THREE.MeshStandardMaterial({
+                color: wizard.baseColor || "#00c8b4",
+                metalness: 0.1,
+                roughness: 0.7,
+                side: THREE.DoubleSide
+              });
+            }
+          });
+          
           setModelObject(object);
           if (geometry) analyze(geometry);
         }
@@ -87,8 +101,6 @@ const Model = ({ file }: { file: File }) => {
     reader.readAsArrayBuffer(file);
   }, [file]);
 
-  const wizard = useAppStore((s) => s.wizard);
-
   useEffect(() => {
     if (!modelObject) return;
     const meshes: THREE.Mesh[] = [];
@@ -106,6 +118,7 @@ const Model = ({ file }: { file: File }) => {
         metalness: 0.1,
         roughness: 0.7,
         wireframe: isWireframe,
+        side: THREE.DoubleSide
       });
     });
   }, [modelObject, isWireframe, wizard.hasAMS, wizard.amsSlots, wizard.amsSlotCount, wizard.baseColor]);
@@ -128,6 +141,9 @@ export const ModelViewer: React.FC<ModelViewerProps> = ({ file: fileProp }) => {
         >
           {file && <Model file={file} />}
         </Stage>
+        <ambientLight intensity={1.5} />
+        <pointLight position={[100, 100, 100]} intensity={2.0} />
+        <pointLight position={[-100, -100, -100]} intensity={1.0} />
         <OrbitControls makeDefault />
         <Grid
           infiniteGrid
