@@ -42,48 +42,6 @@ export const MaterialStep: React.FC = () => {
                   ))}
                 </select>
               </div>
-              <div className="space-y-2">
-                <label className="text-[10px] font-bold uppercase tracking-widest text-muted">Peso do Carretel (g)</label>
-                <div className="flex gap-2">
-                  {[250, 500, 1000].map(w => (
-                    <button
-                      key={w}
-                      onClick={() => updateWizard({ spoolWeight: w })}
-                      className={cn(
-                        "flex-1 py-2.5 rounded-lg text-[10px] font-bold transition-all border",
-                        wizard.spoolWeight === w ? "border-primary bg-primary-subtle text-primary" : "border-border bg-surface-raised text-muted hover:text-foreground"
-                      )}
-                    >
-                      {w}g
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <label className="text-[10px] font-bold uppercase tracking-widest text-muted">Cor do Filamento</label>
-              <div className="flex flex-col gap-3">
-                <div className="flex gap-3">
-                  <input
-                    type="color"
-                    value={wizard.baseColor}
-                    onChange={(e) => updateWizard({ baseColor: e.target.value })}
-                    className="w-14 h-14 rounded-xl cursor-pointer bg-surface-raised border border-border p-1 transition-transform hover:scale-105"
-                  />
-                  <input
-                    type="text"
-                    value={wizard.baseColor}
-                    onChange={(e) => updateWizard({ baseColor: e.target.value })}
-                    className="flex-1 bg-surface-raised border border-border-strong rounded-xl p-3 text-xs font-mono font-bold outline-none focus:border-primary transition-all text-foreground uppercase"
-                  />
-                </div>
-                <input
-                  type="text"
-                  placeholder="Nome da cor (ex: Bambu Green)"
-                  className="w-full bg-surface-raised border border-border-strong rounded-xl p-4 text-xs font-bold outline-none focus:border-primary transition-all text-foreground"
-                />
-              </div>
             </div>
           </div>
         ) : (
@@ -96,12 +54,6 @@ export const MaterialStep: React.FC = () => {
                 <div key={i} className="p-4 bg-surface-raised border border-border rounded-xl space-y-4 relative group shadow-sm">
                   <div className="flex items-center justify-between border-b border-border pb-2">
                     <span className="text-[10px] font-bold text-muted uppercase tracking-widest bg-primary text-[#0d0d14] px-2 py-0.5 rounded-md">Slot {i + 1}</span>
-                    <input
-                      type="color"
-                      value={slot.color}
-                      onChange={(e) => updateAMSSlot(i, { color: e.target.value })}
-                      className="w-7 h-7 rounded-lg cursor-pointer bg-transparent border-none p-0 overflow-hidden shadow-lg"
-                    />
                   </div>
                   <div className="space-y-2">
                     <label className="text-[8px] font-bold uppercase text-muted">Material</label>

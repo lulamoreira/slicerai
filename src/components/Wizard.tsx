@@ -65,12 +65,12 @@ export const Wizard: React.FC = () => {
       </div>
 
       {/* Step Content */}
-      <div className="flex-1 overflow-y-auto min-h-0 pl-6 md:pl-10 pr-6 md:pr-10 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto min-h-0 pl-6 md:pl-10 pr-6 md:pr-10 pb-24 custom-scrollbar">
         {renderStep()}
       </div>
 
       {/* Footer */}
-      <div className="px-6 md:px-10 pb-6 md:pb-8 pt-3 shrink-0 bg-surface flex gap-4">
+      <div className="fixed bottom-0 right-0 w-[60%] px-6 md:px-10 py-4 bg-surface border-t border-border flex gap-4 z-30 shadow-lg">
         {step > 1 && (
           <button
             onClick={prevStep}

@@ -94,22 +94,11 @@ export const ReviewStep: React.FC = () => {
           <Row icon={Grid3x3} label="Build Plate" value={wizard.buildPlate} />
           <Row icon={Layers} label="Layer Height" value={`${wizard.layerHeight.toFixed(2)}mm`} />
           <Row icon={Target} label="Propósito" value={wizard.purposes.join(', ')} />
-          <Row icon={Scale} label="Peso estimado" value={estimatedWeight} highlight />
-          <Row icon={Clock} label="Tempo estimado" value={estimatedWeight === "—" ? estimatedWeight : `~${Math.floor(estimatedTime / 60)}h ${estimatedTime % 60}min`} mono />
-          <Row icon={Triangle} label="Suporte" value={wizard.supportEnabled ? wizard.supportType : "Sem suporte"} />
-          <Row icon={Wrench} label="Nozzle" value={`${wizard.nozzle}mm`} />
-          <div className="flex items-center gap-3 min-w-0">
-            <Palette className="w-4 h-4 text-primary shrink-0" />
-            <div className="flex flex-col gap-1 min-w-0">
-               <span className="text-[0.8rem] text-muted font-medium opacity-60">Cor</span>
-              <div className="flex items-center gap-2">
-                <span
-                  className="inline-block w-4 h-4 rounded-full border border-border-strong shadow-inner shrink-0"
-                  style={{ backgroundColor: reviewColor }}
-                />
-                <span className="text-sm font-bold text-foreground uppercase truncate">{reviewColor}</span>
-              </div>
-            </div>
+          <Row icon={Scale} label="Análise de Geometria" value="Peso/Custo no painel lateral" highlight />
+          <Row icon={Clock} label="Tempo estimado" value={volume === undefined ? "—" : `~${Math.floor(estimatedTime / 60)}h ${estimatedTime % 60}min`} mono />
+          <div className="col-span-1 sm:col-span-2 p-4 bg-primary/10 border border-primary/20 rounded-xl flex items-center gap-3">
+            <Sparkles className="w-4 h-4 text-primary" />
+            <span className="text-[10px] font-bold uppercase tracking-widest text-primary">A IA vai decidir suportes, cores e ironing com base na geometria</span>
           </div>
         </div>
       </div>

@@ -122,6 +122,12 @@ export const generateSettings = async (
 ): Promise<AIResponse> => {
   const systemPrompt = `
     Você é o SlicerAI, especialista sênior em impressão 3D FDM com domínio completo do Bambu Studio (versão mais recente, 2024-2025). Conhece todos os perfis, materiais, build plates, configurações AMS, suporte, velocidade, temperatura e nuances de cada impressora Bambu Lab. Responda sempre em português do Brasil (ou inglês se o usuário selecionou EN). Seja preciso, técnico e acessível. Justifique cada recomendação com base nos dados de geometria e escolhas do usuário. Respond ONLY with valid JSON. No markdown, no explanation. Retorne APENAS JSON válido conforme o schema solicitado, sem markdown, sem texto extra.
+
+    INSTRUÇÕES CRÍTICAS:
+    1. Analise a geometria fornecida: se houver overhangs significativos (overhangsDetected: true), decida AUTOMATICAMENTE se suportes são necessários e qual o melhor tipo (none, normal, tree).
+    2. Decida AUTOMATICAMENTE se o ironing (alisamento) é benéfico baseado no propósito e geometria da peça.
+    3. Escolha uma cor de filamento funcional e apropriada para o propósito do objeto.
+    4. O usuário NÃO fornece estas escolhas - VOCÊ decide baseado na sua expertise técnica. Não peça confirmação sobre suportes, cor ou ironing.
   `;
 
   const userMessage = `
@@ -138,14 +144,13 @@ GEOMETRIA:
 CONFIGURAÇÕES:
 - Impressora: ${wizard.printer} | Nozzle: ${wizard.nozzle}mm
 - AMS: ${wizard.hasAMS ? "Sim" : "Não"}, ${wizard.amsSlotCount} slots
-- Material: ${wizard.material} (${wizard.variant}) | Cor: ${wizard.baseColor}
-${wizard.hasAMS ? wizard.amsSlots.slice(0, wizard.amsSlotCount).map(s => `- Slot ${s.slot}: ${s.material} / ${s.color}`).join('\n') : ''}
+- Material: ${wizard.material} (${wizard.variant})
+${wizard.hasAMS ? wizard.amsSlots.slice(0, wizard.amsSlotCount).map(s => `- Slot ${s.slot}: ${s.material}`).join('\n') : ''}
 - Flush AMS: ${wizard.flushStrategy} | Wipe tower: ${wizard.wipeTower ? "Sim" : "Não"}
 - Build plate: ${wizard.buildPlate}
 - Layer height: ${wizard.layerHeight}mm
 - Propósitos: ${wizard.purposes.join(', ')}
-- Ironing: ${wizard.ironing ? "Sim" : "Não"} | Seam: ${wizard.seamPosition}
-- Suporte: ${wizard.supportType} | Interface: ${wizard.supportInterface}
+- Seam: ${wizard.seamPosition}
 - Custo filamento: R$120/kg
 
 Retorne este JSON exato (todos os campos obrigatórios):
