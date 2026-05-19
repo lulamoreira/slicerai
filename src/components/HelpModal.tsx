@@ -1,5 +1,5 @@
 import React from "react";
-import { X, HelpCircle, Package, Wand2, Bot, ClipboardCheck, Key, MessageSquareQuestion } from "lucide-react";
+import { X, HelpCircle, Package, Wand2, Bot, ClipboardCheck, Key, HelpCircle as MessageSquareQuestion } from "lucide-react";
 import { Button } from "./ui/button";
 import { cn } from "../lib/utils";
 
