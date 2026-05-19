@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { useAppStore, useSettingsStore } from "../store/useAppStore";
-import { useTranslation } from "../lib/i18n";
+import { useSettingsStore } from "../store/useAppStore";
+import { useAuthStore } from "../store/useAuthStore";
 import { 
   Settings as SettingsIcon, 
   History as HistoryIcon, 
@@ -10,13 +10,15 @@ import {
   Github,
   Hexagon,
   User as UserIcon,
-  LogOut
+  LogOut,
+  ShieldCheck,
+  ChevronDown,
+  UserCircle
 } from "lucide-react";
 import { cn } from "../lib/utils";
 import { supabase } from "../integrations/supabase/client";
-import { AuthModal } from "./AuthModal";
 import { toast } from "sonner";
-import { User } from "@supabase/supabase-js";
+import { Link, useNavigate } from "@tanstack/react-router";
 
 interface NavbarProps {
   onShowSettings: () => void;
@@ -25,25 +27,44 @@ interface NavbarProps {
 
 export const Navbar: React.FC<NavbarProps> = ({ onShowSettings, onShowHistory }) => {
   const { theme, setTheme, language, setLanguage, apiKey, history } = useSettingsStore();
-  const t = useTranslation(language);
-  const [user, setUser] = useState<User | null>(null);
-  const [showAuthModal, setShowAuthModal] = useState(false);
-
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-    });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
+  const { user, profile, logout } = useAuthStore();
+  const [showDropdown, setShowDropdown] = useState(false);
+  const navigate = useNavigate();
 
   const handleLogout = async () => {
-    await supabase.auth.signOut();
+    await logout();
     toast.success('Deslogado com sucesso');
+    navigate({ to: '/login' });
+  };
+
+  const getInitials = (name: string) => {
+    if (!name) return 'U';
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+  };
+
+  // Status Chip logic
+  const renderStatusChip = () => {
+    if (!profile || profile.access_status !== 'active') return null;
+    
+    if (!profile.access_end) return null; // Indefinite
+
+    const expiry = new Date(profile.access_end);
+    const now = new Date();
+    const diffDays = Math.ceil((expiry.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+
+    if (diffDays <= 7) {
+      return (
+        <span className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 bg-warning/10 border border-warning/20 text-warning text-[8px] font-black uppercase tracking-widest rounded-full animate-pulse">
+          ⚠️ Expira em {diffDays} dias
+        </span>
+      );
+    }
+
+    return (
+      <span className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 bg-success/10 border border-success/20 text-success text-[8px] font-black uppercase tracking-widest rounded-full">
+        Ativo até {expiry.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
+      </span>
+    );
   };
 
   return (
