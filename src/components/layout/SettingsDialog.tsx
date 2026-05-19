@@ -55,7 +55,10 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
   };
 
   const handleClearData = () => {
-    if (confirm(language === 'pt-BR' ? "Isso apagará todas as configurações e histórico. Continuar?" : "This will erase all settings and history. Continue?")) {
+    const msg = language === 'pt-BR' 
+      ? "Tem certeza? Isso remove API key, histórico e preferências."
+      : "Are you sure? This removes API key, history and preferences.";
+    if (confirm(msg)) {
       localStorage.clear();
       window.location.reload();
     }

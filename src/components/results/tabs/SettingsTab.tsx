@@ -21,10 +21,10 @@ export const SettingsTab = ({ results }: { results: AIResponse }) => {
       title: "Strength",
       params: [
         { key: "wall_loops", value: results.strength.wall_loops },
-        { key: "top_layers", value: results.strength.top_layers },
-        { key: "bottom_layers", value: results.strength.bottom_layers },
-        { key: "infill_density", value: `${results.strength.infill_density}%` },
-        { key: "infill_pattern", value: results.strength.infill_pattern },
+        { key: "top_shell_layers", value: results.strength.top_layers },
+        { key: "bottom_shell_layers", value: results.strength.bottom_layers },
+        { key: "sparse_infill_density", value: `${results.strength.infill_density}%` },
+        { key: "sparse_infill_pattern", value: results.strength.infill_pattern },
         { key: "top_surface_pattern", value: results.strength.top_surface_pattern },
         { key: "bottom_surface_pattern", value: results.strength.bottom_surface_pattern },
       ]
@@ -34,21 +34,22 @@ export const SettingsTab = ({ results }: { results: AIResponse }) => {
       params: [
         { key: "enable_support", value: results.support.needed },
         { key: "support_type", value: results.support.type },
-        { key: "threshold_angle", value: results.support.threshold_angle },
-        { key: "top_z_distance", value: `${results.support.top_z_distance} mm` },
-        { key: "bottom_z_distance", value: `${results.support.bottom_z_distance} mm` },
-        { key: "xy_distance", value: `${results.support.xy_distance} mm` },
-        { key: "interface_layers", value: results.support.interface_layers },
-        { key: "interface_pattern", value: results.support.interface_pattern },
+        { key: "support_threshold_angle", value: results.support.threshold_angle },
+        { key: "support_top_z_distance", value: `${results.support.top_z_distance} mm` },
+        { key: "support_bottom_z_distance", value: `${results.support.bottom_z_distance} mm` },
+        { key: "support_object_xy_distance", value: `${results.support.xy_distance} mm` },
+        { key: "support_interface_top_layers", value: results.support.interface_layers },
+        { key: "support_interface_pattern", value: results.support.interface_pattern },
       ]
     },
     {
-        title: "Temperature",
+        title: "Temperature & Speed",
         params: [
           { key: "nozzle_temperature", value: `${results.temperature.nozzle} °C` },
-          { key: "hot_plate_temp", value: `${results.temperature.bed} °C` },
+          { key: "bed_temperature", value: `${results.temperature.bed} °C` },
           { key: "chamber_temperature", value: `${results.temperature.chamber} °C` },
-          { key: "part_cooling_fan_speed", value: `${results.temperature.part_cooling_fan}%` },
+          { key: "fan_max_speed", value: `${results.temperature.part_cooling_fan}%` },
+          { key: "overall_speed_limit", value: `${results.speed.outer_wall} mm/s` },
         ]
       }
   ];

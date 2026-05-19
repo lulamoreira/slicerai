@@ -10,7 +10,8 @@ import {
   Printer,
   Layers,
   Palette,
-  X
+  X,
+  Ghost
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ptBR, enUS } from "date-fns/locale";
@@ -48,10 +49,10 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({ onClose }) => {
             {history.length === 0 ? (
                 <div className="py-20 text-center space-y-6 opacity-30">
                     <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mx-auto border border-dashed border-white/20">
-                        <Box className="w-10 h-10 text-muted" />
+                        <Ghost className="w-10 h-10 text-muted" />
                     </div>
                     <p className="text-muted text-xs font-black uppercase tracking-widest italic">
-                        {language === 'pt-BR' ? 'Nenhum projeto recente' : 'No recent projects'}
+                        {language === 'pt-BR' ? 'Nenhum histórico ainda' : 'No history yet'}
                     </p>
                 </div>
             ) : (

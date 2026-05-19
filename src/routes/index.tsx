@@ -17,6 +17,17 @@ import {
   Link as LinkIcon
 } from 'lucide-react'
 import { Toaster } from 'sonner'
+
+const toasterProps = {
+  position: 'top-center' as const,
+  duration: 2500,
+  toastOptions: {
+    classNames: {
+      success: '!bg-[#4caf7d] !border-[#4caf7d] !text-white',
+      error: '!bg-[#ff4d6d] !border-[#ff4d6d] !text-white',
+    },
+  },
+}
 import { cn } from '../lib/utils'
 import { SettingsDialog } from '../components/layout/SettingsDialog'
 import { HistorySidebar } from '../components/layout/HistorySidebar'
@@ -56,26 +67,26 @@ function HomeComponent() {
   React.useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const cfg = params.get('cfg')
-    if (cfg) {
-      try {
-        const decoded = JSON.parse(atob(cfg))
-        useAppStore.setState({ 
-          wizard: decoded.wizard, 
-          results: decoded.results,
-          status: 'result'
-        })
-        setSharedBanner(true)
-        setTimeout(() => setSharedBanner(false), 5000)
-      } catch (e) {
-        console.error('Failed to rehydrate from URL', e)
-      }
+    if (!cfg) return
+    try {
+      const decoded = JSON.parse(atob(cfg))
+      if (!decoded || typeof decoded !== 'object' || !decoded.wizard || !decoded.results) return
+      useAppStore.setState({ 
+        wizard: decoded.wizard, 
+        results: decoded.results,
+        status: 'result'
+      })
+      setSharedBanner(true)
+      setTimeout(() => setSharedBanner(false), 5000)
+    } catch {
+      // Silently ignore malformed cfg
     }
   }, [])
 
   if (status === 'idle') {
     return (
       <div className="min-h-screen bg-background text-foreground flex flex-col font-sans">
-        <Toaster position="top-center" theme={theme} />
+        <Toaster {...toasterProps} theme={theme} />
         <Navbar onShowSettings={() => setShowSettings(true)} onShowHistory={() => setShowHistory(true)} />
         <main className="flex-1 flex items-center justify-center p-6">
           <Dropzone />
@@ -94,7 +105,7 @@ function HomeComponent() {
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col font-sans overflow-hidden">
-      <Toaster position="top-center" theme={theme} />
+      <Toaster {...toasterProps} theme={theme} />
       <Navbar onShowSettings={() => setShowSettings(true)} onShowHistory={() => setShowHistory(true)} />
 
       {sharedBanner && (
@@ -106,13 +117,13 @@ function HomeComponent() {
 
       <main className="flex-1 flex flex-col md:flex-row h-[calc(100vh-64px)] overflow-hidden">
         {/* Left Panel: Preview */}
-        <div className="w-full md:w-[40%] p-4 md:p-6 flex flex-col gap-4 bg-[#0d0d14] relative border-r border-white/5">
-          <div className="flex-1 relative min-h-[300px]">
+        <div className="w-full md:w-[40%] h-[240px] md:h-auto p-4 md:p-6 flex flex-col gap-4 bg-[#0d0d14] relative border-r border-white/5 shrink-0">
+          <div className="flex-1 relative min-h-[160px]">
             <ModelViewer />
 
-            {/* Orientation Advisor Banner */}
+            {/* Orientation Advisor Banner — desktop only */}
             {orientationAdvice.suggested && !orientationAdvice.dismissed && (
-              <div className="absolute top-4 left-4 right-4 animate-in slide-in-from-top-4 duration-500 z-20">
+              <div className="hidden md:block absolute top-4 left-4 right-4 animate-in slide-in-from-top-4 duration-500 z-20">
                 <div className="p-4 bg-primary/20 backdrop-blur-md border border-primary/30 rounded-xl flex items-center justify-between shadow-2xl">
                   <div className="flex items-center gap-3">
                     <Info className="w-5 h-5 text-primary" />
@@ -143,8 +154,8 @@ function HomeComponent() {
             )}
           </div>
 
-          {/* Extended Stats Card */}
-          <div className="animate-in slide-in-from-bottom-4 duration-500">
+          {/* Extended Stats Card — desktop only */}
+          <div className="hidden md:block animate-in slide-in-from-bottom-4 duration-500">
             <StatsCard />
           </div>
         </div>

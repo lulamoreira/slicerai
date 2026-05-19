@@ -87,21 +87,28 @@ const Model = ({ file }: { file: File }) => {
     reader.readAsArrayBuffer(file);
   }, [file]);
 
+  const wizard = useAppStore((s) => s.wizard);
+
   useEffect(() => {
-    if (modelObject) {
-      modelObject.traverse((child) => {
-        if ((child as THREE.Mesh).isMesh) {
-          const mesh = child as THREE.Mesh;
-          mesh.material = new THREE.MeshStandardMaterial({
-            color: "#00c8b4",
-            metalness: 0.1,
-            roughness: 0.7,
-            wireframe: isWireframe,
-          });
-        }
+    if (!modelObject) return;
+    const meshes: THREE.Mesh[] = [];
+    modelObject.traverse((child) => {
+      if ((child as THREE.Mesh).isMesh) meshes.push(child as THREE.Mesh);
+    });
+    meshes.forEach((mesh, idx) => {
+      let color = wizard.baseColor || "#00c8b4";
+      if (wizard.hasAMS && meshes.length > 1) {
+        const slot = wizard.amsSlots[idx % wizard.amsSlotCount];
+        if (slot?.color) color = slot.color;
+      }
+      mesh.material = new THREE.MeshStandardMaterial({
+        color,
+        metalness: 0.1,
+        roughness: 0.7,
+        wireframe: isWireframe,
       });
-    }
-  }, [modelObject, isWireframe]);
+    });
+  }, [modelObject, isWireframe, wizard.hasAMS, wizard.amsSlots, wizard.amsSlotCount, wizard.baseColor]);
 
   if (!modelObject) return null;
 

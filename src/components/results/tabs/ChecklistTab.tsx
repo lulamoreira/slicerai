@@ -9,7 +9,7 @@ export const ChecklistTab = ({ results, printer }: { results: AIResponse, printe
     "Nozzle limpo e sem entupimento",
     "Build plate limpa com IPA 99%",
     "Calibração de fluxo (flow calibration) recente",
-    ...(printer.startsWith("X1") ? ["Lidar calibration executada"] : []),
+    ...(printer === "X1C" || printer === "X1E" ? ["Lidar calibration executada"] : []),
     "Modelo orientado corretamente no slicer",
     "Primeira camada verificada na prévia do Bambu Studio"
   ];
