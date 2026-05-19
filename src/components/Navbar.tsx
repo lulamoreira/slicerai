@@ -32,7 +32,7 @@ interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = ({ onShowSettings, onShowHistory }) => {
   const { theme, setTheme, language, setLanguage, apiKey, history } = useSettingsStore();
   const { user, profile, logout } = useAuthStore();
-  console.log('Navbar profile role:', profile?.role);
+  console.log('Profile role:', profile?.role);
   const [showDropdown, setShowDropdown] = useState(false);
   const [showAccountModal, setShowAccountModal] = useState(false);
   const [showHelpModal, setShowHelpModal] = useState(false);
