@@ -32,36 +32,36 @@ export const PrinterStep: React.FC = () => {
   };
 
   return (
-    <div className="space-y-10 animate-in fade-in slide-in-from-right-4 duration-300">
+    <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
       <section>
-        <h3 className="card-section-title mb-5">
+        <h3 className="card-section-title mb-3 text-xs">
           Selecione sua Impressora
         </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-3 gap-2 mb-4">
           {PRINTERS.map((p) => (
             <button
               key={p.id}
               onClick={() => updateWizard({ printer: p.id })}
               className={cn(
-                "p-5 rounded-xl border flex flex-col items-start gap-4 transition-all relative group text-left",
+                "p-3 rounded-xl border-2 cursor-pointer transition-all text-left flex flex-col items-start gap-2",
                 wizard.printer === p.id
                   ? "border-primary bg-primary-subtle shadow-[var(--primary-glow)]"
                   : "border-border bg-surface hover:bg-surface-hover hover:border-border-strong"
               )}
             >
               <div className={cn(
-                "w-12 h-12 rounded-lg flex items-center justify-center transition-all",
+                "w-8 h-8 rounded-lg mb-2 flex items-center justify-center transition-all",
                 wizard.printer === p.id ? "bg-primary text-[#0d0d14]" : "bg-surface-raised text-muted group-hover:text-foreground"
               )}>
-                <p.icon className="w-6 h-6" />
+                <p.icon className="w-4 h-4" />
               </div>
-              <div className="space-y-1">
-                <span className={cn("text-sm font-bold uppercase tracking-tight", wizard.printer === p.id ? "text-primary" : "text-foreground")}>
+              <div className="space-y-0.5">
+                <span className={cn("font-bold text-sm uppercase tracking-tight", wizard.printer === p.id ? "text-primary" : "text-foreground")}>
                   {p.name}
                 </span>
                 <div className="flex flex-wrap gap-1 mt-1">
-                  {p.badges.map(b => (
-                    <span key={b} className="text-[0.65rem] font-medium tracking-tight bg-primary-subtle px-2 py-0.5 rounded-full text-primary border border-primary/30">
+                  {p.badges.slice(0, 1).map(b => (
+                    <span key={b} className="text-[0.6rem] font-medium tracking-tight bg-primary-subtle px-1.5 py-0.5 rounded-full text-primary border border-primary/30">
                       {b}
                     </span>
                   ))}
@@ -72,9 +72,9 @@ export const PrinterStep: React.FC = () => {
         </div>
       </section>
 
-      <section className="grid grid-cols-1 md:grid-cols-2 gap-10">
+      <section className="flex flex-col gap-3 mt-2">
         <div>
-          <h3 className="card-section-title mb-5">
+          <h3 className="card-section-title mb-2 text-xs">
             Diâmetro do Bocal (Nozzle)
           </h3>
           <div className="flex gap-2 bg-surface-raised p-1 rounded-xl border border-border">
@@ -96,7 +96,7 @@ export const PrinterStep: React.FC = () => {
         </div>
 
         <div>
-          <h3 className="card-section-title mb-5">
+          <h3 className="card-section-title mb-2 text-xs">
             Tem AMS acoplado?
           </h3>
           <div className="space-y-4">

@@ -43,7 +43,7 @@ export const Wizard: React.FC = () => {
   return (
     <div className="flex flex-col h-full animate-in fade-in duration-500">
       {/* Progress */}
-      <div className="mb-10">
+      <div className="mb-4">
         <div className="flex justify-between items-end mb-4">
           <div className="space-y-1">
             <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-primary">Passo 0{step}</span>
@@ -65,12 +65,12 @@ export const Wizard: React.FC = () => {
       </div>
 
       {/* Step Content */}
-      <div className="flex-1 overflow-y-auto pr-4 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto min-h-0 pr-1 custom-scrollbar">
         {renderStep()}
       </div>
 
       {/* Footer */}
-      <div className="mt-10 flex gap-4">
+      <div className="mt-4 flex gap-4 shrink-0">
         {step > 1 && (
           <button
             onClick={prevStep}
