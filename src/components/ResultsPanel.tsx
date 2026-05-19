@@ -15,7 +15,10 @@ import {
   Gauge,
   Share2,
   AlertTriangle,
-  RotateCcw
+  RotateCcw,
+  Wind,
+  Droplets,
+  Wand2
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -54,26 +57,26 @@ export const ResultsPanel: React.FC = () => {
             <ResultCard 
               icon={Shield} 
               label="Resistência" 
-              value={`${results.strength.infill_percent}%`} 
+              value={`${results.strength.infill_density}%`} 
               sub={results.strength.infill_pattern}
             />
             <ResultCard 
               icon={Thermometer} 
               label="Temperaturas" 
-              value={`${results.temperatures.nozzle}°C / ${results.temperatures.bed}°C`} 
-              sub={`Câmara: ${results.temperatures.chamber}°C`}
+              value={`${results.temperature.nozzle}°C / ${results.temperature.bed}°C`} 
+              sub={`Câmara: ${results.temperature.chamber}°C`}
             />
             <ResultCard 
               icon={Gauge} 
               label="Velocidade" 
-              value={`${results.speed.print}mm/s`} 
+              value={`${results.speed.infill}mm/s`} 
               sub={`1ª camada: ${results.speed.first_layer}mm/s`}
             />
             <ResultCard 
               icon={Clock} 
               label="Estimativas" 
-              value={results.estimates.time} 
-              sub={`${results.estimates.filament_g}g (${results.estimates.filament_m}m)`}
+              value={`${results.estimates.print_time_minutes} min`} 
+              sub={`${results.estimates.filament_grams}g (${results.estimates.filament_meters}m)`}
               full
             />
           </div>
@@ -84,32 +87,37 @@ layer_height=${results.quality.layer_height}
 first_layer_height=${results.quality.first_layer_height}
 seam_position=${results.quality.seam_position}
 ironing=${results.quality.ironing}
+ironing_flow=${results.quality.ironing_flow}
+ironing_speed=${results.quality.ironing_speed}
 
 [Strength]
-infill_percent=${results.strength.infill_percent}
+infill_density=${results.strength.infill_density}
 infill_pattern=${results.strength.infill_pattern}
 wall_loops=${results.strength.wall_loops}
-top_bottom_layers=${results.strength.top_bottom_layers}
+top_layers=${results.strength.top_layers}
+bottom_layers=${results.strength.bottom_layers}
 
 [Support]
-enabled=${results.support.enabled}
+needed=${results.support.needed}
 type=${results.support.type}
 threshold_angle=${results.support.threshold_angle}
 
-[Temperatures]
-nozzle=${results.temperatures.nozzle}
-bed=${results.temperatures.bed}
-chamber=${results.temperatures.chamber}
+[Temperature]
+nozzle=${results.temperature.nozzle}
+bed=${results.temperature.bed}
+chamber=${results.temperature.chamber}
 
 [Speed]
-print=${results.speed.print}
-first_layer=${results.speed.first_layer}
+mode=${results.speed.mode}
+outer_wall=${results.speed.outer_wall}
+inner_wall=${results.speed.inner_wall}
+infill=${results.speed.infill}
 travel=${results.speed.travel}
 
 [Advanced]
 elephant_foot_compensation=${results.advanced.elephant_foot_compensation}
 enable_overhang_speed=${results.advanced.enable_overhang_speed}
-bridge_speed=${results.advanced.bridge_speed}`;
+bridge_flow=${results.advanced.bridge_flow}`;
 
         return (
           <div className="space-y-4 animate-in fade-in duration-500 font-mono">
@@ -128,10 +136,10 @@ bridge_speed=${results.advanced.bridge_speed}`;
       case 2:
         return (
           <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-500">
-            {Object.entries(results.explanation.topics).map(([key, value]) => (
+            {Object.entries(results.explanation).filter(([k]) => typeof results.explanation[k as keyof typeof results.explanation] === 'string').map(([key, value]) => (
               <div key={key} className="p-5 bg-surface-raised border border-white/5 rounded-2xl shadow-sm">
                 <p className="text-[10px] font-black text-primary uppercase tracking-widest mb-2">{key.replace(/_/g, ' ')}</p>
-                <p className="text-sm leading-relaxed text-muted-foreground">{value}</p>
+                <p className="text-sm leading-relaxed text-muted-foreground">{value as string}</p>
               </div>
             ))}
             {results.explanation.warnings.length > 0 && (
