@@ -49,26 +49,31 @@ const Model = ({ file }: { file: File }) => {
           object = new THREE.Mesh(geometry);
         } else if (file.name.toLowerCase().endsWith('.3mf')) {
           const loader = new ThreeMFLoader();
-          object = loader.parse(result as ArrayBuffer);
-          
-          // Center and scale the group/object
+          object = loader.parse((result as ArrayBuffer).slice(0));
+
+          const center = new THREE.Box3().setFromObject(object).getCenter(new THREE.Vector3());
+          object.position.sub(center);
+
           const box3mf = new THREE.Box3().setFromObject(object);
           const size3mf = box3mf.getSize(new THREE.Vector3());
           const maxDim3mf = Math.max(size3mf.x, size3mf.y, size3mf.z);
           if (maxDim3mf > 0) {
             const scale3mf = 80 / maxDim3mf;
             object.scale.setScalar(scale3mf);
+            const scaledCenter = new THREE.Box3().setFromObject(object).getCenter(new THREE.Vector3());
+            object.position.sub(scaledCenter);
           }
-          
-          const center = new THREE.Box3().setFromObject(object).getCenter(new THREE.Vector3());
-          object.position.sub(center);
 
           // Extract geometry for analysis
           const positions: number[] = [];
           object.traverse((child) => {
             if ((child as THREE.Mesh).isMesh) {
               const mesh = child as THREE.Mesh;
-              const pos = mesh.geometry.attributes.position.array;
+              const geometry = mesh.geometry as THREE.BufferGeometry;
+              if (!geometry.attributes.normal) {
+                geometry.computeVertexNormals();
+              }
+              const pos = geometry.attributes.position.array;
               positions.push(...Array.from(pos));
               
               // Apply requested material to 3MF meshes
@@ -143,6 +148,11 @@ const Model = ({ file }: { file: File }) => {
       if ((child as THREE.Mesh).isMesh) meshes.push(child as THREE.Mesh);
     });
     meshes.forEach((mesh, idx) => {
+      const geometry = mesh.geometry as THREE.BufferGeometry;
+      if (!geometry.attributes.normal) {
+        geometry.computeVertexNormals();
+      }
+
       let color = "#00c8b4";
       if (wizard.hasAMS && meshes.length > 1) {
         const slot = wizard.amsSlots[idx % wizard.amsSlotCount];
