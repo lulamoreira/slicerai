@@ -182,7 +182,7 @@ Retorne este JSON exato (todos os campos obrigatórios):
 }
   `;
 
-  const fullPrompt = `${systemPrompt}\n\n${userMessage}`;
+  const fullPrompt = `${historyContext}\n\n${systemPrompt}\n\n${userMessage}`;
 
   let response;
   const generationConfig = {
