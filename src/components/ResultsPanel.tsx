@@ -38,6 +38,8 @@ export const ResultsPanel: React.FC = () => {
   const { results, resetApp, wizard } = useAppStore();
   const [activeTab, setActiveTab] = useState(0);
   const [copiedAll, setCopiedAll] = useState(false);
+  const [showBambuModal, setShowBambuModal] = useState(false);
+
 
   if (!results) return null;
 
