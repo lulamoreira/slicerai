@@ -33,6 +33,12 @@ export const PrinterStep: React.FC = () => {
 
   return (
     <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
+      <div 
+        onClick={() => useAppStore.setState({ status: 'idle', file: null, geometry: null, results: null })}
+        className="text-[10px] text-muted hover:text-primary cursor-pointer underline mb-2 inline-block"
+      >
+        ← Trocar arquivo
+      </div>
       <section>
         <h3 className="card-section-title mb-3 text-xs">
           Selecione sua Impressora
