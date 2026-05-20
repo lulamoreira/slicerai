@@ -146,18 +146,17 @@ const Model = ({ file }: { file: File }) => {
 
         if (object) {
           // Force material settings for non-3mf if not already handled
-          if (!file.name.toLowerCase().endsWith('.3mf')) {
-            object.traverse((child) => {
-              if ((child as THREE.Mesh).isMesh) {
-                (child as THREE.Mesh).material = new THREE.MeshStandardMaterial({
-                  color: "#00c8b4",
-                  metalness: 0.1,
-                  roughness: 0.7,
-                  side: THREE.DoubleSide
-                });
-              }
-            });
-          }
+          object.traverse((child) => {
+            if ((child as THREE.Mesh).isMesh) {
+              (child as THREE.Mesh).frustumCulled = false;
+              (child as THREE.Mesh).material = new THREE.MeshStandardMaterial({
+                color: "#00c8b4",
+                metalness: 0.1,
+                roughness: 0.7,
+                side: THREE.DoubleSide
+              });
+            }
+          });
           
           setModelObject(object);
         }
@@ -167,7 +166,8 @@ const Model = ({ file }: { file: File }) => {
       }
     };
 
-    const analyze = (geom: THREE.BufferGeometry) => {
+   const analyze = (geom: THREE.BufferGeometry) => {
+      setStatus('parsing');
       const worker = new Worker(
         new URL('../../workers/analyze.worker.ts', import.meta.url),
         { type: 'module' }
