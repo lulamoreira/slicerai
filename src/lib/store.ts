@@ -90,8 +90,8 @@ export const useStore = create<SlicerStore>()(
         const newEntry: HistoryEntry = {
           ...entry,
           id: crypto.randomUUID(),
-          timestamp: Date.now(),
-        };
+          timestamp: new Date().toISOString(),
+        } as any;
         const newHistory = [newEntry, ...state.history].slice(0, 5);
         return { history: newHistory };
       }),
