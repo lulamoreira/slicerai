@@ -88,11 +88,12 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({ onClose }) => {
                                 <div className="flex items-center gap-3 mt-1">
                                     <div className="flex items-center gap-1">
                                         <Printer className="w-2.5 h-2.5 text-primary" />
-                                        <span className="text-[8px] font-bold text-muted uppercase tracking-widest">{entry.printer.split(' ')[0]}</span>
+                                        <span className="text-[8px] font-bold text-muted uppercase tracking-widest">{entry.wizard.printer.split(' ')[0]}</span>
                                     </div>
                                     <div className="flex items-center gap-1">
-                                        <div className="w-2 h-2 rounded-full border border-border" style={{ backgroundColor: entry.color }} />
-                                        <span className="text-[8px] font-bold text-muted uppercase tracking-widest truncate max-w-[60px]">{entry.material}</span>
+                                        <div className="w-2 h-2 rounded-full border border-border" style={{ backgroundColor: entry.wizard.baseColor }} />
+                                        <span className="text-[8px] font-bold text-muted uppercase tracking-widest truncate max-w-[60px]">{entry.wizard.material}</span>
+
                                     </div>
                                 </div>
                             </div>
