@@ -130,54 +130,18 @@ const Model = ({ file }: { file: File }) => {
           const size = bbox.getSize(new THREE.Vector3());
           const maxDim = Math.max(size.x, size.y, size.z);
           if (maxDim > 0) {
-            const scale = 80 / maxDim;
+            const scale = TARGET_MODEL_SIZE / maxDim;
             geometry.scale(scale, scale, scale);
             geometry.center();
           }
           object = new THREE.Mesh(geometry);
+          analyze(geometry);
         } else if (file.name.toLowerCase().endsWith('.3mf')) {
           const loader = new ThreeMFLoader();
-          object = loader.parse((result as ArrayBuffer).slice(0));
-
-          const center = new THREE.Box3().setFromObject(object).getCenter(new THREE.Vector3());
-          object.position.sub(center);
-
-          const box3mf = new THREE.Box3().setFromObject(object);
-          const size3mf = box3mf.getSize(new THREE.Vector3());
-          const maxDim3mf = Math.max(size3mf.x, size3mf.y, size3mf.z);
-          if (maxDim3mf > 0) {
-            const scale3mf = 80 / maxDim3mf;
-            object.scale.setScalar(scale3mf);
-            const scaledCenter = new THREE.Box3().setFromObject(object).getCenter(new THREE.Vector3());
-            object.position.sub(scaledCenter);
-          }
-
-          // Extract geometry for analysis
-          const positions: number[] = [];
-          object.traverse((child) => {
-            if ((child as THREE.Mesh).isMesh) {
-              const mesh = child as THREE.Mesh;
-              const geometry = mesh.geometry as THREE.BufferGeometry;
-              if (!geometry.attributes.normal) {
-                geometry.computeVertexNormals();
-              }
-              const pos = geometry.attributes.position.array;
-              positions.push(...Array.from(pos));
-              
-              // Apply requested material to 3MF meshes
-              mesh.material = new THREE.MeshStandardMaterial({
-                color: "#00c8b4",
-                roughness: 0.7,
-                metalness: 0.1,
-                side: THREE.DoubleSide
-              });
-            }
-          });
-          
-          const posCopy3mf = new Float32Array(positions);
-          const geomCopy = new THREE.BufferGeometry();
-          geomCopy.setAttribute('position', new THREE.Float32BufferAttribute(posCopy3mf, 3));
-          analyze(geomCopy);
+          const parsedObject = loader.parse((result as ArrayBuffer).slice(0));
+          object = normalizeLoaded3mf(parsedObject);
+          geometry = buildAnalysisGeometryFromObject(object);
+          analyze(geometry);
         }
 
         if (object) {
