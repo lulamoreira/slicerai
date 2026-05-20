@@ -152,9 +152,9 @@ export const ResultsPanel: React.FC = () => {
           className="w-full flex items-center justify-center gap-3 px-6 py-4 rounded-xl bg-primary text-[#0d0d14] font-bold text-[11px] tracking-widest hover:bg-primary-hover transition-all shadow-lg mt-4"
         >
           <Download className="w-4 h-4" />
-          BAIXAR PARA BAMBU STUDIO (.json)
+          BAIXAR PARA BAMBU STUDIO (.bbscfg)
         </button>
-        <p className="text-center text-[10px] text-muted mt-2">No Bambu Studio: <span className="font-bold text-foreground">Arquivo → Importar → Importar Configurações</span> → selecione o arquivo baixado</p>
+        <p className="text-center text-[10px] text-muted mt-2">No Bambu Studio: <span className="font-bold text-foreground">Arquivo → Importar → Importar Configurações</span> → selecione o arquivo .bbscfg baixado</p>
 
 
         {/* Profile Name Suggestion */}
