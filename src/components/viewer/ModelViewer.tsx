@@ -10,6 +10,94 @@ interface ModelViewerProps {
   file?: File;
 }
 
+const TARGET_MODEL_SIZE = 80;
+
+const normalizeLoaded3mf = (source: THREE.Object3D) => {
+  source.updateWorldMatrix(true, true);
+
+  const normalizedRoot = new THREE.Group();
+  let meshCount = 0;
+
+  source.traverse((child) => {
+    if (!(child as THREE.Mesh).isMesh) return;
+
+    const mesh = child as THREE.Mesh;
+    const sourceGeometry = mesh.geometry as THREE.BufferGeometry | undefined;
+
+    if (!sourceGeometry?.attributes?.position) return;
+
+    let bakedGeometry = sourceGeometry.clone();
+    bakedGeometry.applyMatrix4(mesh.matrixWorld);
+    bakedGeometry = bakedGeometry.toNonIndexed() ?? bakedGeometry;
+
+    if (!bakedGeometry.attributes.normal) {
+      bakedGeometry.computeVertexNormals();
+    }
+
+    const bakedMesh = new THREE.Mesh(bakedGeometry);
+    bakedMesh.frustumCulled = false;
+    normalizedRoot.add(bakedMesh);
+    meshCount += 1;
+  });
+
+  if (meshCount === 0) {
+    throw new Error('3MF loaded without any renderable mesh geometry');
+  }
+
+  const centeredBox = new THREE.Box3().setFromObject(normalizedRoot);
+  const center = centeredBox.getCenter(new THREE.Vector3());
+  normalizedRoot.position.sub(center);
+  normalizedRoot.updateMatrixWorld(true);
+
+  const sizeBox = new THREE.Box3().setFromObject(normalizedRoot);
+  const size = sizeBox.getSize(new THREE.Vector3());
+  const maxDim = Math.max(size.x, size.y, size.z);
+
+  if (maxDim > 0) {
+    normalizedRoot.scale.setScalar(TARGET_MODEL_SIZE / maxDim);
+    normalizedRoot.updateMatrixWorld(true);
+
+    const scaledCenter = new THREE.Box3().setFromObject(normalizedRoot).getCenter(new THREE.Vector3());
+    normalizedRoot.position.sub(scaledCenter);
+    normalizedRoot.updateMatrixWorld(true);
+  }
+
+  return normalizedRoot;
+};
+
+const buildAnalysisGeometryFromObject = (source: THREE.Object3D) => {
+  source.updateMatrixWorld(true);
+
+  const positions: number[] = [];
+
+  source.traverse((child) => {
+    if (!(child as THREE.Mesh).isMesh) return;
+
+    const mesh = child as THREE.Mesh;
+    const sourceGeometry = mesh.geometry as THREE.BufferGeometry | undefined;
+
+    if (!sourceGeometry?.attributes?.position) return;
+
+    let bakedGeometry = sourceGeometry.clone();
+    bakedGeometry.applyMatrix4(mesh.matrixWorld);
+    bakedGeometry = bakedGeometry.toNonIndexed() ?? bakedGeometry;
+
+    const positionAttribute = bakedGeometry.getAttribute('position');
+    if (!positionAttribute) return;
+
+    positions.push(...Array.from(positionAttribute.array as ArrayLike<number>));
+  });
+
+  if (positions.length === 0) {
+    throw new Error('3MF analysis failed because no vertex positions were found');
+  }
+
+  const analysisGeometry = new THREE.BufferGeometry();
+  analysisGeometry.setAttribute('position', new THREE.Float32BufferAttribute(new Float32Array(positions), 3));
+
+  return analysisGeometry;
+};
+
 const Model = ({ file }: { file: File }) => {
   const mountRef = useRef<THREE.Group>(null);
   const [modelObject, setModelObject] = useState<THREE.Object3D | null>(null);
