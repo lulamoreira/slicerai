@@ -1,7 +1,7 @@
 /// <reference types="@react-three/fiber" />
-import React, { useRef, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls, Grid, Stage } from "@react-three/drei";
+import { OrbitControls, Grid } from "@react-three/drei";
 import * as THREE from "three";
 import { STLLoader, ThreeMFLoader } from "three-stdlib";
 import { useAppStore } from "../../store/useAppStore";
@@ -10,8 +10,95 @@ interface ModelViewerProps {
   file?: File;
 }
 
+const TARGET_MODEL_SIZE = 80;
+
+const normalizeLoaded3mf = (source: THREE.Object3D) => {
+  source.updateWorldMatrix(true, true);
+
+  const normalizedRoot = new THREE.Group();
+  let meshCount = 0;
+
+  source.traverse((child) => {
+    if (!(child as THREE.Mesh).isMesh) return;
+
+    const mesh = child as THREE.Mesh;
+    const sourceGeometry = mesh.geometry as THREE.BufferGeometry | undefined;
+
+    if (!sourceGeometry?.attributes?.position) return;
+
+    let bakedGeometry = sourceGeometry.clone();
+    bakedGeometry.applyMatrix4(mesh.matrixWorld);
+    bakedGeometry = bakedGeometry.toNonIndexed() ?? bakedGeometry;
+
+    if (!bakedGeometry.attributes.normal) {
+      bakedGeometry.computeVertexNormals();
+    }
+
+    const bakedMesh = new THREE.Mesh(bakedGeometry);
+    bakedMesh.frustumCulled = false;
+    normalizedRoot.add(bakedMesh);
+    meshCount += 1;
+  });
+
+  if (meshCount === 0) {
+    throw new Error('3MF loaded without any renderable mesh geometry');
+  }
+
+  const centeredBox = new THREE.Box3().setFromObject(normalizedRoot);
+  const center = centeredBox.getCenter(new THREE.Vector3());
+  normalizedRoot.position.sub(center);
+  normalizedRoot.updateMatrixWorld(true);
+
+  const sizeBox = new THREE.Box3().setFromObject(normalizedRoot);
+  const size = sizeBox.getSize(new THREE.Vector3());
+  const maxDim = Math.max(size.x, size.y, size.z);
+
+  if (maxDim > 0) {
+    normalizedRoot.scale.setScalar(TARGET_MODEL_SIZE / maxDim);
+    normalizedRoot.updateMatrixWorld(true);
+
+    const scaledCenter = new THREE.Box3().setFromObject(normalizedRoot).getCenter(new THREE.Vector3());
+    normalizedRoot.position.sub(scaledCenter);
+    normalizedRoot.updateMatrixWorld(true);
+  }
+
+  return normalizedRoot;
+};
+
+const buildAnalysisGeometryFromObject = (source: THREE.Object3D) => {
+  source.updateMatrixWorld(true);
+
+  const positions: number[] = [];
+
+  source.traverse((child) => {
+    if (!(child as THREE.Mesh).isMesh) return;
+
+    const mesh = child as THREE.Mesh;
+    const sourceGeometry = mesh.geometry as THREE.BufferGeometry | undefined;
+
+    if (!sourceGeometry?.attributes?.position) return;
+
+    let bakedGeometry = sourceGeometry.clone();
+    bakedGeometry.applyMatrix4(mesh.matrixWorld);
+    bakedGeometry = bakedGeometry.toNonIndexed() ?? bakedGeometry;
+
+    const positionAttribute = bakedGeometry.getAttribute('position');
+    if (!positionAttribute) return;
+
+    positions.push(...Array.from(positionAttribute.array as ArrayLike<number>));
+  });
+
+  if (positions.length === 0) {
+    throw new Error('3MF analysis failed because no vertex positions were found');
+  }
+
+  const analysisGeometry = new THREE.BufferGeometry();
+  analysisGeometry.setAttribute('position', new THREE.Float32BufferAttribute(new Float32Array(positions), 3));
+
+  return analysisGeometry;
+};
+
 const Model = ({ file }: { file: File }) => {
-  const mountRef = useRef<THREE.Group>(null);
   const [modelObject, setModelObject] = useState<THREE.Object3D | null>(null);
   const { setStatus, setGeometry: setGeoData, isWireframe, setOrientationAdvice } = useAppStore();
   const wizard = useAppStore((s) => s.wizard);
@@ -42,70 +129,33 @@ const Model = ({ file }: { file: File }) => {
           const size = bbox.getSize(new THREE.Vector3());
           const maxDim = Math.max(size.x, size.y, size.z);
           if (maxDim > 0) {
-            const scale = 80 / maxDim;
+            const scale = TARGET_MODEL_SIZE / maxDim;
             geometry.scale(scale, scale, scale);
             geometry.center();
           }
           object = new THREE.Mesh(geometry);
+          analyze(geometry);
         } else if (file.name.toLowerCase().endsWith('.3mf')) {
           const loader = new ThreeMFLoader();
-          object = loader.parse((result as ArrayBuffer).slice(0));
-
-          const center = new THREE.Box3().setFromObject(object).getCenter(new THREE.Vector3());
-          object.position.sub(center);
-
-          const box3mf = new THREE.Box3().setFromObject(object);
-          const size3mf = box3mf.getSize(new THREE.Vector3());
-          const maxDim3mf = Math.max(size3mf.x, size3mf.y, size3mf.z);
-          if (maxDim3mf > 0) {
-            const scale3mf = 80 / maxDim3mf;
-            object.scale.setScalar(scale3mf);
-            const scaledCenter = new THREE.Box3().setFromObject(object).getCenter(new THREE.Vector3());
-            object.position.sub(scaledCenter);
-          }
-
-          // Extract geometry for analysis
-          const positions: number[] = [];
-          object.traverse((child) => {
-            if ((child as THREE.Mesh).isMesh) {
-              const mesh = child as THREE.Mesh;
-              const geometry = mesh.geometry as THREE.BufferGeometry;
-              if (!geometry.attributes.normal) {
-                geometry.computeVertexNormals();
-              }
-              const pos = geometry.attributes.position.array;
-              positions.push(...Array.from(pos));
-              
-              // Apply requested material to 3MF meshes
-              mesh.material = new THREE.MeshStandardMaterial({
-                color: "#00c8b4",
-                roughness: 0.7,
-                metalness: 0.1,
-                side: THREE.DoubleSide
-              });
-            }
-          });
-          
-          const posCopy3mf = new Float32Array(positions);
-          const geomCopy = new THREE.BufferGeometry();
-          geomCopy.setAttribute('position', new THREE.Float32BufferAttribute(posCopy3mf, 3));
-          analyze(geomCopy);
+          const parsedObject = loader.parse((result as ArrayBuffer).slice(0));
+          object = normalizeLoaded3mf(parsedObject);
+          geometry = buildAnalysisGeometryFromObject(object);
+          analyze(geometry);
         }
 
         if (object) {
           // Force material settings for non-3mf if not already handled
-          if (!file.name.toLowerCase().endsWith('.3mf')) {
-            object.traverse((child) => {
-              if ((child as THREE.Mesh).isMesh) {
-                (child as THREE.Mesh).material = new THREE.MeshStandardMaterial({
-                  color: "#00c8b4",
-                  metalness: 0.1,
-                  roughness: 0.7,
-                  side: THREE.DoubleSide
-                });
-              }
-            });
-          }
+          object.traverse((child) => {
+            if ((child as THREE.Mesh).isMesh) {
+              (child as THREE.Mesh).frustumCulled = false;
+              (child as THREE.Mesh).material = new THREE.MeshStandardMaterial({
+                color: "#00c8b4",
+                metalness: 0.1,
+                roughness: 0.7,
+                side: THREE.DoubleSide
+              });
+            }
+          });
           
           setModelObject(object);
         }
@@ -115,7 +165,8 @@ const Model = ({ file }: { file: File }) => {
       }
     };
 
-    const analyze = (geom: THREE.BufferGeometry) => {
+   const analyze = (geom: THREE.BufferGeometry) => {
+      setStatus('parsing');
       const worker = new Worker(
         new URL('../../workers/analyze.worker.ts', import.meta.url),
         { type: 'module' }
