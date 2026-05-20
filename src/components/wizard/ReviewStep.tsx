@@ -42,7 +42,7 @@ export const ReviewStep: React.FC = () => {
 
     useAppStore.setState({ status: 'generating' });
     try {
-      const results = await generateSettings(wizard as any, profile);
+      const results = await generateSettings(wizard as any, profile, printHistory);
       setResults(results);
 
       let thumbnail = "";
@@ -51,17 +51,16 @@ export const ReviewStep: React.FC = () => {
         thumbnail = canvas.toDataURL('image/png');
       }
 
-      addToHistory({
-        id: crypto.randomUUID(),
-        timestamp: Date.now(),
+      const newEntry = {
+        id: Date.now().toString(),
         fileName: wizard.fileName,
-        printer: wizard.printer,
-        material: wizard.material,
-        color: reviewColor,
-        thumbnail,
-        results,
-        wizardState: wizard as any,
-      });
+        timestamp: new Date().toISOString(),
+        wizard: { ...wizard },
+        results: { ...results },
+        thumbnail, // Including thumbnail as it was previously there and user mentioned it
+      };
+      
+      addToHistory(newEntry as any);
     } catch (error: any) {
       console.error('Gemini error:', error);
       const msg = error?.message || String(error);
