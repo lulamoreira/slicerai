@@ -12,7 +12,7 @@ import { MATERIAL_DENSITIES } from "../../lib/geometry";
 export const ReviewStep: React.FC = () => {
   const { wizard, setResults, status, geometry } = useAppStore();
   const { profile } = useAuthStore();
-  const { apiKey, groqApiKey, aiProvider, addToHistory } = useSettingsStore();
+  const { apiKey, groqApiKey, aiProvider, addToHistory, history: printHistory } = useSettingsStore();
 
   // Reactive weight: prefer live geometry from store; fallback to PLA density placeholder.
   const volume = geometry?.volume ?? wizard.geometryStats?.volume;
