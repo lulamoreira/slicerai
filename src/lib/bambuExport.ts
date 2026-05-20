@@ -1,12 +1,10 @@
+// @ts-ignore
+import { zipSync, strToU8 } from 'fflate';
+
 const PRINTER_MAP: Record<string, string> = {
-  'X1 Carbon': 'X1C',
-  'X1C': 'X1C',
-  'X1E': 'X1E',
-  'P1S': 'P1S',
-  'P1P': 'P1P',
-  'A1': 'A1',
-  'A1 Mini': 'A1 mini',
-  'A1 MINI': 'A1 mini',
+  'X1 Carbon': 'X1C', 'X1C': 'X1C', 'X1E': 'X1E',
+  'P1S': 'P1S', 'P1P': 'P1P', 'A1': 'A1',
+  'A1 Mini': 'A1 mini', 'A1 MINI': 'A1 mini',
 };
 
 const LAYER_QUALITY: Record<string, string> = {
@@ -18,21 +16,24 @@ const LAYER_QUALITY: Record<string, string> = {
   '0.28': '0.28mm Extra Draft',
 };
 
-export function generateBambuProfile(results: any, wizard: any, suggestedName: string): string {
+export function downloadBambuProfile(results: any, wizard: any, suggestedName: string) {
   const printerCode = PRINTER_MAP[wizard.printer] || 'X1C';
   const nozzle = wizard.nozzle || '0.4';
   const layerKey = Number(results.layerHeight || 0.20).toFixed(2);
-  const qualityLabel = LAYER_QUALITY[layerKey] || `${layerKey}mm Standard`;
+  const qualityLabel = LAYER_QUALITY[layerKey] || '0.20mm Standard';
   const inherits = `${qualityLabel} @BBL ${printerCode} ${nozzle} nozzle`;
+  const profileName = `SlicerAI - ${suggestedName}`;
+  const safeName = (suggestedName || 'perfil').replace(/[^a-zA-Z0-9_\-]/g, '_');
 
-  const profile: Record<string, any> = {
+  const processProfile = {
     type: "process",
-    name: `SlicerAI - ${suggestedName}`,
+    name: profileName,
     from: "user",
     is_custom_defined: "1",
+    instantiation: "true",
     inherits,
     layer_height: String(results.layerHeight || 0.20),
-    first_layer_height: String(results.firstLayerHeight || results.layerHeight || 0.20),
+    first_layer_height: String(results.layerHeight || 0.20),
     wall_loops: String(results.wallLoops || 3),
     sparse_infill_density: `${results.infillPercent || 15}%`,
     sparse_infill_pattern: results.infillPattern || "gyroid",
@@ -50,20 +51,26 @@ export function generateBambuProfile(results: any, wizard: any, suggestedName: s
     top_shell_layers: String(results.topLayers || 4),
     bottom_shell_layers: String(results.bottomLayers || 4),
     enable_ironing: results.ironing ? "1" : "0",
-    notes: `Gerado pelo SlicerAI for Bambu em ${new Date().toLocaleDateString('pt-BR')}`
   };
 
-  return JSON.stringify(profile, null, 2);
-}
+  const bundle = {
+    version: "2.0.0",
+    description: `SlicerAI profile gerado em ${new Date().toLocaleDateString('pt-BR')}`
+  };
 
-export function downloadBambuProfile(results: any, wizard: any, suggestedName: string) {
-  const json = generateBambuProfile(results, wizard, suggestedName);
-  const safeName = (suggestedName || 'perfil').replace(/[^a-zA-Z0-9_\-]/g, '_');
-  const blob = new Blob([json], { type: 'application/json' });
+  const processFileName = `process/${safeName}.json`;
+
+  const files: Record<string, Uint8Array> = {
+    'bundle.json': strToU8(JSON.stringify(bundle, null, 2)),
+    [processFileName]: strToU8(JSON.stringify(processProfile, null, 2)),
+  };
+
+  const zipped = zipSync(files);
+  const blob = new Blob([zipped], { type: 'application/octet-stream' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `SlicerAI_${safeName}.json`;
+  a.download = `SlicerAI_${safeName}.bbscfg`;
   a.click();
   URL.revokeObjectURL(url);
 }
