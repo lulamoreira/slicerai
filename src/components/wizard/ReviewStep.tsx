@@ -117,6 +117,18 @@ export const ReviewStep: React.FC = () => {
           </div>
         )}
 
+        <div className="flex flex-col items-center gap-2">
+          {printHistory.length > 0 ? (
+            <span className="text-primary text-[10px] font-bold uppercase tracking-widest text-center animate-pulse">
+              🧠 IA vai considerar seus últimos {Math.min(printHistory.length, 3)} print(s) para calibrar esta recomendação
+            </span>
+          ) : (
+            <span className="text-primary text-[10px] font-bold uppercase tracking-widest text-center">
+              ✨ Primeira análise — a IA vai aprender com esta impressão
+            </span>
+          )}
+        </div>
+
         <button
           onClick={handleGenerate}
           disabled={isGenerating || (!(aiProvider === 'gemini' ? apiKey : groqApiKey) && profile?.api_key_mode !== 'centralized')}
