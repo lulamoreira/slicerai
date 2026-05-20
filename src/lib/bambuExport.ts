@@ -1,3 +1,4 @@
+// @ts-ignore
 import { zipSync, strToU8 } from 'fflate';
 
 const PRINTER_MAP: Record<string, string> = {
