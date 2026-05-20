@@ -1,27 +1,18 @@
-// @ts-ignore
 import { zipSync, strToU8 } from 'fflate';
 
-const PRINTER_MAP: Record<string, string> = {
-  'X1 Carbon': 'X1C', 'X1C': 'X1C', 'X1E': 'X1E',
-  'P1S': 'P1S', 'P1P': 'P1P', 'A1': 'A1',
-  'A1 Mini': 'A1 mini', 'A1 MINI': 'A1 mini',
-};
-
-const LAYER_QUALITY: Record<string, string> = {
-  '0.08': '0.08mm Extra Fine',
-  '0.12': '0.12mm Fine',
-  '0.16': '0.16mm Optimal',
-  '0.20': '0.20mm Standard',
-  '0.24': '0.24mm Draft',
-  '0.28': '0.28mm Extra Draft',
+const PRINTER_PROFILES: Record<string, Record<string, string>> = {
+  'X1 Carbon': { '0.4': '0.20mm Standard @BBL X1C', '0.2': '0.20mm Standard @BBL X1C 0.2 nozzle', '0.6': '0.20mm Standard @BBL X1C 0.6 nozzle', '0.8': '0.20mm Standard @BBL X1C 0.8 nozzle' },
+  'X1C': { '0.4': '0.20mm Standard @BBL X1C', '0.2': '0.20mm Standard @BBL X1C 0.2 nozzle', '0.6': '0.20mm Standard @BBL X1C 0.6 nozzle', '0.8': '0.20mm Standard @BBL X1C 0.8 nozzle' },
+  'P1S': { '0.4': '0.20mm Standard @BBL P1S', '0.2': '0.20mm Standard @BBL P1S 0.2 nozzle', '0.6': '0.20mm Standard @BBL P1S 0.6 nozzle' },
+  'P1P': { '0.4': '0.20mm Standard @BBL P1P', '0.2': '0.20mm Standard @BBL P1P 0.2 nozzle', '0.6': '0.20mm Standard @BBL P1P 0.6 nozzle' },
+  'A1': { '0.4': '0.20mm Standard @BBL A1', '0.2': '0.20mm Standard @BBL A1 0.2 nozzle', '0.6': '0.20mm Standard @BBL A1 0.6 nozzle' },
+  'A1 Mini': { '0.4': '0.20mm Standard @BBL A1M', '0.2': '0.20mm Standard @BBL A1M 0.2 nozzle', '0.6': '0.20mm Standard @BBL A1M 0.6 nozzle' },
 };
 
 export function downloadBambuProfile(results: any, wizard: any, suggestedName: string) {
-  const printerCode = PRINTER_MAP[wizard.printer] || 'X1C';
-  const nozzle = wizard.nozzle || '0.4';
-  const layerKey = Number(results.layerHeight || 0.20).toFixed(2);
-  const qualityLabel = LAYER_QUALITY[layerKey] || '0.20mm Standard';
-  const inherits = `${qualityLabel} @BBL ${printerCode} ${nozzle} nozzle`;
+  const nozzle = String(wizard.nozzle || '0.4');
+  const printerProfiles = PRINTER_PROFILES[wizard.printer] || PRINTER_PROFILES['X1C'];
+  const inherits = printerProfiles[nozzle] || printerProfiles['0.4'];
   const profileName = `SlicerAI - ${suggestedName}`;
   const safeName = (suggestedName || 'perfil').replace(/[^a-zA-Z0-9_\-]/g, '_');
 
@@ -29,40 +20,34 @@ export function downloadBambuProfile(results: any, wizard: any, suggestedName: s
     type: "process",
     name: profileName,
     from: "user",
+    setting_id: "",
     is_custom_defined: "1",
     instantiation: "true",
     inherits,
-    layer_height: String(results.layerHeight || 0.20),
-    first_layer_height: String(results.layerHeight || 0.20),
-    wall_loops: String(results.wallLoops || 3),
-    sparse_infill_density: `${results.infillPercent || 15}%`,
-    sparse_infill_pattern: results.infillPattern || "gyroid",
-    enable_support: (results.supportType && results.supportType !== "none" && results.supportType !== "Sem suporte") ? "1" : "0",
-    support_type: results.supportType === "tree" ? "tree(auto)" : "normal(auto)",
-    support_threshold_angle: String(results.supportAngle || 30),
-    nozzle_temperature: [String(results.nozzleTemp || 220)],
-    nozzle_temperature_initial_layer: [String(results.nozzleTemp || 220)],
-    hot_plate_temp: [String(results.bedTemp || 65)],
-    hot_plate_temp_initial_layer: [String(results.bedTemp || 65)],
-    inner_wall_speed: String(results.printSpeed || 150),
-    outer_wall_speed: String(Math.round((results.printSpeed || 150) * 0.6)),
-    sparse_infill_speed: String(results.printSpeed || 150),
-    top_surface_speed: String(Math.round((results.printSpeed || 150) * 0.5)),
-    top_shell_layers: String(results.topLayers || 4),
-    bottom_shell_layers: String(results.bottomLayers || 4),
-    enable_ironing: results.ironing ? "1" : "0",
+    layer_height: String(results.quality?.layer_height || 0.20),
+    first_layer_height: String(results.quality?.first_layer_height || 0.20),
+    wall_loops: String(results.strength?.wall_loops || 3),
+    sparse_infill_density: `${results.strength?.infill_density || 15}%`,
+    sparse_infill_pattern: results.strength?.infill_pattern || "gyroid",
+    enable_support: (results.support?.needed) ? "1" : "0",
+    support_type: String(results.support?.type || '').toLowerCase().includes("tree") ? "tree(auto)" : "normal(auto)",
+    support_threshold_angle: String(results.support?.threshold_angle || 30),
+    nozzle_temperature: [String(results.temperature?.nozzle || 220)],
+    nozzle_temperature_initial_layer: [String(results.temperature?.nozzle_first_layer || 220)],
+    hot_plate_temp: [String(results.temperature?.bed || 65)],
+    hot_plate_temp_initial_layer: [String(results.temperature?.bed_first_layer || 65)],
+    inner_wall_speed: String(results.speed?.inner_wall || 150),
+    outer_wall_speed: String(results.speed?.outer_wall || Math.round((results.speed?.inner_wall || 150) * 0.6)),
+    sparse_infill_speed: String(results.speed?.infill || 150),
+    top_surface_speed: String(results.speed?.top_surface || Math.round((results.speed?.inner_wall || 150) * 0.5)),
+    top_shell_layers: String(results.strength?.top_layers || 4),
+    bottom_shell_layers: String(results.strength?.bottom_layers || 4),
+    enable_ironing: results.quality?.ironing ? "1" : "0",
   };
 
-  const bundle = {
-    version: "2.0.0",
-    description: `SlicerAI profile gerado em ${new Date().toLocaleDateString('pt-BR')}`
-  };
-
-  const processFileName = `process/${safeName}.json`;
-
+  const fileName = `SlicerAI_${safeName}.json`;
   const files: Record<string, Uint8Array> = {
-    'bundle.json': strToU8(JSON.stringify(bundle, null, 2)),
-    [processFileName]: strToU8(JSON.stringify(processProfile, null, 2)),
+    [fileName]: strToU8(JSON.stringify(processProfile, null, 2)),
   };
 
   const zipped = zipSync(files);
