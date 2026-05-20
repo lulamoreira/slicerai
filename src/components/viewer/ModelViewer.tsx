@@ -106,7 +106,7 @@ const Model = ({ file }: { file: File }) => {
           const geomForWorker = new THREE.BufferGeometry();
           geomForWorker.setAttribute('position', new THREE.Float32BufferAttribute(posCopy3mf, 3));
           analyze(geomForWorker);
-
+        }
 
         if (object) {
           // Force material settings for non-3mf if not already handled
