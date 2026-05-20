@@ -61,7 +61,7 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({ onClose }) => {
                         key={entry.id}
                         onClick={() => {
                             useAppStore.setState({ 
-                                wizard: entry.wizardState, 
+                                wizard: entry.wizard, 
                                 results: entry.results,
                                 status: 'result'
                             });
