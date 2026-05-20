@@ -83,7 +83,7 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({ onClose }) => {
                                 </p>
                                 <div className="flex items-center gap-2 text-[9px] font-bold text-muted uppercase tracking-tighter">
                                     <Clock className="w-2.5 h-2.5" />
-                                    {formatDistanceToNow(entry.timestamp, { addSuffix: true, locale })}
+                                    {formatDistanceToNow(new Date(entry.timestamp), { addSuffix: true, locale })}
                                 </div>
                                 <div className="flex items-center gap-3 mt-1">
                                     <div className="flex items-center gap-1">
