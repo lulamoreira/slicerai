@@ -52,11 +52,13 @@ const Model = ({ file }: { file: File }) => {
           object = loader.parse(result as ArrayBuffer);
           
           // Center and scale the group/object
-          const box = new THREE.Box3().setFromObject(object);
-          const size = box.getSize(new THREE.Vector3());
-          const maxDim = Math.max(size.x, size.y, size.z);
-          const scale = 80 / maxDim;
-          object.scale.setScalar(scale);
+          const box3mf = new THREE.Box3().setFromObject(object);
+          const size3mf = box3mf.getSize(new THREE.Vector3());
+          const maxDim3mf = Math.max(size3mf.x, size3mf.y, size3mf.z);
+          if (maxDim3mf > 0) {
+            const scale3mf = 80 / maxDim3mf;
+            object.scale.setScalar(scale3mf);
+          }
           
           const center = new THREE.Box3().setFromObject(object).getCenter(new THREE.Vector3());
           object.position.sub(center);
@@ -68,27 +70,39 @@ const Model = ({ file }: { file: File }) => {
               const mesh = child as THREE.Mesh;
               const pos = mesh.geometry.attributes.position.array;
               positions.push(...Array.from(pos));
-            }
-          });
-          geometry = new THREE.BufferGeometry();
-          geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-        }
-
-        if (object) {
-          // Force material settings
-          object.traverse((child) => {
-            if ((child as THREE.Mesh).isMesh) {
-              (child as THREE.Mesh).material = new THREE.MeshStandardMaterial({
-                color: "#00ADB5",
+              
+              // Apply requested material to 3MF meshes
+              mesh.material = new THREE.MeshStandardMaterial({
+                color: "#00c8b4",
+                roughness: 0.7,
                 metalness: 0.1,
-                roughness: 0.4,
                 side: THREE.DoubleSide
               });
             }
           });
           
+          const posCopy3mf = new Float32Array(positions);
+          const geomCopy = new THREE.BufferGeometry();
+          geomCopy.setAttribute('position', new THREE.Float32BufferAttribute(posCopy3mf, 3));
+          analyze(geomCopy);
+        }
+
+        if (object) {
+          // Force material settings for non-3mf if not already handled
+          if (!file.name.toLowerCase().endsWith('.3mf')) {
+            object.traverse((child) => {
+              if ((child as THREE.Mesh).isMesh) {
+                (child as THREE.Mesh).material = new THREE.MeshStandardMaterial({
+                  color: "#00c8b4",
+                  metalness: 0.1,
+                  roughness: 0.7,
+                  side: THREE.DoubleSide
+                });
+              }
+            });
+          }
+          
           setModelObject(object);
-          if (geometry) analyze(geometry);
         }
       } catch (err) {
         console.error(err);
@@ -129,7 +143,7 @@ const Model = ({ file }: { file: File }) => {
       if ((child as THREE.Mesh).isMesh) meshes.push(child as THREE.Mesh);
     });
     meshes.forEach((mesh, idx) => {
-      let color = "#00ADB5";
+      let color = "#00c8b4";
       if (wizard.hasAMS && meshes.length > 1) {
         const slot = wizard.amsSlots[idx % wizard.amsSlotCount];
         if (slot?.color) color = slot.color;
@@ -137,7 +151,7 @@ const Model = ({ file }: { file: File }) => {
       mesh.material = new THREE.MeshStandardMaterial({
         color,
         metalness: 0.1,
-        roughness: 0.4,
+        roughness: 0.7,
         wireframe: isWireframe,
         side: THREE.DoubleSide
       });

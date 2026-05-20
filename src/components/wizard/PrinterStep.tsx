@@ -70,6 +70,12 @@ export const PrinterStep: React.FC = () => {
             </button>
           ))}
         </div>
+        <div 
+          onClick={() => useAppStore.setState({ status: 'idle', file: null, geometry: null, results: null })}
+          className="text-[10px] text-muted hover:text-primary cursor-pointer underline inline-block"
+        >
+          ← Trocar arquivo
+        </div>
       </section>
 
       <section className="flex flex-col gap-3 mt-2">

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useSettingsStore } from "../store/useAppStore";
+import { useAppStore, useSettingsStore } from "../store/useAppStore";
 import { useAuthStore } from "../store/useAuthStore";
 import { 
   Settings as SettingsIcon, 
@@ -12,7 +12,8 @@ import {
   HelpCircle,
   User as UserIcon,
   LogOut,
-  
+  Plus,
+  UploadCloud,
   ChevronDown,
   UserCircle
 } from "lucide-react";
@@ -32,6 +33,7 @@ interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = ({ onShowSettings, onShowHistory }) => {
   const { theme, setTheme, language, setLanguage, apiKey, history } = useSettingsStore();
   const { user, profile, logout } = useAuthStore();
+  const { status, resetApp } = useAppStore();
   
   useEffect(() => {
     if (profile) {
@@ -94,6 +96,16 @@ export const Navbar: React.FC<NavbarProps> = ({ onShowSettings, onShowHistory })
       </div>
 
       <div className="flex items-center gap-1 sm:gap-2">
+        {status !== 'idle' && (
+          <button 
+            onClick={resetApp}
+            className="flex items-center gap-2 px-3 py-1.5 hover:bg-primary-subtle border border-border-strong rounded-lg transition-all text-muted hover:text-primary mr-1"
+          >
+            <UploadCloud className="w-4 h-4" />
+            <span className="text-[10px] font-bold tracking-widest uppercase hidden sm:block">Nova Peça</span>
+          </button>
+        )}
+
         <button 
           onClick={onShowHistory}
           className="p-1.5 hover:bg-primary-subtle rounded-lg transition-all text-muted hover:text-primary relative"
