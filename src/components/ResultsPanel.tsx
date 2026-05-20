@@ -22,7 +22,8 @@ import {
   Layers,
   Palette,
   Download,
-  Share
+  Share,
+  Monitor
 } from "lucide-react";
 import { toast } from "sonner";
 import { SummaryTab } from "./results/tabs/SummaryTab";
@@ -30,11 +31,15 @@ import { SettingsTab } from "./results/tabs/SettingsTab";
 import { ExplanationTab } from "./results/tabs/ExplanationTab";
 import { ChecklistTab } from "./results/tabs/ChecklistTab";
 import { downloadBambuProfile } from "../lib/bambuExport";
+import { BambuSettingsModal } from "./BambuSettingsModal";
+
 
 export const ResultsPanel: React.FC = () => {
   const { results, resetApp, wizard } = useAppStore();
   const [activeTab, setActiveTab] = useState(0);
   const [copiedAll, setCopiedAll] = useState(false);
+  const [showBambuModal, setShowBambuModal] = useState(false);
+
 
   if (!results) return null;
 
@@ -148,13 +153,21 @@ export const ResultsPanel: React.FC = () => {
         </div>
 
         <button
-          onClick={() => downloadBambuProfile(results, wizard, (results as any).suggestedName || results.profile_name_suggestion || (wizard as any).fileName || 'perfil')}
+          onClick={() => setShowBambuModal(true)}
           className="w-full flex items-center justify-center gap-3 px-6 py-4 rounded-xl bg-primary text-[#0d0d14] font-bold text-[11px] tracking-widest hover:bg-primary-hover transition-all shadow-lg mt-4"
         >
-          <Download className="w-4 h-4" />
-          BAIXAR PARA BAMBU STUDIO (.bbscfg)
+          <Monitor className="w-4 h-4" />
+          VER CONFIGURAÇÕES PARA BAMBU STUDIO
         </button>
-        <p className="text-center text-[10px] text-muted mt-2">No Bambu Studio: <span className="font-bold text-foreground">Arquivo → Importar → Importar Configurações</span> → selecione o arquivo .bbscfg baixado</p>
+        
+        {showBambuModal && (
+          <BambuSettingsModal 
+            results={results} 
+            wizard={wizard} 
+            onClose={() => setShowBambuModal(false)} 
+          />
+        )}
+
 
 
         {/* Profile Name Suggestion */}
