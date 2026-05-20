@@ -12,7 +12,7 @@ import { MATERIAL_DENSITIES } from "../../lib/geometry";
 export const ReviewStep: React.FC = () => {
   const { wizard, setResults, status, geometry } = useAppStore();
   const { profile } = useAuthStore();
-  const { apiKey, groqApiKey, aiProvider, addToHistory } = useSettingsStore();
+  const { apiKey, groqApiKey, aiProvider, addToHistory, history: printHistory } = useSettingsStore();
 
   // Reactive weight: prefer live geometry from store; fallback to PLA density placeholder.
   const volume = geometry?.volume ?? wizard.geometryStats?.volume;
@@ -42,7 +42,7 @@ export const ReviewStep: React.FC = () => {
 
     useAppStore.setState({ status: 'generating' });
     try {
-      const results = await generateSettings(wizard as any, profile);
+      const results = await generateSettings(wizard as any, profile, printHistory);
       setResults(results);
 
       let thumbnail = "";
@@ -51,17 +51,16 @@ export const ReviewStep: React.FC = () => {
         thumbnail = canvas.toDataURL('image/png');
       }
 
-      addToHistory({
-        id: crypto.randomUUID(),
-        timestamp: Date.now(),
+      const newEntry = {
+        id: Date.now().toString(),
         fileName: wizard.fileName,
-        printer: wizard.printer,
-        material: wizard.material,
-        color: reviewColor,
-        thumbnail,
-        results,
-        wizardState: wizard as any,
-      });
+        timestamp: new Date().toISOString(),
+        wizard: { ...wizard },
+        results: { ...results },
+        thumbnail, // Including thumbnail as it was previously there and user mentioned it
+      };
+      
+      addToHistory(newEntry as any);
     } catch (error: any) {
       console.error('Gemini error:', error);
       const msg = error?.message || String(error);
@@ -117,6 +116,18 @@ export const ReviewStep: React.FC = () => {
             </button>
           </div>
         )}
+
+        <div className="flex flex-col items-center gap-2">
+          {printHistory.length > 0 ? (
+            <span className="text-primary text-[10px] font-bold uppercase tracking-widest text-center animate-pulse">
+              🧠 IA vai considerar seus últimos {Math.min(printHistory.length, 3)} print(s) para calibrar esta recomendação
+            </span>
+          ) : (
+            <span className="text-primary text-[10px] font-bold uppercase tracking-widest text-center">
+              ✨ Primeira análise — a IA vai aprender com esta impressão
+            </span>
+          )}
+        </div>
 
         <button
           onClick={handleGenerate}

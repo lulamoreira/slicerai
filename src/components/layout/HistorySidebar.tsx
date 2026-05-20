@@ -61,7 +61,7 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({ onClose }) => {
                         key={entry.id}
                         onClick={() => {
                             useAppStore.setState({ 
-                                wizard: entry.wizardState, 
+                                wizard: entry.wizard, 
                                 results: entry.results,
                                 status: 'result'
                             });
@@ -83,16 +83,17 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({ onClose }) => {
                                 </p>
                                 <div className="flex items-center gap-2 text-[9px] font-bold text-muted uppercase tracking-tighter">
                                     <Clock className="w-2.5 h-2.5" />
-                                    {formatDistanceToNow(entry.timestamp, { addSuffix: true, locale })}
+                                    {formatDistanceToNow(new Date(entry.timestamp), { addSuffix: true, locale })}
                                 </div>
                                 <div className="flex items-center gap-3 mt-1">
                                     <div className="flex items-center gap-1">
                                         <Printer className="w-2.5 h-2.5 text-primary" />
-                                        <span className="text-[8px] font-bold text-muted uppercase tracking-widest">{entry.printer.split(' ')[0]}</span>
+                                        <span className="text-[8px] font-bold text-muted uppercase tracking-widest">{entry.wizard.printer.split(' ')[0]}</span>
                                     </div>
                                     <div className="flex items-center gap-1">
-                                        <div className="w-2 h-2 rounded-full border border-border" style={{ backgroundColor: entry.color }} />
-                                        <span className="text-[8px] font-bold text-muted uppercase tracking-widest truncate max-w-[60px]">{entry.material}</span>
+                                        <div className="w-2 h-2 rounded-full border border-border" style={{ backgroundColor: entry.wizard.baseColor }} />
+                                        <span className="text-[8px] font-bold text-muted uppercase tracking-widest truncate max-w-[60px]">{entry.wizard.material}</span>
+
                                     </div>
                                 </div>
                             </div>
