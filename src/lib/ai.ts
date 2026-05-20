@@ -118,8 +118,20 @@ export const repairJSON = (json: string): string => {
 
 export const generateSettings = async (
   wizard: WizardState,
-  userProfile: any
+  userProfile: any,
+  history: any[] = []
 ): Promise<AIResponse> => {
+  const historyContext = history && history.length > 0
+    ? `HISTÓRICO DE IMPRESSÕES ANTERIORES DO USUÁRIO (use para calibrar sua recomendação):
+${history.slice(0, 3).map((h, i) => `
+Peça ${i + 1}: ${h.fileName || 'sem nome'}
+- Impressora: ${h.wizard?.printer || h.printer}, Filamento: ${h.wizard?.material || h.material}, Bocal: ${h.wizard?.nozzle || 0.4}mm
+- Configurações geradas: temperatura ${h.results?.temperature?.nozzle}°C, layer ${h.results?.quality?.layer_height}mm, velocidade ${h.results?.speed?.infill}mm/s
+- Suporte: ${h.results?.support?.type}, Infill: ${h.results?.strength?.infill_density}%
+`).join('\n')}
+INSTRUÇÃO: Com base nesse histórico, identifique preferências do usuário e padrões de uso. Se o usuário imprime frequentemente peças funcionais, priorize resistência. Se imprime peças decorativas, priorize acabamento.`
+    : '';
+
   const systemPrompt = `
     Você é o SlicerAI, especialista sênior em impressão 3D FDM com domínio completo do Bambu Studio (versão mais recente, 2024-2025). Conhece todos os perfis, materiais, build plates, configurações AMS, suporte, velocidade, temperatura e nuances de cada impressora Bambu Lab. Responda sempre em português do Brasil (ou inglês se o usuário selecionou EN). Seja preciso, técnico e acessível. Justifique cada recomendação com base nos dados de geometria e escolhas do usuário. Respond ONLY with valid JSON. No markdown, no explanation. Retorne APENAS JSON válido conforme o schema solicitado, sem markdown, sem texto extra.
 
@@ -128,6 +140,7 @@ export const generateSettings = async (
     2. Decida AUTOMATICAMENTE se o ironing (alisamento) é benéfico baseado no propósito e geometria da peça.
     3. Escolha uma cor de filamento funcional e apropriada para o propósito do objeto.
     4. O usuário NÃO fornece estas escolhas - VOCÊ decide baseado na sua expertise técnica. Não peça confirmação sobre suportes, cor ou ironing.
+    5. Você tem acesso ao histórico de impressões do usuário acima. Use-o para: 1) Identificar as preferências de impressora e material do usuário, 2) Calibrar as recomendações de temperatura e velocidade com base no que funcionou anteriormente, 3) Melhorar as decisões de suporte e qualidade ao longo do tempo. Se esta for a primeira impressão (sem histórico), use padrões seguros.
   `;
 
   const userMessage = `
