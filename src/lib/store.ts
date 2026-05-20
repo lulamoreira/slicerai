@@ -97,7 +97,7 @@ export const useStore = create<SlicerStore>()(
       }),
 
       loadFromHistory: (entry) => set({
-        wizard: entry.wizardState,
+        wizard: entry.wizard,
         currentResults: entry.results,
       }),
     }),
