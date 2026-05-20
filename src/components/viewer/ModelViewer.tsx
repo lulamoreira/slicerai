@@ -1,5 +1,5 @@
 /// <reference types="@react-three/fiber" />
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls, Grid, Stage } from "@react-three/drei";
 import * as THREE from "three";
@@ -96,11 +96,6 @@ const buildAnalysisGeometryFromObject = (source: THREE.Object3D) => {
   analysisGeometry.setAttribute('position', new THREE.Float32BufferAttribute(new Float32Array(positions), 3));
 
   return analysisGeometry;
-};
-
-const CameraFitter = ({ object }: { object: THREE.Object3D | null }) => {
-  const controls = OrbitControls.useThree?.();
-  return null;
 };
 
 const Model = ({ file }: { file: File }) => {
