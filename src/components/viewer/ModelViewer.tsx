@@ -1,7 +1,7 @@
 /// <reference types="@react-three/fiber" />
 import React, { useEffect, useState } from "react";
 import { Canvas } from "@react-three/fiber";
-import { OrbitControls, Grid, Stage } from "@react-three/drei";
+import { OrbitControls, Grid } from "@react-three/drei";
 import * as THREE from "three";
 import { STLLoader, ThreeMFLoader } from "three-stdlib";
 import { useAppStore } from "../../store/useAppStore";
