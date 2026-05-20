@@ -22,7 +22,8 @@ import {
   Layers,
   Palette,
   Download,
-  Share
+  Share,
+  Monitor
 } from "lucide-react";
 import { toast } from "sonner";
 import { SummaryTab } from "./results/tabs/SummaryTab";
@@ -30,6 +31,8 @@ import { SettingsTab } from "./results/tabs/SettingsTab";
 import { ExplanationTab } from "./results/tabs/ExplanationTab";
 import { ChecklistTab } from "./results/tabs/ChecklistTab";
 import { downloadBambuProfile } from "../lib/bambuExport";
+import { BambuSettingsModal } from "./BambuSettingsModal";
+
 
 export const ResultsPanel: React.FC = () => {
   const { results, resetApp, wizard } = useAppStore();
