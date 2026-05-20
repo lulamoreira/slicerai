@@ -149,14 +149,11 @@ export interface AIResponse {
 
 export interface HistoryEntry {
   id: string;
-  timestamp: number;
+  timestamp: string;
   fileName: string;
-  printer: PrinterModel;
-  material: string;
-  color: string;
-  thumbnail: string;
+  wizard: WizardState;
   results: AIResponse;
-  wizardState: WizardState;
+  thumbnail?: string;
 }
 
 export interface AppState {
