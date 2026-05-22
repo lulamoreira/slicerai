@@ -49,6 +49,8 @@ export const useSettingsStore = create<SettingsStore>()(
       openrouterKey: "",
       claudeKey: "",
       openaiKey: "",
+      claudeKey: "",
+      openaiKey: "",
       costPerKg: 120,
       defaultPrinter: "X1C",
       language: "pt-BR",
