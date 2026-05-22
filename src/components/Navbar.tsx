@@ -113,12 +113,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onShowSettings, onShowHistory })
         className="flex items-center gap-3 hover:scale-105 active:scale-95 transition-transform"
         aria-label="Voltar para a tela inicial"
       >
-        <div className="w-9 h-9 flex items-center justify-center">
-          <img src="/icon.svg" alt="SlicerAI" className="w-8 h-8 rounded-lg" />
-        </div>
-        <h1 className="font-extrabold tracking-tight text-lg md:text-xl text-foreground hidden xs:block">
-          SlicerAI <span className="text-primary font-light italic hidden sm:inline">for Bambu</span>
-        </h1>
+        <img src="/slicerai-icon.png" alt="SlicerAI" className="w-8 h-8 rounded-xl" />
+        <span className="font-bold text-sm text-foreground hidden xs:inline">SlicerAI</span>
+
 
       </button>
 
