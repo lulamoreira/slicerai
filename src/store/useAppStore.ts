@@ -7,7 +7,8 @@ import {
   FlushStrategy, 
   AIResponse, 
   HistoryEntry,
-  GeometryStats 
+  GeometryStats,
+  ProfileHistoryItem 
 } from "../lib/types";
 
 interface SettingsStore {
@@ -126,6 +127,9 @@ interface AppStore {
   results: AIResponse | null;
   orientationAdvice: { suggested: boolean; dismissed: boolean };
   isWireframe: boolean;
+  profileVersion: number;
+  profileHistory: ProfileHistoryItem[];
+  isFinalized: boolean;
 
   setStatus: (status: AppStore['status']) => void;
   setFile: (file: AppStore['file']) => void;
@@ -135,6 +139,9 @@ interface AppStore {
   setOrientationAdvice: (advice: Partial<AppStore['orientationAdvice']>) => void;
   toggleWireframe: () => void;
   resetApp: () => void;
+  setProfileVersion: (version: number) => void;
+  addToProfileHistory: (item: ProfileHistoryItem) => void;
+  setIsFinalized: (finalized: boolean) => void;
 }
 
 const initialWizard: WizardState = {
@@ -171,6 +178,9 @@ export const useAppStore = create<AppStore>((set) => ({
   results: null,
   orientationAdvice: { suggested: false, dismissed: false },
   isWireframe: false,
+  profileVersion: 1,
+  profileHistory: [],
+  isFinalized: false,
 
   setStatus: (status) => set({ status }),
   setFile: (file) => set((state) => {
@@ -199,7 +209,15 @@ export const useAppStore = create<AppStore>((set) => ({
       printer: (useSettingsStore.getState().defaultPrinter as any) || "X1C"
     },
     results: null,
-    orientationAdvice: { suggested: false, dismissed: false }
+    orientationAdvice: { suggested: false, dismissed: false },
+    profileVersion: 1,
+    profileHistory: [],
+    isFinalized: false
   }),
+  setProfileVersion: (profileVersion) => set({ profileVersion }),
+  addToProfileHistory: (item) => set((state) => ({ 
+    profileHistory: [...state.profileHistory, item] 
+  })),
+  setIsFinalized: (isFinalized) => set({ isFinalized }),
 }));
 

@@ -90,6 +90,18 @@ export const ReviewStep: React.FC = () => {
       };
       
       addToHistory(newEntry as any);
+
+      // Initialize profile versioning in store
+      useAppStore.setState({ 
+        profileVersion: 1,
+        profileHistory: [{
+          version: 1,
+          settings: results, // Using results directly as settings for simplicity
+          results: results,
+          downloadedAt: new Date().toISOString()
+        }],
+        isFinalized: false
+      });
     } catch (error: any) {
       console.error('Generation error:', error);
       
@@ -103,7 +115,6 @@ export const ReviewStep: React.FC = () => {
       alert("Erro ao gerar configurações:\n\n" + msg);
       useAppStore.setState({ status: 'ready' });
     }
-
   };
 
 

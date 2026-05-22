@@ -93,6 +93,7 @@ export interface BambuSettings {
   seamPosition?: string;
   seamReason?: string;
   profileName?: string;
+  version?: number;
 }
 
 export async function downloadBambuProfile(settings: BambuSettings): Promise<void> {
@@ -102,7 +103,10 @@ export async function downloadBambuProfile(settings: BambuSettings): Promise<voi
   const compatMap = COMPATIBLE_PRINTERS_MAP[printer] || COMPATIBLE_PRINTERS_MAP["X1 Carbon"];
   const inheritsValue = printerMap[nozzle] || printerMap["0.4"];
   const compatPrinter = compatMap[nozzle] || compatMap["0.4"];
-  const profileName = settings.profileName || `SlicerAI_${printer.replace(/ /g, "_")}_${Date.now()}`;
+  const versionSuffix = settings.version ? `_v${settings.version}` : "_v1";
+  const profileName = settings.profileName 
+    ? `${settings.profileName}${versionSuffix}` 
+    : `SlicerAI_${printer.replace(/ /g, "_")}_${Date.now()}${versionSuffix}`;
 
   const preset: Record<string, unknown> = {
     print_settings_id: "",

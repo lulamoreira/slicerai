@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useAppStore, useSettingsStore } from "../store/useAppStore";
 import { cn } from "../lib/utils";
 import { 
@@ -8,22 +8,17 @@ import {
   CheckSquare, 
   Copy, 
   Check,
-  Zap,
-  Shield,
-  Clock,
-  Thermometer,
-  Gauge,
-  Share2,
-  AlertTriangle,
   RotateCcw,
-  Wind,
-  Droplets,
-  Wand2,
-  Layers,
-  Palette,
   Download,
   Share,
-  Monitor
+  Monitor,
+  Camera,
+  ThumbsUp,
+  Image as ImageIcon,
+  History,
+  X,
+  FileText,
+  Wand2
 } from "lucide-react";
 import { toast } from "sonner";
 import { SummaryTab } from "./results/tabs/SummaryTab";
@@ -32,14 +27,23 @@ import { ExplanationTab } from "./results/tabs/ExplanationTab";
 import { ChecklistTab } from "./results/tabs/ChecklistTab";
 import { downloadBambuProfile } from "../lib/bambuExport";
 import { BambuSettingsModal } from "./BambuSettingsModal";
-
+import { generateSettings } from "../lib/ai";
+import { useAuthStore } from "../store/useAuthStore";
 
 export const ResultsPanel: React.FC = () => {
-  const { results, resetApp, wizard } = useAppStore();
+  const { results, setResults, resetApp, wizard, profileVersion, profileHistory, addToProfileHistory, setProfileVersion, isFinalized, setIsFinalized } = useAppStore();
+  const { profile } = useAuthStore();
+  const { history: printHistory } = useSettingsStore();
+  
   const [activeTab, setActiveTab] = useState(0);
   const [copiedAll, setCopiedAll] = useState(false);
   const [showBambuModal, setShowBambuModal] = useState(false);
-
+  const [selectedHistoryVersion, setSelectedHistoryVersion] = useState<number | null>(null);
+  const [showImproveArea, setShowImproveArea] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState<string | null>(null);
+  const [isImproving, setIsImproving] = useState(false);
+  
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (!results) return null;
 
@@ -50,25 +54,40 @@ export const ResultsPanel: React.FC = () => {
     { id: 3, label: "Checklist", icon: CheckSquare },
   ];
 
-  const handleCopyAll = () => {
-    const configText = generateFullConfigText(results);
+  const handleCopyAll = (res = results) => {
+    const configText = generateFullConfigText(res);
     navigator.clipboard.writeText(configText);
     setCopiedAll(true);
     toast.success("Todas as configurações copiadas!");
     setTimeout(() => setCopiedAll(false), 2000);
   };
 
-  const handleDownload = () => {
-    const configText = generateFullConfigText(results);
-    const blob = new Blob([configText], { type: "text/plain" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `SlicerAI_${results.profile_name_suggestion}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+  const handleDownload = (res = results, versionNum = profileVersion) => {
+    downloadBambuProfile({
+      printer: (wizard as any).printer || "X1 Carbon",
+      nozzle: String((wizard as any).nozzle || "0.4"),
+      layerHeight: res.quality.layer_height,
+      wallLoops: res.strength.wall_loops,
+      topLayers: res.strength.top_layers,
+      bottomLayers: res.strength.bottom_layers,
+      infillDensity: res.strength.infill_density,
+      infillPattern: res.strength.infill_pattern,
+      printSpeed: res.speed.inner_wall,
+      travelSpeed: res.speed.travel || 200,
+      enableSupport: res.support.needed,
+      supportType: res.support.type,
+      supportThreshold: res.support.threshold_angle,
+      brimWidth: res.adhesion.brim_width || 0,
+      supportReason: res.support.supportReason,
+      nozzleTemp: res.temperature.nozzle,
+      bedTemp: res.temperature.bed,
+      enableIroning: res.quality.ironing,
+      seamPosition: res.quality.seam_position,
+      seamReason: res.quality.seamReason,
+      filamentType: (wizard as any).material || "PLA",
+      profileName: `SlicerAI_${(wizard as any).fileName?.split('.')[0] || 'perfil'}`,
+      version: versionNum
+    });
   };
 
   const handleShare = () => {
@@ -79,12 +98,63 @@ export const ResultsPanel: React.FC = () => {
     toast.success("Link compartilhado copiado!");
   };
 
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setUploadingImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleImprove = async () => {
+    if (!uploadingImage) return;
+    
+    setIsImproving(true);
+    try {
+      const nextVersion = profileVersion + 1;
+      const improvedResults = await generateSettings(
+        wizard as any, 
+        profile, 
+        printHistory, 
+        uploadingImage, 
+        profileVersion,
+        results
+      );
+      
+      setResults(improvedResults);
+      setProfileVersion(nextVersion);
+      addToProfileHistory({
+        version: nextVersion,
+        settings: improvedResults,
+        results: improvedResults,
+        downloadedAt: new Date().toISOString(),
+        improveReason: improvedResults.explanation.postprocessing_tips // We can use this or AI will provide a specific field if we updated the schema
+      });
+      
+      setShowImproveArea(false);
+      setUploadingImage(null);
+      toast.success(`Versão v${nextVersion} gerada com sucesso!`);
+    } catch (error: any) {
+      console.error("Improvement error:", error);
+      toast.error("Erro ao melhorar perfil: " + (error.message || "Erro desconhecido"));
+    } finally {
+      setIsImproving(false);
+    }
+  };
+
   const renderTabContent = () => {
+    const displayResults = selectedHistoryVersion 
+      ? profileHistory.find(h => h.version === selectedHistoryVersion)?.results || results
+      : results;
+
     switch (activeTab) {
-      case 0: return <SummaryTab results={results} />;
-      case 1: return <SettingsTab results={results} />;
-      case 2: return <ExplanationTab results={results} />;
-      case 3: return <ChecklistTab results={results} printer={wizard.printer} />;
+      case 0: return <SummaryTab results={displayResults} />;
+      case 1: return <SettingsTab results={displayResults} />;
+      case 2: return <ExplanationTab results={displayResults} />;
+      case 3: return <ChecklistTab results={displayResults} printer={wizard.printer} />;
       default: return null;
     }
   };
@@ -92,9 +162,12 @@ export const ResultsPanel: React.FC = () => {
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center justify-between mb-8">
-        <h2 className="text-2xl font-bold text-foreground uppercase">Resultados <span className="text-primary">SlicerAI</span></h2>
+        <h2 className="text-2xl font-bold text-foreground uppercase">
+          Resultados <span className="text-primary">SlicerAI</span> 
+          <span className="ml-2 text-sm text-muted-foreground font-mono">v{profileVersion}</span>
+        </h2>
         <button 
-          onClick={handleCopyAll}
+          onClick={() => handleCopyAll()}
           className="flex items-center gap-2 px-4 py-2 bg-primary-subtle border border-primary/20 rounded-lg text-[10px] font-bold tracking-widest text-primary hover:bg-primary/20 transition-all"
         >
           {copiedAll ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
@@ -126,22 +199,172 @@ export const ResultsPanel: React.FC = () => {
         {renderTabContent()}
       </div>
 
-      {/* Bottom Bar */}
+      {/* Refinement Area */}
       <div className="mt-8 pt-8 border-t border-border space-y-6">
+        {isFinalized ? (
+          <div className="p-6 bg-[#00AE42]/10 border border-[#00AE42]/30 rounded-xl text-center animate-in zoom-in-95 duration-300">
+            <p className="text-[#00AE42] font-bold text-lg mb-1">Perfil finalizado na v{profileVersion} — boas impressões! 🎉</p>
+            <p className="text-[#00AE42]/70 text-xs">Sua configuração ideal foi salva no histórico.</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            <div className="flex flex-wrap gap-3">
+              <button 
+                onClick={() => setIsFinalized(true)}
+                className="flex-1 min-w-[140px] flex items-center justify-center gap-2 px-4 py-3.5 bg-[#00AE42]/10 border border-[#00AE42]/30 rounded-xl text-[10px] font-bold tracking-widest text-[#00AE42] hover:bg-[#00AE42]/20 transition-all"
+              >
+                <ThumbsUp className="w-3.5 h-3.5" />
+                ESTOU SATISFEITO
+              </button>
+              <button 
+                onClick={() => setShowImproveArea(!showImproveArea)}
+                className={cn(
+                  "flex-1 min-w-[140px] flex items-center justify-center gap-2 px-4 py-3.5 rounded-xl text-[10px] font-bold tracking-widest transition-all",
+                  showImproveArea 
+                    ? "bg-primary text-[#0d0d14]" 
+                    : "bg-transparent border border-border-strong text-foreground hover:text-primary hover:border-primary hover:bg-surface-hover"
+                )}
+              >
+                <Camera className="w-3.5 h-3.5" />
+                QUERO MELHORAR
+              </button>
+            </div>
+
+            {showImproveArea && (
+              <div className="p-6 bg-surface-raised border border-primary/30 rounded-xl space-y-4 animate-in slide-in-from-top-4 duration-300">
+                <div className="flex justify-between items-start">
+                  <div className="space-y-1">
+                    <p className="text-sm font-bold text-foreground">Enviar print do fatiamento</p>
+                    <p className="text-[11px] text-muted-foreground">
+                      Faça o fatiamento no Bambu Studio com este perfil, tire um print screen do resultado e envie aqui para a IA analisar e melhorar.
+                    </p>
+                  </div>
+                  <button onClick={() => setShowImproveArea(false)} className="text-muted-foreground hover:text-white">
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <div 
+                  onClick={() => fileInputRef.current?.click()}
+                  className={cn(
+                    "border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center gap-3 transition-all cursor-pointer",
+                    uploadingImage ? "border-primary/50 bg-primary/5" : "border-border-strong hover:border-primary/30 hover:bg-primary/5"
+                  )}
+                >
+                  <input 
+                    type="file" 
+                    ref={fileInputRef} 
+                    className="hidden" 
+                    accept="image/png,image/jpeg"
+                    onChange={handleImageUpload}
+                  />
+                  {uploadingImage ? (
+                    <div className="relative group w-full max-w-[200px] aspect-video">
+                      <img src={uploadingImage} alt="Preview" className="w-full h-full object-cover rounded-lg" />
+                      <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity rounded-lg">
+                        <p className="text-[10px] font-bold text-white uppercase">Trocar Imagem</p>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                        <ImageIcon className="w-6 h-6 text-primary" />
+                      </div>
+                      <p className="text-[10px] font-bold text-primary uppercase tracking-widest">Clique para selecionar PNG ou JPG</p>
+                    </>
+                  )}
+                </div>
+
+                <button
+                  disabled={!uploadingImage || isImproving}
+                  onClick={handleImprove}
+                  className="w-full py-4 rounded-xl bg-primary text-[#0d0d14] font-bold text-[11px] tracking-widest hover:bg-primary-hover transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {isImproving ? (
+                    <>
+                      <div className="w-3.5 h-3.5 border-2 border-[#0d0d14]/30 border-t-[#0d0d14] rounded-full animate-spin" />
+                      ANALISANDO...
+                    </>
+                  ) : (
+                    <>
+                      <Wand2 className="w-3.5 h-3.5" />
+                      GERAR v{profileVersion + 1} MELHORADA
+                    </>
+                  )}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Version History */}
+        {profileHistory.length > 0 && (
+          <div className="space-y-4">
+            <div className="flex items-center gap-2 text-muted uppercase tracking-[0.2em] text-[10px] font-bold">
+              <History className="w-3.5 h-3.5" />
+              Histórico de Versões
+            </div>
+            <div className="grid grid-cols-1 gap-3">
+              {profileHistory.map((item) => (
+                <div 
+                  key={item.version}
+                  className={cn(
+                    "p-4 rounded-xl border transition-all space-y-3",
+                    results.profile_name_suggestion === item.results.profile_name_suggestion && profileVersion === item.version
+                      ? "bg-primary/5 border-primary/30"
+                      : "bg-surface-raised border-border"
+                  )}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <span className="text-sm font-mono font-bold text-primary">v{item.version}</span>
+                      <span className="text-[10px] text-muted-foreground uppercase tracking-widest">
+                        {new Date(item.downloadedAt).toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button 
+                        onClick={() => handleCopyAll(item.results)}
+                        className="p-2 hover:bg-primary/10 text-muted-foreground hover:text-primary rounded-lg transition-all"
+                        title="Copiar configurações"
+                      >
+                        <Copy className="w-3.5 h-3.5" />
+                      </button>
+                      <button 
+                        onClick={() => handleDownload(item.results, item.version)}
+                        className="p-2 hover:bg-primary/10 text-muted-foreground hover:text-primary rounded-lg transition-all"
+                        title="Baixar .bbscfg"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                  {item.improveReason && (
+                    <p className="text-[11px] text-muted-foreground italic bg-black/10 p-2 rounded-lg border border-border/50">
+                      <span className="font-bold text-primary mr-1 opacity-70">Melhoria:</span>
+                      {item.improveReason}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="flex flex-wrap gap-3">
           <button 
             onClick={resetApp}
             className="flex-1 min-w-[120px] flex items-center justify-center gap-2 px-4 py-3.5 bg-transparent border border-border-strong rounded-xl text-[10px] font-bold tracking-widest text-foreground hover:text-primary hover:border-primary hover:bg-surface-hover transition-all"
           >
             <RotateCcw className="w-3.5 h-3.5" />
-            REFAZER
+            REFAZER TUDO
           </button>
           <button 
-            onClick={handleDownload}
+            onClick={() => handleDownload()}
             className="flex-1 min-w-[120px] flex items-center justify-center gap-2 px-4 py-3.5 bg-transparent border border-border-strong rounded-xl text-[10px] font-bold tracking-widest text-foreground hover:text-primary hover:border-primary hover:bg-surface-hover transition-all"
           >
             <Download className="w-3.5 h-3.5" />
-            BAIXAR .TXT
+            BAIXAR .bbscfg
           </button>
           <button 
             onClick={handleShare}
@@ -157,7 +380,7 @@ export const ResultsPanel: React.FC = () => {
           className="w-full flex items-center justify-center gap-3 px-6 py-4 rounded-xl bg-primary text-[#0d0d14] font-bold text-[11px] tracking-widest hover:bg-primary-hover transition-all shadow-lg mt-4"
         >
           <Monitor className="w-4 h-4" />
-          VER CONFIGURAÇÕES PARA BAMBU STUDIO
+          VER TODAS AS CONFIGURAÇÕES
         </button>
         
         {showBambuModal && (
@@ -186,23 +409,21 @@ export const ResultsPanel: React.FC = () => {
               seamPosition: results.quality.seam_position,
               seamReason: results.quality.seamReason,
               filamentType: (wizard as any).material || "PLA",
-              profileName: `SlicerAI - ${results.profile_name_suggestion || (wizard as any).fileName || 'perfil'}`,
+              profileName: `SlicerAI_${(wizard as any).fileName?.split('.')[0] || 'perfil'}`,
+              version: profileVersion
             }}
           />
         )}
 
-
-
-        {/* Profile Name Suggestion */}
         <div className="space-y-3">
           <p className="text-[10px] font-bold text-muted uppercase tracking-[0.2em] opacity-50">Sugestão de Nome de Perfil</p>
           <div className="flex items-center gap-3 p-3 bg-surface-raised border border-border rounded-xl group shadow-inner">
             <code className="flex-1 text-xs font-mono font-bold text-primary truncate pl-2">
-              {results.profile_name_suggestion}
+              {results.profile_name_suggestion}_v{profileVersion}
             </code>
             <button 
               onClick={() => {
-                navigator.clipboard.writeText(results.profile_name_suggestion);
+                navigator.clipboard.writeText(`${results.profile_name_suggestion}_v${profileVersion}`);
                 toast.success("Nome do perfil copiado!");
               }}
               className="p-2.5 hover:bg-primary-subtle text-muted group-hover:text-primary rounded-lg transition-all active:scale-90"

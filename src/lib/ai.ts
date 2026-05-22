@@ -121,7 +121,10 @@ export const repairJSON = (json: string): string => {
 export const generateSettings = async (
   wizard: WizardState,
   userProfile: any,
-  history: any[] = []
+  history: any[] = [],
+  improvementImage?: string,
+  currentVersion?: number,
+  previousResults?: AIResponse
 ): Promise<AIResponse> => {
   const historyContext = history && history.length > 0
     ? `HISTÓRICO DE IMPRESSÕES ANTERIORES DO USUÁRIO (use para calibrar sua recomendação):
@@ -144,7 +147,7 @@ INSTRUÇÃO: Com base nesse histórico, identifique preferências do usuário e 
        - Se o volume for baixo em relação ao bounding box indicando peça não sólida com espaços vazios, ative suporte.
        - Prefira o tipo normal(auto) para figuras orgânicas e tree(auto) para peças técnicas.
        - Só desative suporte se a peça for claramente plana, geométrica e simples como um cubo, cilindro ou placa reta.
-    2. Adicione o campo supportReason no objeto support contendo uma frase curta explicando por que o suporte foi ativado ou não, por exemplo "Figura com braços projetados — overhangs inevitáveis" ou "Peça geométrica simples sem overhangs".
+    2. Adicione the field supportReason no objeto support contendo uma frase curta explicando por que o suporte foi ativado ou não, por exemplo "Figura com braços projetados — overhangs inevitáveis" ou "Peça geométrica simples sem overhangs".
     3. Escolha o seam_position mais adequado para a peça usando estes critérios:
        - Use "back" para figuras humanas, personagens e animais pois esconde a costura na parte traseira.
        - Use "aligned" para peças técnicas e mecânicas onde a costura alinhada facilita pós-processamento.
@@ -155,7 +158,20 @@ INSTRUÇÃO: Com base nesse histórico, identifique preferências do usuário e 
     6. Escolha uma cor de filamento funcional e apropriada para o propósito do objeto.
     7. O usuário NÃO fornece estas escolhas (incluindo suportes e seam position) - VOCÊ decide baseado na sua expertise técnica.
     8. Você tem acesso ao histórico de impressões do usuário acima. Use-o para: 1) Identificar as preferências de impressora e material do usuário, 2) Calibrar as recomendações de temperatura e velocidade com base no que funcionou anteriormente, 3) Melhorar as decisões de suporte e qualidade ao longo do tempo. Se esta for a primeira impressão (sem histórico), use padrões seguros.
+    9. SE FOR FORNECIDA UMA IMAGEM DE MELHORIA: Analise o print screen do fatiamento, identifique problemas visíveis como stringing excessivo, má adesão, suportes desnecessários, qualidade de superfície ruim, ou tempo de impressão muito alto, e gere um perfil melhorado corrigindo esses problemas. Explique em improveReason o que foi identificado e o que foi ajustado. O novo perfil gerado deve ter o número da versão incrementado.
   `;
+
+  const improvementContext = improvementImage 
+    ? `
+ALERTA DE MELHORIA (Versão v${currentVersion}):
+O usuário enviou um print screen do fatiamento no Bambu Studio usando as configurações da versão v${currentVersion} (fornecidas abaixo).
+Analise a imagem em anexo e melhore os parâmetros.
+
+CONFIGURAÇÕES v${currentVersion} ATUAIS:
+${JSON.stringify(previousResults, null, 2)}
+
+INSTRUÇÃO ADICIONAL: "O usuário aplicou o perfil v${currentVersion} e fatiou o modelo. Analise o print screen do fatiamento, identifique problemas visíveis como stringing excessivo, má adesão, suportes desnecessários, qualidade de superfície ruim, ou tempo de impressão muito alto, e gere um perfil melhorado corrigindo esses problemas. Explique em \`improveReason\` o que foi identificado e o que foi ajustado."
+` : '';
 
   const userMessage = `
 Analise este modelo 3D e gere as melhores configurações para o Bambu Studio.
@@ -196,7 +212,22 @@ Retorne este JSON exato (todos os campos obrigatórios):
 }
   `;
 
-  const fullPrompt = `${historyContext}\n\n${systemPrompt}\n\n${userMessage}`;
+  const fullPrompt = `${historyContext}\n\n${improvementContext}\n\n${systemPrompt}\n\n${userMessage}`;
+
+  const messageContents: any[] = [];
+  if (improvementImage) {
+    messageContents.push({
+      text: fullPrompt
+    });
+    messageContents.push({
+      inlineData: {
+        mimeType: "image/jpeg",
+        data: improvementImage.split(',')[1] // remove data:image/jpeg;base64,
+      }
+    });
+  } else {
+    messageContents.push({ text: fullPrompt });
+  }
 
   let response;
   const generationConfig = {
@@ -217,7 +248,7 @@ Retorne este JSON exato (todos os campos obrigatórios):
           "Authorization": `Bearer ${session?.access_token}`
         },
         body: JSON.stringify({
-          contents: [{ parts: [{ text: fullPrompt }] }],
+          contents: [{ parts: messageContents }],
           generationConfig,
         }),
       }
@@ -226,6 +257,19 @@ Retorne este JSON exato (todos os campos obrigatórios):
     const groqApiKey = useSettingsStore.getState().groqApiKey;
     if (!groqApiKey) throw new Error('NO_API_KEY');
     const cleanKey = groqApiKey.trim().replace(/[^\x20-\x7E]/g, "");
+
+    const messages = [];
+    if (improvementImage) {
+      messages.push({
+        role: "user",
+        content: [
+          { type: "text", text: fullPrompt },
+          { type: "image_url", image_url: { url: improvementImage } }
+        ]
+      });
+    } else {
+      messages.push({ role: "user", content: fullPrompt });
+    }
 
     response = await fetch(
       "https://api.groq.com/openai/v1/chat/completions",
@@ -236,8 +280,8 @@ Retorne este JSON exato (todos os campos obrigatórios):
           "Content-Type": "application/json" 
         },
         body: JSON.stringify({
-          model: "llama-3.3-70b-versatile",
-          messages: [{ role: "user", content: fullPrompt }],
+          model: improvementImage ? "llama-3.2-11b-vision-preview" : "llama-3.3-70b-versatile",
+          messages,
           temperature: 0.2,
           max_tokens: 8192,
           response_format: { type: "json_object" }
@@ -259,7 +303,7 @@ Retorne este JSON exato (todos os campos obrigatórios):
         },
         body: JSON.stringify({
           model: "deepseek-chat",
-          messages: [{ role: "user", content: fullPrompt }],
+          messages: [{ role: "user", content: fullPrompt + (improvementImage ? " [IMAGE ATTACHED BUT NOT SUPPORTED BY DEEPSEEK - PLEASE ANALYZE TEXT CONTEXT]" : "") }],
           temperature: 0.2,
           max_tokens: 4096,
         }),
@@ -269,6 +313,19 @@ Retorne este JSON exato (todos os campos obrigatórios):
     const openrouterKey = useSettingsStore.getState().openrouterKey;
     if (!openrouterKey) throw new Error('NO_API_KEY');
     const cleanKey = openrouterKey.trim().replace(/[^\x20-\x7E]/g, "");
+
+    const messages = [];
+    if (improvementImage) {
+      messages.push({
+        role: "user",
+        content: [
+          { type: "text", text: fullPrompt },
+          { type: "image_url", image_url: { url: improvementImage } }
+        ]
+      });
+    } else {
+      messages.push({ role: "user", content: fullPrompt });
+    }
 
     response = await fetch(
       "https://openrouter.ai/api/v1/chat/completions",
@@ -280,8 +337,8 @@ Retorne este JSON exato (todos os campos obrigatórios):
           "HTTP-Referer": "https://slicerai.app"
         },
         body: JSON.stringify({
-          model: "deepseek/deepseek-r1:free",
-          messages: [{ role: "user", content: fullPrompt }],
+          model: improvementImage ? "google/gemini-2.0-flash-001" : "deepseek/deepseek-r1:free",
+          messages,
           temperature: 0.2,
           max_tokens: 4096,
         }),
@@ -297,7 +354,7 @@ Retorne este JSON exato (todos os campos obrigatórios):
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          contents: [{ parts: [{ text: fullPrompt }] }],
+          contents: [{ parts: messageContents }],
           generationConfig,
         }),
       }
