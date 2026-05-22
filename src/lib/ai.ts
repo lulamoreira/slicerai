@@ -379,7 +379,7 @@ Retorne este JSON exato (todos os campos obrigatórios):
           "HTTP-Referer": "https://slicerai.app"
         },
         body: JSON.stringify({
-          model: improvementImage ? "google/gemini-2.0-flash-001" : "meta-llama/llama-3.3-70b-instruct:free",
+          model: improvementImage ? "google/gemma-3-27b-it:free" : "meta-llama/llama-3.3-70b-instruct:free",
           messages,
           temperature: 0.2,
           max_tokens: 4096,
