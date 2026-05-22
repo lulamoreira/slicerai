@@ -17,7 +17,8 @@ import {
   Image as ImageIcon,
   History,
   X,
-  FileText
+  FileText,
+  Wand2
 } from "lucide-react";
 import { toast } from "sonner";
 import { SummaryTab } from "./results/tabs/SummaryTab";
