@@ -110,9 +110,10 @@ export const ReviewStep: React.FC = () => {
       useAppStore.setState({ status: 'ready' });
 
       // Handle specific structured errors from ai.ts
-      if (error?.code === "QUOTA_EXCEEDED" || error?.code === "NO_BALANCE" || error?.code === "INVALID_KEY" || error?.code === "OPENROUTER_NO_MODELS") {
+      if (error?.code === "QUOTA_EXCEEDED" || error?.code === "NO_BALANCE" || error?.code === "INVALID_KEY" || error?.code === "OPENROUTER_NO_MODELS" || error?.code === "VISION_NOT_AVAILABLE") {
         const hasGroq = !!groqApiKey || profile?.api_key_mode === 'centralized';
         const isQuotaOrBalanceOrNotFound = error?.code === "QUOTA_EXCEEDED" || error?.code === "NO_BALANCE" || error?.code === "OPENROUTER_NO_MODELS";
+        const isVisionError = error?.code === "VISION_NOT_AVAILABLE";
 
         if (isQuotaOrBalanceOrNotFound && hasGroq && selectedProvider !== 'groq') {
           // Automatic fallback to Groq
@@ -128,7 +129,7 @@ export const ReviewStep: React.FC = () => {
 
         setLastError({
           provider: error.provider || selectedProvider,
-          message: error.message
+          message: isVisionError ? "⚠️ O modelo de visão atual não está disponível. Tentando com outro provedor..." : error.message
         });
         setFailedProviders(prev => new Set(prev).add(selectedProvider));
         setIsAiModalOpen(true); // Re-open the selection modal
