@@ -130,6 +130,7 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
     Quality: t.quality, Strength: t.strength, Speed: t.speed, Support: t.support, Analysis: t.analysis,
   };
 
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent className="w-full h-full md:h-auto max-w-lg md:max-h-[90vh] flex flex-col p-0 gap-0 bg-[#1c1c1e] text-white border-white/10 rounded-none md:rounded-[2.5rem]">
