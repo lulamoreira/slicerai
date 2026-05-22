@@ -219,11 +219,12 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
                       volume: settings.geometryStats.volume,
                       triangleCount: settings.geometryStats.triangleCount
                     }) === "organic" 
-                      ? (lang === "PT" ? "Modelo orgânico — Tree Organic" : "Organic Model — Tree Organic")
-                      : (lang === "PT" ? "Modelo técnico — Normal Grid" : "Technical Model — Normal Grid")}
-                  </p>
-                </div>
-              )}
+                        ? (lang === "PT" ? "Modelo orgânico — Tree Organic" : "Organic Model — Tree Organic")
+                        : (lang === "PT" ? "Modelo técnico — Normal Grid" : "Technical Model — Normal Grid")}
+                    </p>
+                  </div>
+                )}
+
               <Row label={t.enableSupport} value={settings.enableSupport ? "✓ On" : "✗ Off"} onCopy={() => copy(settings.enableSupport ? "1" : "0")} decision={settings.decisions?.support} />
 
               {settings.supportReason && (
@@ -245,11 +246,11 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
           {activeTab === "Analysis" && (
             <div className="space-y-6 py-2">
               <div className="space-y-2">
-                <h3 className="text-sm font-bold text-primary flex items-center gap-2 uppercase tracking-wider">
+                <h3 className="text-sm font-bold text-green-400 flex items-center gap-2 uppercase tracking-wider">
                   <span className="w-1.5 h-1.5 rounded-full bg-primary" />
                   {t.strategyTitle}
                 </h3>
-                <p className="text-sm leading-relaxed text-foreground bg-white/5 p-4 rounded-xl border border-white/10 italic">
+                <p className="text-sm leading-relaxed text-gray-200 bg-white/5 p-4 rounded-xl border border-border/10 italic">
                   "{settings.decisions?.overall || "A IA está processando a melhor estratégia para este modelo..."}"
                 </p>
               </div>
