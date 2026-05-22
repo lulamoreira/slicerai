@@ -302,9 +302,9 @@ Retorne este JSON exato (todos os campos obrigatórios):
       ? ["llava-v1.5-7b-4096-preview", "llama-3.2-90b-vision-preview"] 
       : ["llama-3.3-70b-versatile"];
     
-    let groqResponse;
+    let groqResponse: Response | undefined;
     for (const model of groqModels) {
-      groqResponse = await fetch(
+      const currentTry = await fetch(
         "https://api.groq.com/openai/v1/chat/completions",
         {
           method: "POST",
@@ -321,14 +321,16 @@ Retorne este JSON exato (todos os campos obrigatórios):
           }),
         }
       );
-      if (groqResponse.ok) break;
-      const errData = await groqResponse.json().catch(() => ({}));
-      if (improvementImage && (groqResponse.status === 400 || errData?.error?.message?.includes("decommissioned") || errData?.error?.code === "model_not_found")) {
+      groqResponse = currentTry;
+      if (currentTry.ok) break;
+      const errData = await currentTry.json().catch(() => ({}));
+      if (improvementImage && (currentTry.status === 400 || errData?.error?.message?.includes("decommissioned") || errData?.error?.code === "model_not_found")) {
         console.log(`Groq: model ${model} failed, trying next fallback...`);
         continue;
       }
       break;
     }
+    if (!groqResponse) throw new Error("Falha ao conectar com Groq");
     response = groqResponse;
   } else if (aiProvider === 'deepseek') {
     const deepseekKey = useSettingsStore.getState().deepseekKey;
