@@ -229,6 +229,47 @@ Retorne este JSON exato (todos os campos obrigatórios):
         }),
       }
     );
+  } else if (aiProvider === 'deepseek') {
+    const deepseekKey = useSettingsStore.getState().deepseekKey;
+    if (!deepseekKey) throw new Error('NO_API_KEY');
+
+    response = await fetch(
+      "https://api.deepseek.com/v1/chat/completions",
+      {
+        method: "POST",
+        headers: { 
+          "Authorization": `Bearer ${deepseekKey}`,
+          "Content-Type": "application/json" 
+        },
+        body: JSON.stringify({
+          model: "deepseek-chat",
+          messages: [{ role: "user", content: fullPrompt }],
+          temperature: 0.2,
+          max_tokens: 4096,
+        }),
+      }
+    );
+  } else if (aiProvider === 'openrouter') {
+    const openrouterKey = useSettingsStore.getState().openrouterKey;
+    if (!openrouterKey) throw new Error('NO_API_KEY');
+
+    response = await fetch(
+      "https://openrouter.ai/api/v1/chat/completions",
+      {
+        method: "POST",
+        headers: { 
+          "Authorization": `Bearer ${openrouterKey}`,
+          "Content-Type": "application/json",
+          "HTTP-Referer": "https://slicerai.app"
+        },
+        body: JSON.stringify({
+          model: "deepseek/deepseek-r1:free",
+          messages: [{ role: "user", content: fullPrompt }],
+          temperature: 0.2,
+          max_tokens: 4096,
+        }),
+      }
+    );
   } else {
     const apiKey = useSettingsStore.getState().apiKey;
     if (!apiKey) throw new Error('NO_API_KEY');
