@@ -391,14 +391,13 @@ export const ReviewStep: React.FC = () => {
               }}
               className={cn(
                 "flex flex-col items-start p-4 rounded-xl border transition-all text-left relative overflow-hidden group",
-                (!deepseekKey && profile?.api_key_mode !== 'centralized')
-                  ? "bg-black/20 border-border/20 opacity-50 cursor-not-allowed"
-                  : "bg-surface-raised border-border/30 hover:border-primary/50 hover:bg-surface-raised/80"
+                "bg-muted border border-border hover:border-primary/50 hover:bg-muted/80",
+                (!deepseekKey && profile?.api_key_mode !== 'centralized') && "opacity-50 cursor-not-allowed"
               )}
             >
-              <span className="font-bold text-sm text-white">Usar DeepSeek V3</span>
+              <span className="font-bold text-sm text-foreground">Usar DeepSeek V3</span>
               {(!deepseekKey && profile?.api_key_mode !== 'centralized') && (
-                <span className="text-[10px] text-warning flex items-center gap-1 mt-1 font-medium">
+                <span className="text-[10px] text-red-500 flex items-center gap-1 mt-1 font-bold">
                   <AlertCircle className="w-3 h-3" />
                   Sem chave cadastrada
                 </span>
@@ -414,14 +413,13 @@ export const ReviewStep: React.FC = () => {
               }}
               className={cn(
                 "flex flex-col items-start p-4 rounded-xl border transition-all text-left relative overflow-hidden group",
-                (!groqApiKey && profile?.api_key_mode !== 'centralized')
-                  ? "bg-black/20 border-border/20 opacity-50 cursor-not-allowed"
-                  : "bg-surface-raised border-border/30 hover:border-primary/50 hover:bg-surface-raised/80"
+                "bg-muted border border-border hover:border-primary/50 hover:bg-muted/80",
+                (!groqApiKey && profile?.api_key_mode !== 'centralized') && "opacity-50 cursor-not-allowed"
               )}
             >
-              <span className="font-bold text-sm text-white">Usar Groq Llama 3.3</span>
+              <span className="font-bold text-sm text-foreground">Usar Groq Llama 3.3</span>
               {(!groqApiKey && profile?.api_key_mode !== 'centralized') && (
-                <span className="text-[10px] text-warning flex items-center gap-1 mt-1 font-medium">
+                <span className="text-[10px] text-red-500 flex items-center gap-1 mt-1 font-bold">
                   <AlertCircle className="w-3 h-3" />
                   Sem chave cadastrada
                 </span>
