@@ -352,6 +352,8 @@ export const ReviewStep: React.FC = () => {
                 selectedProvider === 'gemini' ? (!!apiKey || profile?.api_key_mode === 'centralized') :
                 selectedProvider === 'groq' ? (!!groqApiKey || profile?.api_key_mode === 'centralized') :
                 selectedProvider === 'deepseek' ? (!!deepseekKey || profile?.api_key_mode === 'centralized') :
+                selectedProvider === 'claude' ? (!!useSettingsStore.getState().claudeKey || profile?.api_key_mode === 'centralized') :
+                selectedProvider === 'openai' ? (!!useSettingsStore.getState().openaiKey || profile?.api_key_mode === 'centralized') :
                 (!!openrouterKey || profile?.api_key_mode === 'centralized')
               ) || failedProviders.has(selectedProvider)}
               className="bg-[#00AE42] hover:bg-[#009938] text-white font-bold"
