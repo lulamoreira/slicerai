@@ -8,6 +8,7 @@ const aiResponseSchema = z.object({
     layer_height: z.number(),
     first_layer_height: z.number(),
     seam_position: z.string(),
+    seamReason: z.string().optional(),
     ironing: z.boolean(),
     ironing_flow: z.number(),
     ironing_speed: z.number()
@@ -144,10 +145,16 @@ INSTRUÇÃO: Com base nesse histórico, identifique preferências do usuário e 
        - Prefira o tipo normal(auto) para figuras orgânicas e tree(auto) para peças técnicas.
        - Só desative suporte se a peça for claramente plana, geométrica e simples como um cubo, cilindro ou placa reta.
     2. Adicione o campo supportReason no objeto support contendo uma frase curta explicando por que o suporte foi ativado ou não, por exemplo "Figura com braços projetados — overhangs inevitáveis" ou "Peça geométrica simples sem overhangs".
-    3. Decida AUTOMATICAMENTE se o ironing (alisamento) é benéfico baseado no propósito e geometria da peça.
-    4. Escolha uma cor de filamento funcional e apropriada para o propósito do objeto.
-    5. O usuário NÃO fornece estas escolhas - VOCÊ decide baseado na sua expertise técnica. Não peça confirmação sobre suportes, cor ou ironing.
-    6. Você tem acesso ao histórico de impressões do usuário acima. Use-o para: 1) Identificar as preferências de impressora e material do usuário, 2) Calibrar as recomendações de temperatura e velocidade com base no que funcionou anteriormente, 3) Melhorar as decisões de suporte e qualidade ao longo do tempo. Se esta for a primeira impressão (sem histórico), use padrões seguros.
+    3. Escolha o seam_position mais adequado para a peça usando estes critérios:
+       - Use "back" para figuras humanas, personagens e animais pois esconde a costura na parte traseira.
+       - Use "aligned" para peças técnicas e mecânicas onde a costura alinhada facilita pós-processamento.
+       - Use "nearest" para peças com geometria complexa e muitas curvas onde velocidade importa mais.
+       - Use "random" apenas para peças decorativas orgânicas onde nenhuma face é preferível.
+    4. Adicione o campo seamReason no objeto quality com uma frase curta explicando a escolha, por exemplo "Figura humana — costura posicionada na parte traseira para ficar invisível".
+    5. Decida AUTOMATICAMENTE se o ironing (alisamento) é benéfico baseado no propósito e geometria da peça.
+    6. Escolha uma cor de filamento funcional e apropriada para o propósito do objeto.
+    7. O usuário NÃO fornece estas escolhas (incluindo suportes e seam position) - VOCÊ decide baseado na sua expertise técnica.
+    8. Você tem acesso ao histórico de impressões do usuário acima. Use-o para: 1) Identificar as preferências de impressora e material do usuário, 2) Calibrar as recomendações de temperatura e velocidade com base no que funcionou anteriormente, 3) Melhorar as decisões de suporte e qualidade ao longo do tempo. Se esta for a primeira impressão (sem histórico), use padrões seguros.
   `;
 
   const userMessage = `
@@ -170,12 +177,12 @@ ${wizard.hasAMS ? wizard.amsSlots.slice(0, wizard.amsSlotCount).map(s => `- Slot
 - Build plate: ${wizard.buildPlate}
 - Layer height: ${wizard.layerHeight}mm
 - Propósitos: ${wizard.purposes.join(', ')}
-- Seam: ${wizard.seamPosition}
+
 - Custo filamento: R$120/kg
 
 Retorne este JSON exato (todos os campos obrigatórios):
 {
-  "quality": { "layer_height": number, "first_layer_height": number, "seam_position": string, "ironing": boolean, "ironing_flow": number, "ironing_speed": number },
+  "quality": { "layer_height": number, "first_layer_height": number, "seam_position": string, "seamReason": string, "ironing": boolean, "ironing_flow": number, "ironing_speed": number },
   "strength": { "infill_density": number, "infill_pattern": string, "wall_loops": number, "top_layers": number, "bottom_layers": number, "top_surface_pattern": string, "bottom_surface_pattern": string },
   "support": { "needed": boolean, "type": string, "threshold_angle": number, "top_z_distance": number, "bottom_z_distance": number, "xy_distance": number, "interface_layers": number, "interface_pattern": string, "tree_support_angle": number, "on_build_plate_only": boolean, "supportReason": string },
   "temperature": { "nozzle": number, "nozzle_first_layer": number, "bed": number, "bed_first_layer": number, "chamber": number, "chamber_required": boolean, "part_cooling_fan": number, "part_cooling_first_layer": number },
