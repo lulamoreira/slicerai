@@ -12,7 +12,7 @@ import { MATERIAL_DENSITIES } from "../../lib/geometry";
 export const ReviewStep: React.FC = () => {
   const { wizard, setResults, status, geometry } = useAppStore();
   const { profile } = useAuthStore();
-  const { apiKey, groqApiKey, aiProvider, addToHistory, history: printHistory } = useSettingsStore();
+  const { apiKey, groqApiKey, deepseekKey, openrouterKey, aiProvider, addToHistory, history: printHistory } = useSettingsStore();
 
   // Reactive weight: prefer live geometry from store; fallback to PLA density placeholder.
   const volume = geometry?.volume ?? wizard.geometryStats?.volume;
@@ -34,7 +34,11 @@ export const ReviewStep: React.FC = () => {
 
   const handleGenerate = async () => {
     const isCentralized = profile?.api_key_mode === 'centralized';
-    const currentApiKey = aiProvider === 'gemini' ? apiKey : groqApiKey;
+    const currentApiKey = 
+      aiProvider === 'gemini' ? apiKey : 
+      aiProvider === 'groq' ? groqApiKey :
+      aiProvider === 'deepseek' ? deepseekKey :
+      openrouterKey;
     if (!currentApiKey && !isCentralized) {
       openSettings();
       return;
@@ -103,10 +107,18 @@ export const ReviewStep: React.FC = () => {
       </div>
 
       <div className="space-y-4">
-        {(!(aiProvider === 'gemini' ? apiKey : groqApiKey) && profile?.api_key_mode !== 'centralized') && (
+        {(!(aiProvider === 'gemini' ? apiKey : 
+           aiProvider === 'groq' ? groqApiKey : 
+           aiProvider === 'deepseek' ? deepseekKey : 
+           openrouterKey) && profile?.api_key_mode !== 'centralized') && (
           <div className="p-3 bg-[rgba(255,180,84,0.1)] border border-[rgba(255,180,84,0.3)] rounded-lg flex items-center justify-between gap-3">
             <span className="text-[0.85rem] font-medium text-warning">
-              ⚠️ Configure sua chave {aiProvider === 'gemini' ? 'Gemini 2.0 Flash' : 'Groq Llama 3.3'} nas ⚙️ Configurações para continuar
+              ⚠️ Configure sua chave {
+                aiProvider === 'gemini' ? 'Gemini 2.0 Flash' : 
+                aiProvider === 'groq' ? 'Groq Llama 3.3' :
+                aiProvider === 'deepseek' ? 'DeepSeek V3' :
+                'OpenRouter'
+              } nas ⚙️ Configurações para continuar
             </span>
             <button
               onClick={openSettings}
@@ -131,7 +143,7 @@ export const ReviewStep: React.FC = () => {
 
         <button
           onClick={handleGenerate}
-          disabled={isGenerating || (!(aiProvider === 'gemini' ? apiKey : groqApiKey) && profile?.api_key_mode !== 'centralized')}
+          disabled={isGenerating || (!(aiProvider === 'gemini' ? apiKey : aiProvider === 'groq' ? groqApiKey : aiProvider === 'deepseek' ? deepseekKey : openrouterKey) && profile?.api_key_mode !== 'centralized')}
           className={cn(
             "w-full py-10 rounded-xl flex flex-col items-center justify-center gap-3 transition-all relative overflow-hidden group",
             isGenerating
@@ -153,7 +165,10 @@ export const ReviewStep: React.FC = () => {
               <div className="text-center space-y-1">
                 <span className="text-2xl font-bold tracking-tight uppercase block text-[#0d0d14]">Gerar com SlicerAI</span>
                 <span className="text-[10px] opacity-70 font-bold uppercase tracking-[0.4em] block pl-1 text-[#0d0d14]">
-                  {aiProvider === 'gemini' ? "OTIMIZAÇÃO GEMINI 2.0 FLASH" : "OTIMIZAÇÃO GROQ LLAMA 3.3"}
+                  {aiProvider === 'gemini' ? "OTIMIZAÇÃO GOOGLE GEMINI 2.0" : 
+                   aiProvider === 'groq' ? "OTIMIZAÇÃO GROQ LLAMA 3.3" :
+                   aiProvider === 'deepseek' ? "OTIMIZAÇÃO DEEPSEEK V3" :
+                   "OTIMIZAÇÃO OPENROUTER"}
                 </span>
               </div>
             </>
