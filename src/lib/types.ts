@@ -61,6 +61,7 @@ export interface AIResponse {
     first_layer_height: number;
     seam_position: string;
     seamReason?: string;
+    improveReason?: string;
     ironing: boolean;
     ironing_flow: number;
     ironing_speed: number;
