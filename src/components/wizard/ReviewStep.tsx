@@ -62,6 +62,8 @@ export const ReviewStep: React.FC = () => {
       selectedProvider === 'gemini' ? apiKey : 
       selectedProvider === 'groq' ? groqApiKey :
       selectedProvider === 'deepseek' ? deepseekKey :
+      selectedProvider === 'claude' ? useSettingsStore.getState().claudeKey :
+      selectedProvider === 'openai' ? useSettingsStore.getState().openaiKey :
       openrouterKey;
 
     if (!currentApiKey && !isCentralized) {
@@ -109,6 +111,21 @@ export const ReviewStep: React.FC = () => {
 
       // Handle specific structured errors from ai.ts
       if (error?.code === "QUOTA_EXCEEDED" || error?.code === "NO_BALANCE" || error?.code === "INVALID_KEY" || error?.code === "OPENROUTER_NO_MODELS") {
+        const hasGroq = !!groqApiKey || profile?.api_key_mode === 'centralized';
+        const isQuotaOrBalanceOrNotFound = error?.code === "QUOTA_EXCEEDED" || error?.code === "NO_BALANCE" || error?.code === "OPENROUTER_NO_MODELS";
+
+        if (isQuotaOrBalanceOrNotFound && hasGroq && selectedProvider !== 'groq') {
+          // Automatic fallback to Groq
+          setAiProvider('groq');
+          setLastError({
+            provider: error.provider || selectedProvider,
+            message: `${error.message.split('.')[0]} — alternando automaticamente para Groq (gratuito)`
+          });
+          setFailedProviders(prev => new Set(prev).add(selectedProvider));
+          setIsAiModalOpen(true);
+          return;
+        }
+
         setLastError({
           provider: error.provider || selectedProvider,
           message: error.message
@@ -221,6 +238,8 @@ export const ReviewStep: React.FC = () => {
                   {aiProvider === 'gemini' ? "OTIMIZAÇÃO GOOGLE GEMINI 2.0" : 
                    aiProvider === 'groq' ? "OTIMIZAÇÃO GROQ Llama 3.3" :
                    aiProvider === 'deepseek' ? "OTIMIZAÇÃO DEEPSEEK V3" :
+                   aiProvider === 'claude' ? "OTIMIZAÇÃO CLAUDE 3.5 HAIKU" :
+                   aiProvider === 'openai' ? "OTIMIZAÇÃO GPT-4O MINI" :
                    "OTIMIZAÇÃO OPENROUTER"}
                 </span>
               </div>
@@ -295,6 +314,30 @@ export const ReviewStep: React.FC = () => {
                 setLastError(null);
               }} 
             />
+            <ProviderButton 
+              id="claude" 
+              name="Claude (Anthropic)" 
+              description="Claude 3.5 Haiku — PAGO 💳"
+              hasKey={!!useSettingsStore.getState().claudeKey || profile?.api_key_mode === 'centralized'} 
+              isSelected={selectedProvider === 'claude'} 
+              isFailed={failedProviders.has('claude')}
+              onClick={() => {
+                setSelectedProvider('claude');
+                setLastError(null);
+              }} 
+            />
+            <ProviderButton 
+              id="openai" 
+              name="ChatGPT (OpenAI)" 
+              description="GPT-4o Mini — PAGO 💳"
+              hasKey={!!useSettingsStore.getState().openaiKey || profile?.api_key_mode === 'centralized'} 
+              isSelected={selectedProvider === 'openai'} 
+              isFailed={failedProviders.has('openai')}
+              onClick={() => {
+                setSelectedProvider('openai');
+                setLastError(null);
+              }} 
+            />
           </div>
 
           <DialogFooter className="flex gap-3 mt-2 sm:justify-end">
@@ -311,6 +354,8 @@ export const ReviewStep: React.FC = () => {
                 selectedProvider === 'gemini' ? (!!apiKey || profile?.api_key_mode === 'centralized') :
                 selectedProvider === 'groq' ? (!!groqApiKey || profile?.api_key_mode === 'centralized') :
                 selectedProvider === 'deepseek' ? (!!deepseekKey || profile?.api_key_mode === 'centralized') :
+                selectedProvider === 'claude' ? (!!useSettingsStore.getState().claudeKey || profile?.api_key_mode === 'centralized') :
+                selectedProvider === 'openai' ? (!!useSettingsStore.getState().openaiKey || profile?.api_key_mode === 'centralized') :
                 (!!openrouterKey || profile?.api_key_mode === 'centralized')
               ) || failedProviders.has(selectedProvider)}
               className="bg-[#00AE42] hover:bg-[#009938] text-white font-bold"

@@ -131,7 +131,7 @@ export const ResultsPanel: React.FC = () => {
         settings: improvedResults,
         results: improvedResults,
         downloadedAt: new Date().toISOString(),
-        improveReason: improvedResults.explanation.postprocessing_tips // We can use this or AI will provide a specific field if we updated the schema
+        improveReason: (improvedResults as any).quality.improveReason || improvedResults.explanation.postprocessing_tips
       });
       
       setShowImproveArea(false);

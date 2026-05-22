@@ -9,6 +9,7 @@ const aiResponseSchema = z.object({
     first_layer_height: z.number(),
     seam_position: z.string(),
     seamReason: z.string().optional(),
+    improveReason: z.string().optional(),
     ironing: z.boolean(),
     ironing_flow: z.number(),
     ironing_speed: z.number()
@@ -158,7 +159,7 @@ INSTRUÇÃO: Com base nesse histórico, identifique preferências do usuário e 
     6. Escolha uma cor de filamento funcional e apropriada para o propósito do objeto.
     7. O usuário NÃO fornece estas escolhas (incluindo suportes e seam position) - VOCÊ decide baseado na sua expertise técnica.
     8. Você tem acesso ao histórico de impressões do usuário acima. Use-o para: 1) Identificar as preferências de impressora e material do usuário, 2) Calibrar as recomendações de temperatura e velocidade com base no que funcionou anteriormente, 3) Melhorar as decisões de suporte e qualidade ao longo do tempo. Se esta for a primeira impressão (sem histórico), use padrões seguros.
-    9. SE FOR FORNECIDA UMA IMAGEM DE MELHORIA: Analise o print screen do fatiamento, identifique problemas visíveis como stringing excessivo, má adesão, suportes desnecessários, qualidade de superfície ruim, ou tempo de impressão muito alto, e gere um perfil melhorado corrigindo esses problemas. Explique em improveReason o que foi identificado e o que foi ajustado. O novo perfil gerado deve ter o número da versão incrementado.
+    9. SE FOR FORNECIDA UMA IMAGEM DE MELHORIA: Analise o print screen do fatiamento, identifique problemas visíveis como stringing excessivo, má adesão, suportes desnecessários, qualidade de superfície ruim, ou tempo de impressão muito alto, e gere um perfil melhorado corrigindo esses problemas. Explique em quality.improveReason o que foi identificado e o que foi ajustado. O novo perfil gerado deve ter o número da versão incrementado.
   `;
 
   const improvementContext = improvementImage 
@@ -198,7 +199,7 @@ ${wizard.hasAMS ? wizard.amsSlots.slice(0, wizard.amsSlotCount).map(s => `- Slot
 
 Retorne este JSON exato (todos os campos obrigatórios):
 {
-  "quality": { "layer_height": number, "first_layer_height": number, "seam_position": string, "seamReason": string, "ironing": boolean, "ironing_flow": number, "ironing_speed": number },
+  "quality": { "layer_height": number, "first_layer_height": number, "seam_position": string, "seamReason": string, "improveReason": string, "ironing": boolean, "ironing_flow": number, "ironing_speed": number },
   "strength": { "infill_density": number, "infill_pattern": string, "wall_loops": number, "top_layers": number, "bottom_layers": number, "top_surface_pattern": string, "bottom_surface_pattern": string },
   "support": { "needed": boolean, "type": string, "threshold_angle": number, "top_z_distance": number, "bottom_z_distance": number, "xy_distance": number, "interface_layers": number, "interface_pattern": string, "tree_support_angle": number, "on_build_plate_only": boolean, "supportReason": string },
   "temperature": { "nozzle": number, "nozzle_first_layer": number, "bed": number, "bed_first_layer": number, "chamber": number, "chamber_required": boolean, "part_cooling_fan": number, "part_cooling_first_layer": number },
@@ -383,6 +384,48 @@ Retorne este JSON exato (todos os campos obrigatórios):
         };
       }
     }
+  } else if (aiProvider === 'claude') {
+    const claudeKey = useSettingsStore.getState().claudeKey;
+    if (!claudeKey) throw new Error('NO_API_KEY');
+    const cleanKey = claudeKey.trim().replace(/[^\x20-\x7E]/g, "");
+
+    response = await fetch(
+      "https://api.anthropic.com/v1/messages",
+      {
+        method: "POST",
+        headers: { 
+          "x-api-key": cleanKey,
+          "anthropic-version": "2023-06-01",
+          "Content-Type": "application/json" 
+        },
+        body: JSON.stringify({
+          model: "claude-3-5-haiku-20241022",
+          max_tokens: 2048,
+          messages: [{ role: "user", content: fullPrompt }],
+        }),
+      }
+    );
+  } else if (aiProvider === 'openai') {
+    const openaiKey = useSettingsStore.getState().openaiKey;
+    if (!openaiKey) throw new Error('NO_API_KEY');
+    const cleanKey = openaiKey.trim().replace(/[^\x20-\x7E]/g, "");
+
+    response = await fetch(
+      "https://api.openai.com/v1/chat/completions",
+      {
+        method: "POST",
+        headers: { 
+          "Authorization": `Bearer ${cleanKey}`,
+          "Content-Type": "application/json" 
+        },
+        body: JSON.stringify({
+          model: "gpt-4o-mini",
+          messages: [{ role: "user", content: fullPrompt }],
+          temperature: 0.2,
+          max_tokens: 2048,
+        }),
+      }
+    );
   } else {
     const apiKey = useSettingsStore.getState().apiKey;
     if (!apiKey) throw new Error('NO_API_KEY');
@@ -404,21 +447,24 @@ Retorne este JSON exato (todos os campos obrigatórios):
     const errBody = await response.json().catch(() => ({}));
     const errorMessage = errBody?.error?.message || errBody?.error?.status || response.statusText || "Erro desconhecido";
     
-    // DeepSeek balance error
-    if (aiProvider === 'deepseek' && response.status === 402) {
+    // DeepSeek/Claude/OpenAI balance error
+    if (response.status === 402) {
+      const providerName = aiProvider === 'claude' ? 'Claude' : aiProvider === 'openai' ? 'OpenAI' : 'DeepSeek';
+      const billingUrl = aiProvider === 'claude' ? 'console.anthropic.com' : aiProvider === 'openai' ? 'platform.openai.com' : 'platform.deepseek.com';
       throw { 
         code: "NO_BALANCE", 
-        provider: "DeepSeek", 
-        message: "Saldo insuficiente — seus créditos gratuitos acabaram. Acesse platform.deepseek.com para recarregar ou troque de provedor." 
+        provider: providerName, 
+        message: `Saldo insuficiente — seus créditos acabaram. Acesse ${billingUrl} para recarregar ou troque de provedor.` 
       };
     }
 
-    // Gemini quota error
-    if (aiProvider === 'gemini' && response.status === 429 && (errorMessage.toLowerCase().includes("quota") || errorMessage.toLowerCase().includes("limit exceeded"))) {
+    // Gemini/Generic quota error
+    if (response.status === 429) {
+      const providerName = aiProvider.charAt(0).toUpperCase() + aiProvider.slice(1);
       throw { 
         code: "QUOTA_EXCEEDED", 
-        provider: "Gemini", 
-        message: "Cota gratuita esgotada. Tente novamente amanhã ou troque de provedor." 
+        provider: providerName, 
+        message: `${providerName}: Cota esgotada ou limite atingido. Tente outro provedor.` 
       };
     }
 
@@ -440,9 +486,15 @@ Retorne este JSON exato (todos os campos obrigatórios):
 
 
   const data = await response.json();
-  const content = (aiProvider === 'groq' || aiProvider === 'deepseek' || aiProvider === 'openrouter')
-    ? data?.choices?.[0]?.message?.content 
-    : data?.candidates?.[0]?.content?.parts?.[0]?.text;
+  let content = "";
+  if (aiProvider === 'claude') {
+    content = data?.content?.[0]?.text;
+  } else if (aiProvider === 'groq' || aiProvider === 'deepseek' || aiProvider === 'openrouter' || aiProvider === 'openai') {
+    content = data?.choices?.[0]?.message?.content;
+  } else {
+    content = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+  }
+  
   if (!content) throw new Error(`Empty response from ${aiProvider}`);
   const repaired = repairJSON(content);
   return aiResponseSchema.parse(JSON.parse(repaired));
