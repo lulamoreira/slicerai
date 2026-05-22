@@ -26,8 +26,6 @@ export const ReviewStep: React.FC = () => {
   const [lastError, setLastError] = React.useState<{ provider: string; message: string } | null>(null);
   const [failedProviders, setFailedProviders] = React.useState<Set<string>>(new Set());
 
-
-
   // Reactive weight: prefer live geometry from store; fallback to PLA density placeholder.
   const volume = geometry?.volume ?? wizard.geometryStats?.volume;
   const density = MATERIAL_DENSITIES[wizard.material as keyof typeof MATERIAL_DENSITIES] || 1.24;
@@ -130,7 +128,6 @@ export const ReviewStep: React.FC = () => {
     }
   };
 
-
   const isGenerating = status === 'generating';
 
   return (
@@ -222,7 +219,7 @@ export const ReviewStep: React.FC = () => {
                 <span className="text-2xl font-bold tracking-tight uppercase block text-[#0d0d14]">Gerar com SlicerAI</span>
                 <span className="text-[10px] opacity-70 font-bold uppercase tracking-[0.4em] block pl-1 text-[#0d0d14]">
                   {aiProvider === 'gemini' ? "OTIMIZAÇÃO GOOGLE GEMINI 2.0" : 
-                   aiProvider === 'groq' ? "OTIMIZAÇÃO GROQ LLAMA 3.3" :
+                   aiProvider === 'groq' ? "OTIMIZAÇÃO GROQ Llama 3.3" :
                    aiProvider === 'deepseek' ? "OTIMIZAÇÃO DEEPSEEK V3" :
                    "OTIMIZAÇÃO OPENROUTER"}
                 </span>
@@ -242,6 +239,14 @@ export const ReviewStep: React.FC = () => {
             <p className="text-sm text-muted-foreground">
               Você pode trocar a qualquer momento nas Configurações.
             </p>
+            {lastError && (
+              <div className="mt-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg flex items-start gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+                <p className="text-xs text-red-400 leading-relaxed">
+                  <span className="font-bold">⚠️ {lastError.provider}:</span> {lastError.message}
+                </p>
+              </div>
+            )}
           </DialogHeader>
 
           <div className="grid grid-cols-1 gap-3 my-6">
@@ -250,28 +255,44 @@ export const ReviewStep: React.FC = () => {
               name="Google Gemini 2.0" 
               hasKey={!!apiKey || profile?.api_key_mode === 'centralized'} 
               isSelected={selectedProvider === 'gemini'} 
-              onClick={() => setSelectedProvider('gemini')} 
+              isFailed={failedProviders.has('gemini')}
+              onClick={() => {
+                setSelectedProvider('gemini');
+                setLastError(null);
+              }} 
             />
             <ProviderButton 
               id="groq" 
               name="Groq Llama 3.3" 
               hasKey={!!groqApiKey || profile?.api_key_mode === 'centralized'} 
               isSelected={selectedProvider === 'groq'} 
-              onClick={() => setSelectedProvider('groq')} 
+              isFailed={failedProviders.has('groq')}
+              onClick={() => {
+                setSelectedProvider('groq');
+                setLastError(null);
+              }} 
             />
             <ProviderButton 
               id="deepseek" 
               name="DeepSeek V3" 
               hasKey={!!deepseekKey || profile?.api_key_mode === 'centralized'} 
               isSelected={selectedProvider === 'deepseek'} 
-              onClick={() => setSelectedProvider('deepseek')} 
+              isFailed={failedProviders.has('deepseek')}
+              onClick={() => {
+                setSelectedProvider('deepseek');
+                setLastError(null);
+              }} 
             />
             <ProviderButton 
               id="openrouter" 
               name="OpenRouter" 
               hasKey={!!openrouterKey || profile?.api_key_mode === 'centralized'} 
               isSelected={selectedProvider === 'openrouter'} 
-              onClick={() => setSelectedProvider('openrouter')} 
+              isFailed={failedProviders.has('openrouter')}
+              onClick={() => {
+                setSelectedProvider('openrouter');
+                setLastError(null);
+              }} 
             />
           </div>
 
@@ -290,7 +311,7 @@ export const ReviewStep: React.FC = () => {
                 selectedProvider === 'groq' ? (!!groqApiKey || profile?.api_key_mode === 'centralized') :
                 selectedProvider === 'deepseek' ? (!!deepseekKey || profile?.api_key_mode === 'centralized') :
                 (!!openrouterKey || profile?.api_key_mode === 'centralized')
-              )}
+              ) || failedProviders.has(selectedProvider)}
               className="bg-[#00AE42] hover:bg-[#009938] text-white font-bold"
             >
               Gerar agora
@@ -372,23 +393,23 @@ export const ReviewStep: React.FC = () => {
       </Dialog>
 
     </div>
-
   );
 };
 
-const ProviderButton = ({ id, name, hasKey, isSelected, onClick }: { 
+const ProviderButton = ({ id, name, hasKey, isSelected, isFailed, onClick }: { 
   id: string; 
   name: string; 
   hasKey: boolean; 
   isSelected: boolean; 
+  isFailed?: boolean;
   onClick: () => void 
 }) => (
   <button
     onClick={onClick}
-    disabled={!hasKey}
+    disabled={!hasKey || isFailed}
     className={cn(
       "flex flex-col items-start p-4 rounded-xl border transition-all text-left relative overflow-hidden group",
-      !hasKey 
+      (!hasKey || isFailed)
         ? "bg-black/20 border-border/20 opacity-50 cursor-not-allowed" 
         : isSelected
           ? "bg-primary/10 border-primary ring-1 ring-primary"
@@ -396,9 +417,12 @@ const ProviderButton = ({ id, name, hasKey, isSelected, onClick }: {
     )}
   >
     <div className="flex items-center justify-between w-full">
-      <span className={cn("font-bold text-sm", isSelected ? "text-primary" : "text-white")}>
-        {name}
-      </span>
+      <div className="flex items-center gap-2">
+        <span className={cn("font-bold text-sm", isSelected ? "text-primary" : isFailed ? "text-red-400" : "text-white")}>
+          {name}
+        </span>
+        {isFailed && <AlertCircle className="w-3.5 h-3.5 text-red-500" />}
+      </div>
       {isSelected && <div className="w-2 h-2 rounded-full bg-primary" />}
     </div>
     {!hasKey && (
@@ -407,9 +431,14 @@ const ProviderButton = ({ id, name, hasKey, isSelected, onClick }: {
         Sem chave cadastrada
       </span>
     )}
+    {isFailed && (
+      <span className="text-[10px] text-red-400 flex items-center gap-1 mt-1 font-medium">
+        <AlertCircle className="w-3 h-3" />
+        Falha no provedor
+      </span>
+    )}
   </button>
 );
-
 
 const Row = ({ icon: Icon, label, value, highlight, mono }: { icon: any; label: string; value: string; highlight?: boolean; mono?: boolean }) => (
   <div className="flex items-center gap-3 min-w-0">
