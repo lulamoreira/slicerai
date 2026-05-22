@@ -227,7 +227,10 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
           <div className="space-y-4">
             <div className="flex justify-between items-center px-1">
                 <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-primary">
-                  {aiProvider === 'gemini' ? 'Google Gemini 2.0 Flash API Key' : 'GROQ API KEY'}
+                  {aiProvider === 'gemini' ? 'Google Gemini 2.0 Flash API Key' : 
+                   aiProvider === 'groq' ? 'GROQ API KEY' : 
+                   aiProvider === 'deepseek' ? 'DeepSeek API KEY' : 
+                   'OpenRouter API KEY'}
                 </label>
                 <div className="flex items-center gap-1 opacity-50">
                     <Wifi className="w-2.5 h-2.5" />
