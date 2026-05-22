@@ -123,15 +123,17 @@ function HomeComponent() {
           </div>
       )}
 
-      <main className="flex-1 flex flex-col md:flex-row h-[calc(100vh-64px)] overflow-hidden">
+      <main className="flex-1 flex flex-col md:flex-row h-full md:h-[calc(100vh-64px)] overflow-y-auto md:overflow-hidden">
         {/* Left Panel: Preview */}
-        <div className="w-full md:w-[40%] h-[240px] md:h-auto p-4 md:p-6 flex flex-col gap-4 bg-[var(--background)] relative border-r border-border shrink-0">
+        <div className="w-full md:w-[40%] h-[300px] sm:h-[400px] md:h-auto p-4 md:p-6 flex flex-col gap-4 bg-[var(--background)] relative border-b md:border-b-0 md:border-r border-border shrink-0">
+
           <div className="flex-1 relative min-h-[160px]">
             <ModelViewer />
 
-            {/* Orientation Advisor Banner — desktop only */}
+            {/* Orientation Advisor Banner */}
             {orientationAdvice.suggested && !orientationAdvice.dismissed && (
-              <div className="hidden md:block absolute top-4 left-4 right-4 animate-in slide-in-from-top-4 duration-500 z-20">
+              <div className="absolute top-4 left-4 right-4 animate-in slide-in-from-top-4 duration-500 z-20">
+
                 <div className="p-4 bg-[var(--primary-subtle)] backdrop-blur-md border border-[var(--primary-glow)] rounded-xl flex items-center justify-between shadow-2xl">
                   <div className="flex items-center gap-3">
                     <Info className="w-5 h-5 text-primary" />
@@ -162,10 +164,11 @@ function HomeComponent() {
             )}
           </div>
 
-          {/* Extended Stats Card — desktop only */}
-          <div className="hidden md:block animate-in slide-in-from-bottom-4 duration-500">
+          {/* Extended Stats Card */}
+          <div className="animate-in slide-in-from-bottom-4 duration-500 mb-20 md:mb-0">
             <StatsCard />
           </div>
+
         </div>
 
         {/* Right Panel: Wizard / Results */}
