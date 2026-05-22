@@ -199,7 +199,7 @@ ${wizard.hasAMS ? wizard.amsSlots.slice(0, wizard.amsSlotCount).map(s => `- Slot
 
 Retorne este JSON exato (todos os campos obrigatórios):
 {
-  "quality": { "layer_height": number, "first_layer_height": number, "seam_position": string, "seamReason": string, "ironing": boolean, "ironing_flow": number, "ironing_speed": number },
+  "quality": { "layer_height": number, "first_layer_height": number, "seam_position": string, "seamReason": string, "improveReason": string, "ironing": boolean, "ironing_flow": number, "ironing_speed": number },
   "strength": { "infill_density": number, "infill_pattern": string, "wall_loops": number, "top_layers": number, "bottom_layers": number, "top_surface_pattern": string, "bottom_surface_pattern": string },
   "support": { "needed": boolean, "type": string, "threshold_angle": number, "top_z_distance": number, "bottom_z_distance": number, "xy_distance": number, "interface_layers": number, "interface_pattern": string, "tree_support_angle": number, "on_build_plate_only": boolean, "supportReason": string },
   "temperature": { "nozzle": number, "nozzle_first_layer": number, "bed": number, "bed_first_layer": number, "chamber": number, "chamber_required": boolean, "part_cooling_fan": number, "part_cooling_first_layer": number },
