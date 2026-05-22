@@ -365,11 +365,32 @@ Retorne este JSON exato (todos os campos obrigatórios):
     const errBody = await response.json().catch(() => ({}));
     const errorMessage = errBody?.error?.message || errBody?.error?.status || response.statusText || "Erro desconhecido";
     
-    if (response.status === 429 && (errorMessage.toLowerCase().includes("quota") || errorMessage.toLowerCase().includes("limit exceeded"))) {
-      const error = new Error("Sua cota gratuita do Gemini foi atingida. Você pode trocar de provedor nas configurações ou aguardar o reset da cota.");
-      (error as any).code = "QUOTA_EXCEEDED";
-      (error as any).provider = aiProvider;
-      throw error;
+    // DeepSeek balance error
+    if (aiProvider === 'deepseek' && response.status === 402) {
+      throw { 
+        code: "NO_BALANCE", 
+        provider: "DeepSeek", 
+        message: "Saldo insuficiente — seus créditos gratuitos acabaram. Acesse platform.deepseek.com para recarregar ou troque de provedor." 
+      };
+    }
+
+    // Gemini quota error
+    if (aiProvider === 'gemini' && response.status === 429 && (errorMessage.toLowerCase().includes("quota") || errorMessage.toLowerCase().includes("limit exceeded"))) {
+      throw { 
+        code: "QUOTA_EXCEEDED", 
+        provider: "Gemini", 
+        message: "Cota gratuita esgotada. Tente novamente amanhã ou troque de provedor." 
+      };
+    }
+
+    // Invalid API key
+    if (response.status === 401) {
+      const providerName = aiProvider.charAt(0).toUpperCase() + aiProvider.slice(1);
+      throw { 
+        code: "INVALID_KEY", 
+        provider: providerName, 
+        message: `Chave de API inválida para ${providerName}. Verifique nas Configurações.` 
+      };
     }
     
     const providerName = aiProvider.charAt(0).toUpperCase() + aiProvider.slice(1);
