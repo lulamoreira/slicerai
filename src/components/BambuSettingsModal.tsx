@@ -4,7 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Copy, Download } from "lucide-react";
 import { downloadBambuProfile, BambuSettings } from "@/lib/bambuExport";
+import { detectModelType } from "@/lib/supportProfiles";
 import { toast } from "sonner";
+
 
 interface Props {
   open: boolean;
@@ -150,9 +152,17 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
             {tabs.map((tab) => (
               <button key={tab} onClick={() => setActiveTab(tab)}
                 className={`px-4 py-2 text-xs font-bold uppercase tracking-wider transition-all border-b-2 -mb-px whitespace-nowrap ${activeTab === tab ? "border-green-400 text-white" : "border-transparent text-gray-400 hover:text-white"}`}>
-                {tabLabel[tab]}
+                <div className="flex items-center gap-1.5">
+                  {tabLabel[tab]}
+                  {tab === "Support" && (
+                    <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-[9px] px-1 py-0 h-3.5 uppercase tracking-tighter">
+                      📐 {lang === "PT" ? "Geometria" : "Geometry"}
+                    </Badge>
+                  )}
+                </div>
               </button>
             ))}
+
           </div>
         </DialogHeader>
 
@@ -192,7 +202,26 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
           )}
           {activeTab === "Support" && (
             <div>
+              {settings.geometryStats && (
+                <div className="mb-4 p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
+                  <p className="text-[10px] font-bold text-green-400 uppercase tracking-widest mb-1">
+                    {lang === "PT" ? "Análise Geométrica" : "Geometric Analysis"}
+                  </p>
+                  <p className="text-sm font-semibold text-white">
+                    {detectModelType({
+                      width: settings.geometryStats.boundingBox.x,
+                      depth: settings.geometryStats.boundingBox.y,
+                      height: settings.geometryStats.boundingBox.z,
+                      volume: settings.geometryStats.volume,
+                      triangleCount: settings.geometryStats.triangleCount
+                    }) === "organic" 
+                      ? (lang === "PT" ? "Modelo orgânico — Tree Organic" : "Organic Model — Tree Organic")
+                      : (lang === "PT" ? "Modelo técnico — Normal Grid" : "Technical Model — Normal Grid")}
+                  </p>
+                </div>
+              )}
               <Row label={t.enableSupport} value={settings.enableSupport ? "✓ On" : "✗ Off"} onCopy={() => copy(settings.enableSupport ? "1" : "0")} decision={settings.decisions?.support} />
+
               {settings.supportReason && (
                 <p className="text-[11px] text-muted-foreground italic mb-2 -mt-1 px-1">
                   {settings.supportReason}
