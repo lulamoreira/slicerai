@@ -100,7 +100,20 @@ const aiResponseSchema = z.object({
     warnings: z.array(z.string()),
     pre_print_checklist_extra: z.array(z.string())
   }),
-  profile_name_suggestion: z.string()
+  profile_name_suggestion: z.string(),
+  decisions: z.object({
+    layerHeight: z.string(),
+    wallLoops: z.string(),
+    infillDensity: z.string(),
+    infillPattern: z.string(),
+    printSpeed: z.string(),
+    support: z.string(),
+    seam: z.string(),
+    ironing: z.string(),
+    temperatures: z.string(),
+    overall: z.string()
+  }),
+  improvements: z.record(z.string()).optional()
 });
 
 export const repairJSON = (json: string): string => {
@@ -159,7 +172,12 @@ INSTRUÇÃO: Com base nesse histórico, identifique preferências do usuário e 
     6. Escolha uma cor de filamento funcional e apropriada para o propósito do objeto.
     7. O usuário NÃO fornece estas escolhas (incluindo suportes e seam position) - VOCÊ decide baseado na sua expertise técnica.
     8. Você tem acesso ao histórico de impressões do usuário acima. Use-o para: 1) Identificar as preferências de impressora e material do usuário, 2) Calibrar as recomendações de temperatura e velocidade com base no que funcionou anteriormente, 3) Melhorar as decisões de suporte e qualidade ao longo do tempo. Se esta for a primeira impressão (sem histórico), use padrões seguros.
-    9. SE FOR FORNECIDA UMA IMAGEM DE MELHORIA: Analise o print screen do fatiamento, identifique problemas visíveis como stringing excessivo, má adesão, suportes desnecessários, qualidade de superfície ruim, ou tempo de impressão muito alto, e gere um perfil melhorado corrigindo esses problemas. Explique em quality.improveReason o que foi identificado e o que foi ajustado. O novo perfil gerado deve ter o número da versão incrementado.
+    9. SE FOR FORNECIDA UMA IMAGEM DE MELHORIA: Analise o print screen do fatiamento, identifique problemas visíveis como stringing excessivo, má adesão, suportes desnecessários, qualidade de superfície ruim, ou tempo de impressão muito alto, e gere um perfil melhorado corrigindo esses problemas. Explique em quality.improveReason o que foi identificado e o que foi ajustado. O novo perfil gerado deve ter o número da versão incrementado. Inclua também o campo improvements no JSON de resposta, contendo um objeto onde as chaves são os nomes das configurações alteradas e os valores explicam especificamente o que foi visto no print screen que motivou o ajuste.
+    10. EXPLICAÇÕES DIDÁTICAS (Campo decisions): Para cada configuração principal escolhida, você DEVE explicar em português em 1 ou 2 frases curtas e didáticas o MOTIVO da sua escolha no campo decisions do JSON. Imagine que está ensinando um iniciante. Mencione características da geometria da peça que influenciaram a decisão. 
+        Exemplos de tom e conteúdo:
+        - layerHeight: "Escolhi 0.20mm pois a peça tem detalhes finos no rosto e capacete — camadas mais finas capturam melhor as curvas sem perder muito tempo."
+        - support: "Ativei suporte do tipo tree pois os braços formam ângulos de 70° — sem suporte essas partes colapsariam durante a impressão."
+        - ironing: "Desatvei o ironing pois a peça é uma figura com superfícies curvas — o ironing só beneficia superfícies planas e adicionaria 40 minutos desnecessários."
   `;
 
   const improvementContext = improvementImage 
@@ -209,7 +227,9 @@ Retorne este JSON exato (todos os campos obrigatórios):
   "advanced": { "elephant_foot_compensation": number, "enable_overhang_speed": boolean, "bridge_flow": number, "precise_outer_wall": boolean, "thick_bridges": boolean, "small_perimeter_speed": number },
   "estimates": { "print_time_minutes": number, "filament_grams": number, "filament_meters": number, "filament_per_color": [{ "slot": number, "color": string, "grams": number, "meters": number }], "estimated_cost_brl": number },
   "explanation": { "layer_height_reason": string, "infill_reason": string, "support_reason": string, "material_plate_tips": string, "postprocessing_tips": string, "warnings": [string], "pre_print_checklist_extra": [string] },
-  "profile_name_suggestion": string
+  "profile_name_suggestion": string,
+  "decisions": { "layerHeight": string, "wallLoops": string, "infillDensity": string, "infillPattern": string, "printSpeed": string, "support": string, "seam": string, "ironing": string, "temperatures": string, "overall": string },
+  "improvements": { "campo": "o que foi visto no print e por que mudou" }
 }
   `;
 

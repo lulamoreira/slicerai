@@ -410,7 +410,9 @@ export const ResultsPanel: React.FC = () => {
               seamReason: results.quality.seamReason,
               filamentType: (wizard as any).material || "PLA",
               profileName: `SlicerAI_${(wizard as any).fileName?.split('.')[0] || 'perfil'}`,
-              version: profileVersion
+              version: profileVersion,
+              decisions: results.decisions,
+              improvements: results.improvements
             }}
           />
         )}

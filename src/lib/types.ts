@@ -148,6 +148,19 @@ export interface AIResponse {
     pre_print_checklist_extra: string[];
   };
   profile_name_suggestion: string;
+  decisions: {
+    layerHeight: string;
+    wallLoops: string;
+    infillDensity: string;
+    infillPattern: string;
+    printSpeed: string;
+    support: string;
+    seam: string;
+    ironing: string;
+    temperatures: string;
+    overall: string;
+  };
+  improvements?: Record<string, string>;
 }
 
 export interface HistoryEntry {
