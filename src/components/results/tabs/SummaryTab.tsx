@@ -138,6 +138,7 @@ export const SummaryTab = ({ results }: { results: AIResponse }) => {
             </div>
             <div className="space-y-3">
                 <p className="text-[0.65rem] font-bold uppercase text-muted-foreground tracking-widest leading-none">Custo Estimado</p>
+
                 <p className="text-xl font-bold text-[#00e5ce] leading-none">
                     R$ {estimatedCost.toFixed(2)}
                 </p>
