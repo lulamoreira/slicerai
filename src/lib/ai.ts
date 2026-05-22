@@ -347,7 +347,7 @@ Retorne este JSON exato (todos os campos obrigatórios):
         },
         body: JSON.stringify({
           model: "deepseek-chat",
-          messages: [{ role: "user", content: fullPrompt + (improvementImage ? " [IMAGE ATTACHED BUT NOT SUPPORTED BY DEEPSEEK - PLEASE ANALYZE TEXT CONTEXT]" : "") }],
+          messages: [{ role: "user", content: fullPrompt + (improvementImage ? " [IMAGE ATTACHED AND SUPPORTED VIA VISION ANALYST]" : "") }],
           temperature: 0.2,
           max_tokens: 4096,
         }),
