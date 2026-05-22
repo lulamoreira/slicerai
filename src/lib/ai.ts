@@ -100,7 +100,20 @@ const aiResponseSchema = z.object({
     warnings: z.array(z.string()),
     pre_print_checklist_extra: z.array(z.string())
   }),
-  profile_name_suggestion: z.string()
+  profile_name_suggestion: z.string(),
+  decisions: z.object({
+    layerHeight: z.string(),
+    wallLoops: z.string(),
+    infillDensity: z.string(),
+    infillPattern: z.string(),
+    printSpeed: z.string(),
+    support: z.string(),
+    seam: z.string(),
+    ironing: z.string(),
+    temperatures: z.string(),
+    overall: z.string()
+  }),
+  improvements: z.record(z.string()).optional()
 });
 
 export const repairJSON = (json: string): string => {
