@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Button } from "@/components/ui/button";
 
 export const ReviewStep: React.FC = () => {
-  const { wizard, setResults, status, geometry } = useAppStore();
+  const { wizard, setResults, status, geometry, profileHistory } = useAppStore();
   const { profile } = useAuthStore();
   const { 
     apiKey, groqApiKey, deepseekKey, openrouterKey, aiProvider, 
@@ -110,9 +110,10 @@ export const ReviewStep: React.FC = () => {
       useAppStore.setState({ status: 'ready' });
 
       // Handle specific structured errors from ai.ts
-      if (error?.code === "QUOTA_EXCEEDED" || error?.code === "NO_BALANCE" || error?.code === "INVALID_KEY" || error?.code === "OPENROUTER_NO_MODELS") {
+      if (error?.code === "QUOTA_EXCEEDED" || error?.code === "NO_BALANCE" || error?.code === "INVALID_KEY" || error?.code === "OPENROUTER_NO_MODELS" || error?.code === "VISION_NOT_AVAILABLE") {
         const hasGroq = !!groqApiKey || profile?.api_key_mode === 'centralized';
         const isQuotaOrBalanceOrNotFound = error?.code === "QUOTA_EXCEEDED" || error?.code === "NO_BALANCE" || error?.code === "OPENROUTER_NO_MODELS";
+        const isVisionError = error?.code === "VISION_NOT_AVAILABLE";
 
         if (isQuotaOrBalanceOrNotFound && hasGroq && selectedProvider !== 'groq') {
           // Automatic fallback to Groq
@@ -128,7 +129,7 @@ export const ReviewStep: React.FC = () => {
 
         setLastError({
           provider: error.provider || selectedProvider,
-          message: error.message
+          message: isVisionError ? "⚠️ O modelo de visão atual não está disponível. Tentando com outro provedor..." : error.message
         });
         setFailedProviders(prev => new Set(prev).add(selectedProvider));
         setIsAiModalOpen(true); // Re-open the selection modal
@@ -272,7 +273,7 @@ export const ReviewStep: React.FC = () => {
             <ProviderButton 
               id="gemini" 
               name="Google Gemini 2.0" 
-              description="Gratuito com limite diário"
+              description={profileHistory.length > 1 ? "✅ Suporta análise de imagem" : "Gratuito com limite diário"}
               hasKey={!!apiKey || profile?.api_key_mode === 'centralized'} 
               isSelected={selectedProvider === 'gemini'} 
               isFailed={failedProviders.has('gemini')}
@@ -284,7 +285,7 @@ export const ReviewStep: React.FC = () => {
             <ProviderButton 
               id="groq" 
               name="Groq Llama 3.3" 
-              description="Gratuito e rápido"
+              description={profileHistory.length > 1 ? "⚠️ Suporte limitado a imagens" : "Gratuito e rápido"}
               hasKey={!!groqApiKey || profile?.api_key_mode === 'centralized'} 
               isSelected={selectedProvider === 'groq'} 
               isFailed={failedProviders.has('groq')}
@@ -296,7 +297,7 @@ export const ReviewStep: React.FC = () => {
             <ProviderButton 
               id="deepseek" 
               name="DeepSeek V3" 
-              description="Gratuito — $5 de crédito inicial"
+              description={profileHistory.length > 1 ? "✅ Suporta análise de imagem" : "Gratuito — $5 de crédito inicial"}
               hasKey={!!deepseekKey || profile?.api_key_mode === 'centralized'} 
               isSelected={selectedProvider === 'deepseek'} 
               isFailed={failedProviders.has('deepseek')}
@@ -308,7 +309,7 @@ export const ReviewStep: React.FC = () => {
             <ProviderButton 
               id="openrouter" 
               name="OpenRouter" 
-              description="Modelos gratuitos disponíveis"
+              description={profileHistory.length > 1 ? "✅ Suporta análise de imagem" : "Modelos gratuitos disponíveis"}
               hasKey={!!openrouterKey || profile?.api_key_mode === 'centralized'} 
               isSelected={selectedProvider === 'openrouter'} 
               isFailed={failedProviders.has('openrouter')}
@@ -320,7 +321,7 @@ export const ReviewStep: React.FC = () => {
             <ProviderButton 
               id="claude" 
               name="Claude (Anthropic)" 
-              description="Claude 3.5 Haiku — PAGO 💳"
+              description={profileHistory.length > 1 ? "✅ Suporta análise de imagem" : "Claude 3.5 Haiku — PAGO 💳"}
               hasKey={!!useSettingsStore.getState().claudeKey || profile?.api_key_mode === 'centralized'} 
               isSelected={selectedProvider === 'claude'} 
               isFailed={failedProviders.has('claude')}
@@ -332,7 +333,7 @@ export const ReviewStep: React.FC = () => {
             <ProviderButton 
               id="openai" 
               name="ChatGPT (OpenAI)" 
-              description="GPT-4o Mini — PAGO 💳"
+              description={profileHistory.length > 1 ? "✅ Suporta análise de imagem" : "GPT-4o Mini — PAGO 💳"}
               hasKey={!!useSettingsStore.getState().openaiKey || profile?.api_key_mode === 'centralized'} 
               isSelected={selectedProvider === 'openai'} 
               isFailed={failedProviders.has('openai')}

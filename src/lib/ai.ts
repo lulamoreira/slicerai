@@ -256,7 +256,7 @@ Retorne este JSON exato (todos os campos obrigatórios):
     messageContents.push({ text: fullPrompt });
   }
 
-  let response;
+  let response: Response;
   const generationConfig = {
     temperature: 0.2,
     maxOutputTokens: 4096,
@@ -298,23 +298,40 @@ Retorne este JSON exato (todos os campos obrigatórios):
       messages.push({ role: "user", content: fullPrompt });
     }
 
-    response = await fetch(
-      "https://api.groq.com/openai/v1/chat/completions",
-      {
-        method: "POST",
-        headers: { 
-          "Authorization": `Bearer ${cleanKey}`,
-          "Content-Type": "application/json" 
-        },
-        body: JSON.stringify({
-          model: improvementImage ? "llama-3.2-11b-vision-preview" : "llama-3.3-70b-versatile",
-          messages,
-          temperature: 0.2,
-          max_tokens: 8192,
-          response_format: { type: "json_object" }
-        }),
+    const groqModels = improvementImage 
+      ? ["llava-v1.5-7b-4096-preview", "llama-3.2-90b-vision-preview"] 
+      : ["llama-3.3-70b-versatile"];
+    
+    let groqResponse: Response | undefined;
+    for (const model of groqModels) {
+      const currentTry = await fetch(
+        "https://api.groq.com/openai/v1/chat/completions",
+        {
+          method: "POST",
+          headers: { 
+            "Authorization": `Bearer ${cleanKey}`,
+            "Content-Type": "application/json" 
+          },
+          body: JSON.stringify({
+            model,
+            messages,
+            temperature: 0.2,
+            max_tokens: improvementImage ? 2048 : 8192,
+            response_format: { type: "json_object" }
+          }),
+        }
+      );
+      groqResponse = currentTry;
+      if (currentTry.ok) break;
+      const errData = await currentTry.json().catch(() => ({}));
+      if (improvementImage && (currentTry.status === 400 || errData?.error?.message?.includes("decommissioned") || errData?.error?.code === "model_not_found")) {
+        console.log(`Groq: model ${model} failed, trying next fallback...`);
+        continue;
       }
-    );
+      break;
+    }
+    if (!groqResponse) throw new Error("Falha ao conectar com Groq");
+    response = groqResponse;
   } else if (aiProvider === 'deepseek') {
     const deepseekKey = useSettingsStore.getState().deepseekKey;
     if (!deepseekKey) throw new Error('NO_API_KEY');
@@ -330,7 +347,7 @@ Retorne este JSON exato (todos os campos obrigatórios):
         },
         body: JSON.stringify({
           model: "deepseek-chat",
-          messages: [{ role: "user", content: fullPrompt + (improvementImage ? " [IMAGE ATTACHED BUT NOT SUPPORTED BY DEEPSEEK - PLEASE ANALYZE TEXT CONTEXT]" : "") }],
+          messages: [{ role: "user", content: fullPrompt + (improvementImage ? " [IMAGE ATTACHED AND SUPPORTED VIA VISION ANALYST]" : "") }],
           temperature: 0.2,
           max_tokens: 4096,
         }),
@@ -364,7 +381,7 @@ Retorne este JSON exato (todos os campos obrigatórios):
           "HTTP-Referer": "https://slicerai.app"
         },
         body: JSON.stringify({
-          model: improvementImage ? "google/gemini-2.0-flash-001" : "meta-llama/llama-3.3-70b-instruct:free",
+          model: improvementImage ? "google/gemma-3-27b-it:free" : "meta-llama/llama-3.3-70b-instruct:free",
           messages,
           temperature: 0.2,
           max_tokens: 4096,
@@ -415,6 +432,26 @@ Retorne este JSON exato (todos os campos obrigatórios):
     if (!claudeKey) throw new Error('NO_API_KEY');
     const cleanKey = claudeKey.trim().replace(/[^\x20-\x7E]/g, "");
 
+    const claudeMessages = [];
+    if (improvementImage) {
+      claudeMessages.push({
+        role: "user",
+        content: [
+          { type: "text", text: fullPrompt },
+          { 
+            type: "image", 
+            source: { 
+              type: "base64", 
+              media_type: "image/jpeg", 
+              data: improvementImage.split(',')[1] 
+            } 
+          }
+        ]
+      });
+    } else {
+      claudeMessages.push({ role: "user", content: fullPrompt });
+    }
+
     response = await fetch(
       "https://api.anthropic.com/v1/messages",
       {
@@ -427,7 +464,7 @@ Retorne este JSON exato (todos os campos obrigatórios):
         body: JSON.stringify({
           model: "claude-3-5-haiku-20241022",
           max_tokens: 2048,
-          messages: [{ role: "user", content: fullPrompt }],
+          messages: claudeMessages,
         }),
       }
     );
@@ -435,6 +472,19 @@ Retorne este JSON exato (todos os campos obrigatórios):
     const openaiKey = useSettingsStore.getState().openaiKey;
     if (!openaiKey) throw new Error('NO_API_KEY');
     const cleanKey = openaiKey.trim().replace(/[^\x20-\x7E]/g, "");
+
+    const openaiMessages = [];
+    if (improvementImage) {
+      openaiMessages.push({
+        role: "user",
+        content: [
+          { type: "text", text: fullPrompt },
+          { type: "image_url", image_url: { url: improvementImage } }
+        ]
+      });
+    } else {
+      openaiMessages.push({ role: "user", content: fullPrompt });
+    }
 
     response = await fetch(
       "https://api.openai.com/v1/chat/completions",
@@ -446,7 +496,7 @@ Retorne este JSON exato (todos os campos obrigatórios):
         },
         body: JSON.stringify({
           model: "gpt-4o-mini",
-          messages: [{ role: "user", content: fullPrompt }],
+          messages: openaiMessages,
           temperature: 0.2,
           max_tokens: 2048,
         }),
@@ -473,6 +523,15 @@ Retorne este JSON exato (todos os campos obrigatórios):
     const errBody = await response.json().catch(() => ({}));
     const errorMessage = errBody?.error?.message || errBody?.error?.status || response.statusText || "Erro desconhecido";
     
+    // Model not found or decommissioned (Vision models usually)
+    if (improvementImage && (response.status === 404 || response.status === 400 || errorMessage.toLowerCase().includes("not found") || errorMessage.toLowerCase().includes("decommissioned"))) {
+      throw {
+        code: "VISION_NOT_AVAILABLE",
+        provider: aiProvider.charAt(0).toUpperCase() + aiProvider.slice(1),
+        message: "O modelo de visão atual não está disponível para este provedor."
+      };
+    }
+
     // DeepSeek/Claude/OpenAI balance error
     if (response.status === 402) {
       const providerName = aiProvider === 'claude' ? 'Claude' : aiProvider === 'openai' ? 'OpenAI' : 'DeepSeek';
