@@ -77,7 +77,7 @@ export const MaterialStep: React.FC = () => {
                   <span className="text-[10px] font-bold uppercase tracking-widest text-muted">Estratégia de Flush</span>
                   <Info className="w-3 h-3 text-muted/50" />
                 </div>
-                <div className="flex gap-1 bg-surface-raised p-1 rounded-xl border border-border">
+                <div className="flex flex-wrap gap-1 bg-surface-raised p-1 rounded-xl border border-border">
                   {["Automático", "Conservador", "Agressivo"].map(s => (
                     <button
                       key={s}

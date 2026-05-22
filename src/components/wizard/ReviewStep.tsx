@@ -150,7 +150,7 @@ export const ReviewStep: React.FC = () => {
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-300 pb-10">
-      <div className="p-8 bg-surface border border-border-strong rounded-xl space-y-8 shadow-sm relative overflow-hidden">
+      <div className="p-4 md:p-8 bg-surface border border-border-strong rounded-xl space-y-6 md:space-y-8 shadow-sm relative overflow-hidden">
         <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full -mr-16 -mt-16 blur-3xl" />
 
         <div className="flex items-center justify-between border-b border-border pb-6">
@@ -168,8 +168,9 @@ export const ReviewStep: React.FC = () => {
           <Row icon={Printer} label="Impressora" value={`${wizard.printer} (${wizard.nozzle}mm)`} />
           <Row icon={Package} label="Material" value={`${wizard.material} ${wizard.variant}`} />
           <Row icon={Grid3x3} label="Build Plate" value={wizard.buildPlate} />
-          <Row icon={Layers} label="Layer Height" value={`${wizard.layerHeight.toFixed(2)}mm`} />
+          <Row icon={Layers} label="Camada" value={`${wizard.layerHeight.toFixed(2)}mm`} />
           <Row icon={Target} label="Propósito" value={wizard.purposes.join(', ')} />
+
           <Row icon={Scale} label="Análise de Geometria" value="Peso/Custo no painel lateral" highlight />
           <Row icon={Clock} label="Tempo estimado" value={volume === undefined ? "—" : `~${Math.floor(estimatedTime / 60)}h ${estimatedTime % 60}min`} mono />
           <div className="col-span-1 sm:col-span-2 p-4 bg-primary/10 border border-primary/20 rounded-xl flex items-center gap-3">

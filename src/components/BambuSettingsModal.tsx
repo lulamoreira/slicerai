@@ -130,7 +130,7 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg max-h-[90vh] flex flex-col p-0 gap-0 bg-[#1a1a1a] text-white border-white/10">
+      <DialogContent className="w-full h-full md:h-auto max-w-lg md:max-h-[90vh] flex flex-col p-0 gap-0 bg-[#1a1a1a] text-white border-white/10 rounded-none md:rounded-[2.5rem]">
         <DialogHeader className="px-4 pt-4 pb-0 shrink-0">
           <div className="flex items-center justify-between">
             <DialogTitle className="text-base font-semibold text-white">Process — SlicerAI</DialogTitle>
