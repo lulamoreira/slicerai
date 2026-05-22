@@ -31,6 +31,7 @@ const LABELS: Record<Lang, Record<string, string>> = {
     filament: "Filament type", printer: "Printer", nozzle: "Nozzle diameter",
     howToImport: "How to import: File → Import → Import Configs",
     copyAll: "Copy all", copied: "Copied!",
+    seamPosition: "Seam position",
   },
   PT: {
     quality: "Qualidade", strength: "Resistência", speed: "Velocidade", support: "Suporte",
@@ -47,6 +48,7 @@ const LABELS: Record<Lang, Record<string, string>> = {
     filament: "Tipo de filamento", printer: "Impressora", nozzle: "Diâmetro do bico",
     howToImport: "Como importar: Arquivo → Importar → Importar Configurações",
     copyAll: "Copiar tudo", copied: "Copiado!",
+    seamPosition: "Posição da costura",
   },
 };
 
@@ -140,6 +142,12 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
               <Row label={t.topLayers} value={String(settings.topLayers)} onCopy={() => copy(String(settings.topLayers))} />
               <Row label={t.bottomLayers} value={String(settings.bottomLayers)} onCopy={() => copy(String(settings.bottomLayers))} />
               <Row label={t.ironing} value={settings.enableIroning ? "✓ On" : "✗ Off"} onCopy={() => copy(settings.enableIroning ? "1" : "0")} />
+              <Row label={t.seamPosition} value={settings.seamPosition || "aligned"} onCopy={() => copy(settings.seamPosition || "aligned")} />
+              {settings.seamReason && (
+                <p className="text-[11px] text-muted-foreground italic mb-2 -mt-1 px-1">
+                  {settings.seamReason}
+                </p>
+              )}
             </div>
           )}
           {activeTab === "Strength" && (

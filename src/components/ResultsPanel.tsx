@@ -183,6 +183,8 @@ export const ResultsPanel: React.FC = () => {
               nozzleTemp: results.temperature.nozzle,
               bedTemp: results.temperature.bed,
               enableIroning: results.quality.ironing,
+              seamPosition: results.quality.seam_position,
+              seamReason: results.quality.seamReason,
               filamentType: (wizard as any).material || "PLA",
               profileName: `SlicerAI - ${results.profile_name_suggestion || (wizard as any).fileName || 'perfil'}`,
             }}

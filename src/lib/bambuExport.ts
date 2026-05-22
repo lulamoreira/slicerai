@@ -90,6 +90,8 @@ export interface BambuSettings {
   bedTemp: number;
   enableIroning: boolean;
   filamentType: string;
+  seamPosition?: string;
+  seamReason?: string;
   profileName?: string;
 }
 
@@ -113,6 +115,7 @@ export async function downloadBambuProfile(settings: BambuSettings): Promise<voi
     compatible_printers_condition: "",
     compatible_prints_condition: "",
     layer_height: String(settings.layerHeight),
+    seam_position: settings.seamPosition || "aligned",
     initial_layer_print_height: String(Math.max(settings.layerHeight, 0.2)),
     wall_loops: String(settings.wallLoops),
     top_shell_layers: String(settings.topLayers),
