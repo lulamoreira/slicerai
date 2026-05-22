@@ -344,13 +344,12 @@ export const ReviewStep: React.FC = () => {
           </div>
 
           <DialogFooter className="flex gap-3 mt-2 sm:justify-end">
-            <Button 
-              variant="outline" 
-              onClick={() => setIsAiModalOpen(false)}
-              className="bg-transparent border-border/50 text-white hover:bg-white/5"
-            >
-              Cancelar
-            </Button>
+            variant="outline" 
+            onClick={() => setIsAiModalOpen(false)}
+            className="bg-transparent border-border text-foreground hover:bg-muted"
+          >
+            Cancelar
+          </Button>
             <Button 
               onClick={handleConfirmGeneration}
               disabled={!(
