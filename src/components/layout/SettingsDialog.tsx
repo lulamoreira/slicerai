@@ -80,7 +80,11 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
   }
 
   const handleTest = async () => {
-    const currentKey = aiProvider === 'gemini' ? apiKey : groqApiKey;
+    const currentKey = 
+      aiProvider === 'gemini' ? apiKey : 
+      aiProvider === 'groq' ? groqApiKey : 
+      aiProvider === 'deepseek' ? deepseekKey : 
+      openrouterKey;
     if (!currentKey) {
       toast.error("Insira uma chave API primeiro");
       return;
