@@ -13,10 +13,12 @@ import {
 
 interface SettingsStore {
   apiKey: string;
-  aiProvider: 'gemini' | 'groq' | 'deepseek' | 'openrouter';
+  aiProvider: 'gemini' | 'groq' | 'deepseek' | 'openrouter' | 'claude' | 'openai';
   groqApiKey: string;
   deepseekKey: string;
   openrouterKey: string;
+  claudeKey: string;
+  openaiKey: string;
   costPerKg: number;
   defaultPrinter: string;
   language: 'pt-BR' | 'en';
@@ -24,10 +26,12 @@ interface SettingsStore {
   history: HistoryEntry[];
   
   setApiKey: (apiKey: string) => void;
-  setAiProvider: (provider: 'gemini' | 'groq' | 'deepseek' | 'openrouter') => void;
+  setAiProvider: (provider: 'gemini' | 'groq' | 'deepseek' | 'openrouter' | 'claude' | 'openai') => void;
   setGroqApiKey: (apiKey: string) => void;
   setDeepseekKey: (apiKey: string) => void;
   setOpenrouterKey: (apiKey: string) => void;
+  setClaudeKey: (apiKey: string) => void;
+  setOpenaiKey: (apiKey: string) => void;
   setCostPerKg: (cost: number) => void;
   setDefaultPrinter: (printer: string) => void;
   setLanguage: (lang: 'pt-BR' | 'en') => void;
@@ -43,6 +47,8 @@ export const useSettingsStore = create<SettingsStore>()(
       groqApiKey: "",
       deepseekKey: "",
       openrouterKey: "",
+      claudeKey: "",
+      openaiKey: "",
       costPerKg: 120,
       defaultPrinter: "X1C",
       language: "pt-BR",
@@ -77,6 +83,20 @@ export const useSettingsStore = create<SettingsStore>()(
           throw new Error("Chave inválida — verifique se copiou corretamente");
         }
         set({ openrouterKey: cleanKey });
+      },
+      setClaudeKey: (claudeKey) => {
+        const cleanKey = claudeKey.trim().replace(/[^\x20-\x7E]/g, "");
+        if (claudeKey && cleanKey.length < 10) {
+          throw new Error("Chave inválida — verifique se copiou corretamente");
+        }
+        set({ claudeKey: cleanKey });
+      },
+      setOpenaiKey: (openaiKey) => {
+        const cleanKey = openaiKey.trim().replace(/[^\x20-\x7E]/g, "");
+        if (openaiKey && cleanKey.length < 10) {
+          throw new Error("Chave inválida — verifique se copiou corretamente");
+        }
+        set({ openaiKey: cleanKey });
       },
       setCostPerKg: (costPerKg) => set({ costPerKg }),
       setDefaultPrinter: (defaultPrinter) => set({ defaultPrinter }),
