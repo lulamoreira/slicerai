@@ -156,6 +156,16 @@ export interface HistoryEntry {
   wizard: WizardState;
   results: AIResponse;
   thumbnail?: string;
+  profileVersion?: number;
+  profileHistory?: ProfileHistoryItem[];
+}
+
+export interface ProfileHistoryItem {
+  version: number;
+  settings: any; // BambuSettings from bambuExport.ts, but we use AIResponse mostly
+  results: AIResponse;
+  downloadedAt: string;
+  improveReason?: string;
 }
 
 export interface AppState {
