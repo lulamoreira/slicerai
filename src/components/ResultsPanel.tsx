@@ -162,9 +162,29 @@ export const ResultsPanel: React.FC = () => {
         
         {showBambuModal && (
           <BambuSettingsModal 
-            results={results} 
-            wizard={wizard} 
-            onClose={() => setShowBambuModal(false)} 
+            open={showBambuModal}
+            onClose={() => setShowBambuModal(false)}
+            settings={{
+              printer: (wizard as any).printer || "X1 Carbon",
+              nozzle: String((wizard as any).nozzle || "0.4"),
+              layerHeight: results.quality.layer_height,
+              wallLoops: results.strength.wall_loops,
+              topLayers: results.strength.top_layers,
+              bottomLayers: results.strength.bottom_layers,
+              infillDensity: results.strength.infill_density,
+              infillPattern: results.strength.infill_pattern,
+              printSpeed: results.speed.inner_wall,
+              travelSpeed: results.speed.travel || 200,
+              enableSupport: results.support.needed,
+              supportType: results.support.type,
+              supportThreshold: results.support.threshold_angle,
+              brimWidth: results.adhesion.brim_width || 0,
+              nozzleTemp: results.temperature.nozzle,
+              bedTemp: results.temperature.bed,
+              enableIroning: results.quality.ironing,
+              filamentType: (wizard as any).material || "PLA",
+              profileName: `SlicerAI - ${results.profile_name_suggestion || (wizard as any).fileName || 'perfil'}`,
+            }}
           />
         )}
 
