@@ -397,9 +397,10 @@ export const ReviewStep: React.FC = () => {
   );
 };
 
-const ProviderButton = ({ id, name, hasKey, isSelected, isFailed, onClick }: { 
+const ProviderButton = ({ id, name, description, hasKey, isSelected, isFailed, onClick }: { 
   id: string; 
   name: string; 
+  description?: string;
   hasKey: boolean; 
   isSelected: boolean; 
   isFailed?: boolean;
@@ -426,6 +427,11 @@ const ProviderButton = ({ id, name, hasKey, isSelected, isFailed, onClick }: {
       </div>
       {isSelected && <div className="w-2 h-2 rounded-full bg-primary" />}
     </div>
+    {description && !isFailed && hasKey && (
+      <span className="text-[10px] text-muted-foreground mt-1 font-medium italic">
+        {description}
+      </span>
+    )}
     {!hasKey && (
       <span className="text-[10px] text-warning flex items-center gap-1 mt-1 font-medium">
         <AlertCircle className="w-3 h-3" />
