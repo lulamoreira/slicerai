@@ -304,23 +304,42 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
                     </button>
                 </div>
                 <a
-                  href={aiProvider === 'gemini' ? "https://aistudio.google.com/apikey" : "https://console.groq.com"}
+                  href={
+                    aiProvider === 'gemini' ? "https://aistudio.google.com/apikey" : 
+                    aiProvider === 'groq' ? "https://console.groq.com" : 
+                    aiProvider === 'deepseek' ? "https://platform.deepseek.com" : 
+                    "https://openrouter.ai"
+                  }
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 text-[10px] font-bold tracking-widest text-primary hover:underline px-1"
                 >
                   {language === 'pt-BR' 
-                    ? (aiProvider === 'gemini' ? 'OBTER CHAVE GRÁTIS' : 'Obter chave grátis em console.groq.com') 
-                    : (aiProvider === 'gemini' ? 'GET FREE KEY' : 'Get free key at console.groq.com')} <ExternalLink className="w-3 h-3" />
+                    ? (aiProvider === 'gemini' ? 'OBTER CHAVE GRÁTIS' : 
+                       aiProvider === 'groq' ? 'Obter chave grátis em console.groq.com' : 
+                       aiProvider === 'deepseek' ? 'Obter chave grátis em platform.deepseek.com' : 
+                       'Obter chave grátis em openrouter.ai') 
+                    : (aiProvider === 'gemini' ? 'GET FREE KEY' : 
+                       aiProvider === 'groq' ? 'Get free key at console.groq.com' : 
+                       aiProvider === 'deepseek' ? 'Get free key at platform.deepseek.com' : 
+                       'Get free key at openrouter.ai')} <ExternalLink className="w-3 h-3" />
                 </a>
                 <p className="text-[9px] text-muted font-bold uppercase tracking-widest px-2 leading-relaxed italic opacity-50">
                     {language === 'pt-BR' 
                         ? (aiProvider === 'gemini' 
                             ? "Obtenha sua chave gratuita em aistudio.google.com/apikey. Não é necessário cartão de crédito." 
-                            : "Obtenha sua chave gratuita em console.groq.com. Sua chave é salva localmente.")
+                            : aiProvider === 'groq' 
+                            ? "Obtenha sua chave gratuita em console.groq.com. Sua chave é salva localmente."
+                            : aiProvider === 'deepseek'
+                            ? "Obtenha sua chave em platform.deepseek.com. Sua chave é salva localmente."
+                            : "Obtenha sua chave em openrouter.ai. Sua chave é salva localmente.")
                         : (aiProvider === 'gemini'
                             ? "Get your free key at aistudio.google.com/apikey. No credit card required."
-                            : "Get your free key at console.groq.com. Your key is saved locally.")}
+                            : aiProvider === 'groq'
+                            ? "Get your free key at console.groq.com. Your key is saved locally."
+                            : aiProvider === 'deepseek'
+                            ? "Get your key at platform.deepseek.com. Your key is saved locally."
+                            : "Get your key at openrouter.ai. Your key is saved locally.")}
                 </p>
               </>
             )}
