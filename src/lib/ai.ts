@@ -227,7 +227,9 @@ Retorne este JSON exato (todos os campos obrigatórios):
   "advanced": { "elephant_foot_compensation": number, "enable_overhang_speed": boolean, "bridge_flow": number, "precise_outer_wall": boolean, "thick_bridges": boolean, "small_perimeter_speed": number },
   "estimates": { "print_time_minutes": number, "filament_grams": number, "filament_meters": number, "filament_per_color": [{ "slot": number, "color": string, "grams": number, "meters": number }], "estimated_cost_brl": number },
   "explanation": { "layer_height_reason": string, "infill_reason": string, "support_reason": string, "material_plate_tips": string, "postprocessing_tips": string, "warnings": [string], "pre_print_checklist_extra": [string] },
-  "profile_name_suggestion": string
+  "profile_name_suggestion": string,
+  "decisions": { "layerHeight": string, "wallLoops": string, "infillDensity": string, "infillPattern": string, "printSpeed": string, "support": string, "seam": string, "ironing": string, "temperatures": string, "overall": string },
+  "improvements": { "campo": "o que foi visto no print e por que mudou" }
 }
   `;
 
