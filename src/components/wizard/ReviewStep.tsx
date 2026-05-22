@@ -62,6 +62,8 @@ export const ReviewStep: React.FC = () => {
       selectedProvider === 'gemini' ? apiKey : 
       selectedProvider === 'groq' ? groqApiKey :
       selectedProvider === 'deepseek' ? deepseekKey :
+      selectedProvider === 'claude' ? useSettingsStore.getState().claudeKey :
+      selectedProvider === 'openai' ? useSettingsStore.getState().openaiKey :
       openrouterKey;
 
     if (!currentApiKey && !isCentralized) {
