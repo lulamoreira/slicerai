@@ -12,8 +12,10 @@ import {
 
 interface SettingsStore {
   apiKey: string;
-  aiProvider: 'gemini' | 'groq';
+  aiProvider: 'gemini' | 'groq' | 'deepseek' | 'openrouter';
   groqApiKey: string;
+  deepseekKey: string;
+  openrouterKey: string;
   costPerKg: number;
   defaultPrinter: string;
   language: 'pt-BR' | 'en';
@@ -21,8 +23,10 @@ interface SettingsStore {
   history: HistoryEntry[];
   
   setApiKey: (apiKey: string) => void;
-  setAiProvider: (provider: 'gemini' | 'groq') => void;
+  setAiProvider: (provider: 'gemini' | 'groq' | 'deepseek' | 'openrouter') => void;
   setGroqApiKey: (apiKey: string) => void;
+  setDeepseekKey: (apiKey: string) => void;
+  setOpenrouterKey: (apiKey: string) => void;
   setCostPerKg: (cost: number) => void;
   setDefaultPrinter: (printer: string) => void;
   setLanguage: (lang: 'pt-BR' | 'en') => void;
