@@ -47,26 +47,27 @@
 }
 
 :root {
-  --background:        #0d0d14;
-  --surface:           #161622;
-  --surface-raised:    #1e1e2e;
-  --surface-hover:     #252538;
-  --border:            rgba(255,255,255,0.10);
-  --border-strong:     rgba(255,255,255,0.20);
-  --primary:           #00c8b4;
-  --primary-hover:     #00e5ce;
-  --primary-glow:      0 0 24px rgba(0,200,180,0.30);
-  --primary-subtle:    rgba(0,200,180,0.10);
+  --background:        #0d0d12;
+  --surface:           #161620;
+  --surface-raised:    #1c1c2b;
+  --surface-hover:     #232335;
+  --border:            rgba(255,255,255,0.06);
+  --border-strong:     rgba(255,255,255,0.12);
+  --primary:           #00e5ce;
+  --primary-hover:     #33f0dc;
+  --primary-glow:      0 0 30px rgba(0,229,206,0.15);
+  --primary-subtle:    rgba(0,229,206,0.08);
   --accent:            #f5a623;
   --destructive:       #ff4d6d;
-  --success:           #4caf7d;
-  --warning:           #ffb454;
-  --foreground:        #e8e8f0;
-  --foreground-soft:   #c0c0d0;
-  --muted:             #7b7b9a;
-  --muted-subtle:      rgba(123,123,154,0.15);
-  --radius:            0.75rem;
+  --success:           #00e5ce;
+  --warning:           #f5a623;
+  --foreground:        #f8f8fc;
+  --foreground-soft:   #a0a0b8;
+  --muted:             #646480;
+  --muted-subtle:      rgba(100,100,128,0.12);
+  --radius:            1rem;
 }
+
 
 .light {
   --background:        #f0f2f5;

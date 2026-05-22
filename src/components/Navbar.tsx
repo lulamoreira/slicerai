@@ -85,22 +85,23 @@ export const Navbar: React.FC<NavbarProps> = ({ onShowSettings, onShowHistory })
   };
 
   return (
-    <header className="h-[52px] border-b border-border bg-surface sticky top-0 z-40 px-6 flex items-center justify-between">
+    <header className="h-[64px] border-b border-border/50 bg-surface/80 backdrop-blur-md sticky top-0 z-50 px-6 flex items-center justify-between">
       <button
         onClick={() => {
           resetApp();
           navigate({ to: '/' });
         }}
-        className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+        className="flex items-center gap-3 hover:scale-105 active:scale-95 transition-transform"
         aria-label="Voltar para a tela inicial"
       >
-        <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+        <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center shadow-[var(--primary-glow)]">
           <Hexagon className="w-5 h-5 text-[#0d0d14] fill-[#0d0d14]/20" />
         </div>
-        <h1 className="font-extrabold tracking-tight text-lg text-foreground hidden sm:block">
-          SlicerAI <span className="text-primary font-normal italic">for Bambu</span>
+        <h1 className="font-extrabold tracking-tight text-xl text-foreground hidden sm:block">
+          SlicerAI <span className="text-primary font-light italic">for Bambu</span>
         </h1>
       </button>
+
 
 
       <div className="flex items-center gap-1 sm:gap-2">

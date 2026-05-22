@@ -9,13 +9,14 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-[#0d0d14] font-bold rounded-lg px-5 py-2.5 hover:bg-primary-hover hover:shadow-[var(--primary-glow)] disabled:opacity-40",
-        destructive: "bg-transparent border border-destructive text-destructive hover:bg-destructive/10",
+        default: "bg-primary text-[#0d0d14] font-bold rounded-xl px-6 py-3 hover:bg-primary-hover hover:scale-[1.02] active:scale-[0.98] transition-all hover:shadow-[var(--primary-glow)] disabled:opacity-40",
+        destructive: "bg-destructive/10 border border-destructive/20 text-destructive hover:bg-destructive/20 rounded-xl px-6 py-3",
         outline:
-          "border border-border-strong bg-transparent text-foreground hover:bg-surface-hover hover:border-primary hover:text-primary",
-        secondary: "bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80",
-        ghost: "bg-transparent text-muted hover:text-primary hover:bg-primary-subtle",
+          "border border-border-strong bg-transparent text-foreground hover:bg-surface-hover hover:border-primary hover:text-primary rounded-xl px-6 py-3",
+        secondary: "bg-surface-raised text-foreground border border-border shadow-sm hover:bg-surface-hover rounded-xl px-6 py-3",
+        ghost: "bg-transparent text-muted hover:text-primary hover:bg-primary-subtle rounded-xl px-6 py-3",
         link: "text-primary underline-offset-4 hover:underline",
+
       },
       size: {
         default: "h-9 px-4 py-2",

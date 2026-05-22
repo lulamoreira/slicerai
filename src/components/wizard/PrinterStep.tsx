@@ -34,27 +34,33 @@ export const PrinterStep: React.FC = () => {
   return (
     <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
       <section>
-        <h3 className="card-section-title mb-3 text-xs">
+        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground mb-4">
           Selecione sua Impressora
         </h3>
-        <div className="grid grid-cols-3 gap-2 mb-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mb-6">
           {PRINTERS.map((p) => (
             <button
               key={p.id}
               onClick={() => updateWizard({ printer: p.id })}
               className={cn(
-                "p-3 rounded-xl border-2 cursor-pointer transition-all text-left flex flex-col items-start gap-2",
+                "p-4 rounded-2xl border-2 cursor-pointer transition-all text-left flex flex-col items-start gap-3 group relative overflow-hidden",
                 wizard.printer === p.id
-                  ? "border-primary bg-primary-subtle shadow-[var(--primary-glow)]"
-                  : "border-border bg-surface hover:bg-surface-hover hover:border-border-strong"
+                  ? "border-primary bg-primary/5 shadow-[var(--primary-glow)]"
+                  : "border-border bg-surface/50 hover:bg-surface-hover hover:border-border-strong"
               )}
             >
+              {wizard.printer === p.id && (
+                <div className="absolute top-0 right-0 p-2">
+                  <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
+                </div>
+              )}
               <div className={cn(
-                "w-8 h-8 rounded-lg mb-2 flex items-center justify-center transition-all",
+                "w-10 h-10 rounded-xl flex items-center justify-center transition-all",
                 wizard.printer === p.id ? "bg-primary text-[#0d0d14]" : "bg-surface-raised text-muted group-hover:text-foreground"
               )}>
-                <p.icon className="w-4 h-4" />
+                <p.icon className="w-5 h-5" />
               </div>
+
               <div className="space-y-0.5">
                 <span className={cn("font-bold text-sm uppercase tracking-tight", wizard.printer === p.id ? "text-primary" : "text-foreground")}>
                   {p.name}

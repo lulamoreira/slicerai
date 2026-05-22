@@ -173,20 +173,22 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/80 backdrop-blur-md animate-in fade-in duration-300" onClick={onClose}>
-      <div className="w-full max-w-lg bg-surface border border-border rounded-[1.5rem] p-8 shadow-2xl relative overflow-hidden" onClick={e => e.stopPropagation()}>
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-accent to-destructive opacity-50" />
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#0d0d12]/90 backdrop-blur-xl animate-in fade-in duration-500" onClick={onClose}>
+      <div className="w-full max-w-lg bg-surface/90 border border-border/50 rounded-[2.5rem] p-10 shadow-2xl relative overflow-hidden" onClick={e => e.stopPropagation()}>
+        <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-primary via-[#33f0dc] to-primary/50 opacity-80" />
+
         
         <button onClick={onClose} className="absolute top-6 right-6 p-1.5 text-muted hover:text-primary transition-all hover:bg-primary-subtle rounded-lg">
           <X className="w-5 h-5" />
         </button>
 
-        <h2 className="text-xl font-bold tracking-tight mb-8 flex items-center gap-4 text-foreground uppercase">
-          <div className="w-10 h-10 rounded-xl bg-primary-subtle flex items-center justify-center">
-            <Settings className="w-5 h-5 text-primary" />
+        <h2 className="text-2xl font-black tracking-tight mb-10 flex items-center gap-5 text-foreground uppercase">
+          <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center shadow-[var(--primary-glow)]">
+            <Settings className="w-6 h-6 text-primary" />
           </div>
           {language === 'pt-BR' ? 'Configurações' : 'Settings'}
         </h2>
+
 
         <div className="space-y-10 custom-scrollbar max-h-[60vh] pr-2 overflow-y-auto">
           {/* AI Provider Selector */}
