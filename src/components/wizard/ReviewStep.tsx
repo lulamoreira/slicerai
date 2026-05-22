@@ -310,6 +310,30 @@ export const ReviewStep: React.FC = () => {
                 setLastError(null);
               }} 
             />
+            <ProviderButton 
+              id="claude" 
+              name="Claude (Anthropic)" 
+              description="Claude 3.5 Haiku — PAGO 💳"
+              hasKey={!!useSettingsStore.getState().claudeKey || profile?.api_key_mode === 'centralized'} 
+              isSelected={selectedProvider === 'claude'} 
+              isFailed={failedProviders.has('claude')}
+              onClick={() => {
+                setSelectedProvider('claude');
+                setLastError(null);
+              }} 
+            />
+            <ProviderButton 
+              id="openai" 
+              name="ChatGPT (OpenAI)" 
+              description="GPT-4o Mini — PAGO 💳"
+              hasKey={!!useSettingsStore.getState().openaiKey || profile?.api_key_mode === 'centralized'} 
+              isSelected={selectedProvider === 'openai'} 
+              isFailed={failedProviders.has('openai')}
+              onClick={() => {
+                setSelectedProvider('openai');
+                setLastError(null);
+              }} 
+            />
           </div>
 
           <DialogFooter className="flex gap-3 mt-2 sm:justify-end">
