@@ -257,14 +257,15 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
 
               {settings.improvements && Object.keys(settings.improvements).length > 0 && (
                 <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-500">
-                  <h3 className="text-sm font-bold text-[#00AE42] flex items-center gap-2 uppercase tracking-wider">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#00AE42]" />
+                  <h3 className="text-sm font-bold text-green-500 flex items-center gap-2 uppercase tracking-wider">
+                    <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
                     {t.improvementsTitle}
                   </h3>
                   <div className="grid gap-2">
                     {Object.entries(settings.improvements).map(([field, reason]) => (
-                      <div key={field} className="p-3 bg-[#00AE42]/5 border border-[#00AE42]/20 rounded-lg">
-                        <p className="text-xs font-bold text-[#00AE42] uppercase mb-1">{field}</p>
+                      <div key={field} className="p-3 bg-green-500/5 border border-green-500/20 rounded-lg">
+                        <p className="text-xs font-bold text-green-500 uppercase mb-1">{field}</p>
+
                         <p className="text-xs text-gray-200">{reason}</p>
                       </div>
                     ))}
