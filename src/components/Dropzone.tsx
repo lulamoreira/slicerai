@@ -45,8 +45,8 @@ export const Dropzone: React.FC = () => {
 
         <input {...getInputProps()} />
         
-        <div className="w-20 h-20 bg-primary/10 rounded-[2rem] flex items-center justify-center shadow-[var(--primary-glow)] group-hover:scale-110 group-hover:bg-primary/20 transition-all duration-500">
-          <Box size={40} className="text-primary" />
+        <div className="w-24 h-24 bg-primary/10 rounded-[2.5rem] flex items-center justify-center shadow-[var(--primary-glow)] group-hover:scale-110 group-hover:bg-primary/20 transition-all duration-500">
+          <img src="/slicerai-icon.svg" alt="SlicerAI" className="w-16 h-16 rounded-2xl" style={{filter: "none", opacity: 1}}/>
         </div>
 
         <div className="text-center space-y-4 px-8">
