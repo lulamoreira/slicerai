@@ -22,7 +22,7 @@ interface SettingsStore {
   costPerKg: number;
   defaultPrinter: string;
   language: 'pt-BR' | 'en';
-  theme: 'dark' | 'light';
+  theme: 'dark' | 'light' | 'contrast' | 'rainbow';
   history: HistoryEntry[];
   
   setApiKey: (apiKey: string) => void;
@@ -36,6 +36,7 @@ interface SettingsStore {
   setDefaultPrinter: (printer: string) => void;
   setLanguage: (lang: 'pt-BR' | 'en') => void;
   setTheme: (theme: 'dark' | 'light' | 'contrast' | 'rainbow') => void;
+
   addToHistory: (entry: HistoryEntry) => void;
 }
 
