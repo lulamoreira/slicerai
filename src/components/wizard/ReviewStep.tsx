@@ -433,7 +433,7 @@ export const ReviewStep: React.FC = () => {
             <Button 
               variant="outline" 
               onClick={() => setIsQuotaModalOpen(false)}
-              className="bg-transparent border-border/50 text-white hover:bg-white/5"
+              className="bg-transparent border-border text-foreground hover:bg-muted"
             >
               Agora não
             </Button>
