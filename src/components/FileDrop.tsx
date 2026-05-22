@@ -68,7 +68,7 @@ export const FileDrop: React.FC<FileDropProps> = ({ onFileChange }) => {
     >
       <input {...getInputProps()} />
       <div className="w-16 h-16 bg-surface-raised rounded-full flex items-center justify-center mb-4">
-        <Upload className={`w-8 h-8 ${isDragActive ? "text-primary" : "text-muted-foreground"}`} />
+        <img src="/slicerai-icon.svg" alt="SlicerAI" className="w-8 h-8 rounded-xl" style={{filter: "none", opacity: 1}}/>
       </div>
       <p className="text-center font-medium">
         {isDragActive ? "Solte o arquivo aqui" : "Arraste um arquivo .STL ou .3MF"}
