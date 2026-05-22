@@ -249,7 +249,7 @@ export const ReviewStep: React.FC = () => {
       </div>
 
       <Dialog open={isAiModalOpen} onOpenChange={setIsAiModalOpen}>
-        <DialogContent className="max-w-md bg-[#1e2127] text-white border-border/50 p-6">
+        <DialogContent className="max-w-md bg-surface text-foreground border-border-strong p-6">
           <DialogHeader className="space-y-3">
             <DialogTitle className="text-xl font-bold flex items-center gap-2">
               <Cpu className="w-5 h-5 text-primary" />
@@ -272,6 +272,7 @@ export const ReviewStep: React.FC = () => {
             <ProviderButton 
               id="gemini" 
               name="Google Gemini 2.0" 
+              description="Gratuito com limite diário"
               hasKey={!!apiKey || profile?.api_key_mode === 'centralized'} 
               isSelected={selectedProvider === 'gemini'} 
               isFailed={failedProviders.has('gemini')}
@@ -283,6 +284,7 @@ export const ReviewStep: React.FC = () => {
             <ProviderButton 
               id="groq" 
               name="Groq Llama 3.3" 
+              description="Gratuito e rápido"
               hasKey={!!groqApiKey || profile?.api_key_mode === 'centralized'} 
               isSelected={selectedProvider === 'groq'} 
               isFailed={failedProviders.has('groq')}
@@ -294,6 +296,7 @@ export const ReviewStep: React.FC = () => {
             <ProviderButton 
               id="deepseek" 
               name="DeepSeek V3" 
+              description="Gratuito — $5 de crédito inicial"
               hasKey={!!deepseekKey || profile?.api_key_mode === 'centralized'} 
               isSelected={selectedProvider === 'deepseek'} 
               isFailed={failedProviders.has('deepseek')}
@@ -305,7 +308,7 @@ export const ReviewStep: React.FC = () => {
             <ProviderButton 
               id="openrouter" 
               name="OpenRouter" 
-              description="Meta Llama 3.3 70B — gratuito"
+              description="Modelos gratuitos disponíveis"
               hasKey={!!openrouterKey || profile?.api_key_mode === 'centralized'} 
               isSelected={selectedProvider === 'openrouter'} 
               isFailed={failedProviders.has('openrouter')}
@@ -344,7 +347,7 @@ export const ReviewStep: React.FC = () => {
             <Button 
               variant="outline" 
               onClick={() => setIsAiModalOpen(false)}
-              className="bg-transparent border-border/50 text-white hover:bg-white/5"
+              className="bg-transparent border-border text-foreground hover:bg-muted"
             >
               Cancelar
             </Button>
@@ -367,7 +370,7 @@ export const ReviewStep: React.FC = () => {
       </Dialog>
 
       <Dialog open={isQuotaModalOpen} onOpenChange={setIsQuotaModalOpen}>
-        <DialogContent className="max-w-md bg-[#1e2127] text-white border-border/50 p-6">
+        <DialogContent className="max-w-md bg-surface text-foreground border-border-strong p-6">
           <DialogHeader className="space-y-3">
             <DialogTitle className="text-xl font-bold flex items-center gap-2">
               <AlertCircle className="w-5 h-5 text-warning" />
@@ -388,14 +391,13 @@ export const ReviewStep: React.FC = () => {
               }}
               className={cn(
                 "flex flex-col items-start p-4 rounded-xl border transition-all text-left relative overflow-hidden group",
-                (!deepseekKey && profile?.api_key_mode !== 'centralized')
-                  ? "bg-black/20 border-border/20 opacity-50 cursor-not-allowed"
-                  : "bg-surface-raised border-border/30 hover:border-primary/50 hover:bg-surface-raised/80"
+                "bg-muted border border-border hover:border-primary/50 hover:bg-muted/80",
+                (!deepseekKey && profile?.api_key_mode !== 'centralized') && "opacity-50 cursor-not-allowed"
               )}
             >
-              <span className="font-bold text-sm text-white">Usar DeepSeek V3</span>
+              <span className="font-bold text-sm text-foreground">Usar DeepSeek V3</span>
               {(!deepseekKey && profile?.api_key_mode !== 'centralized') && (
-                <span className="text-[10px] text-warning flex items-center gap-1 mt-1 font-medium">
+                <span className="text-[10px] text-red-500 flex items-center gap-1 mt-1 font-bold">
                   <AlertCircle className="w-3 h-3" />
                   Sem chave cadastrada
                 </span>
@@ -411,14 +413,13 @@ export const ReviewStep: React.FC = () => {
               }}
               className={cn(
                 "flex flex-col items-start p-4 rounded-xl border transition-all text-left relative overflow-hidden group",
-                (!groqApiKey && profile?.api_key_mode !== 'centralized')
-                  ? "bg-black/20 border-border/20 opacity-50 cursor-not-allowed"
-                  : "bg-surface-raised border-border/30 hover:border-primary/50 hover:bg-surface-raised/80"
+                "bg-muted border border-border hover:border-primary/50 hover:bg-muted/80",
+                (!groqApiKey && profile?.api_key_mode !== 'centralized') && "opacity-50 cursor-not-allowed"
               )}
             >
-              <span className="font-bold text-sm text-white">Usar Groq Llama 3.3</span>
+              <span className="font-bold text-sm text-foreground">Usar Groq Llama 3.3</span>
               {(!groqApiKey && profile?.api_key_mode !== 'centralized') && (
-                <span className="text-[10px] text-warning flex items-center gap-1 mt-1 font-medium">
+                <span className="text-[10px] text-red-500 flex items-center gap-1 mt-1 font-bold">
                   <AlertCircle className="w-3 h-3" />
                   Sem chave cadastrada
                 </span>
@@ -430,7 +431,7 @@ export const ReviewStep: React.FC = () => {
             <Button 
               variant="outline" 
               onClick={() => setIsQuotaModalOpen(false)}
-              className="bg-transparent border-border/50 text-white hover:bg-white/5"
+              className="bg-transparent border-border text-foreground hover:bg-muted"
             >
               Agora não
             </Button>
@@ -456,35 +457,43 @@ const ProviderButton = ({ id, name, description, hasKey, isSelected, isFailed, o
     disabled={!hasKey || isFailed}
     className={cn(
       "flex flex-col items-start p-4 rounded-xl border transition-all text-left relative overflow-hidden group",
-      (!hasKey || isFailed)
-        ? "bg-black/20 border-border/20 opacity-50 cursor-not-allowed" 
-        : isSelected
-          ? "bg-primary/10 border-primary ring-1 ring-primary"
-          : "bg-surface-raised border-border/30 hover:border-primary/50 hover:bg-surface-raised/80"
+      isSelected
+        ? "bg-primary/10 border-2 border-primary shadow-[0_0_15px_rgba(0,200,180,0.1)]"
+        : "bg-muted/50 border border-border hover:border-primary/50 hover:bg-muted/80",
+      (!hasKey || isFailed) && "opacity-50 cursor-not-allowed"
     )}
   >
     <div className="flex items-center justify-between w-full">
       <div className="flex items-center gap-2">
-        <span className={cn("font-bold text-sm", isSelected ? "text-primary" : isFailed ? "text-red-400" : "text-white")}>
+        <span className={cn(
+          "font-bold text-sm",
+          isSelected ? "text-primary" : "text-foreground"
+        )}>
           {name}
         </span>
         {isFailed && <AlertCircle className="w-3.5 h-3.5 text-red-500" />}
       </div>
-      {isSelected && <div className="w-2 h-2 rounded-full bg-primary" />}
+      {isSelected && <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />}
     </div>
+
     {description && !isFailed && hasKey && (
-      <span className="text-[10px] text-muted-foreground mt-1 font-medium italic">
+      <span className={cn(
+        "text-[10px] mt-1 font-medium italic",
+        isSelected ? "text-primary/80" : "text-muted-foreground"
+      )}>
         {description}
       </span>
     )}
+
     {!hasKey && (
-      <span className="text-[10px] text-warning flex items-center gap-1 mt-1 font-medium">
+      <span className="text-[10px] text-red-500 flex items-center gap-1 mt-1 font-bold">
         <AlertCircle className="w-3 h-3" />
-        Sem chave cadastrada
+        Sem chave cadastrada — configure nas Configurações
       </span>
     )}
+    
     {isFailed && (
-      <span className="text-[10px] text-red-400 flex items-center gap-1 mt-1 font-medium">
+      <span className="text-[10px] text-red-500 flex items-center gap-1 mt-1 font-bold">
         <AlertCircle className="w-3 h-3" />
         Falha no provedor
       </span>
