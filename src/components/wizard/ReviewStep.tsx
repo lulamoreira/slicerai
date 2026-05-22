@@ -107,15 +107,26 @@ export const ReviewStep: React.FC = () => {
     } catch (error: any) {
       console.error('Generation error:', error);
       
+      useAppStore.setState({ status: 'ready' });
+
+      // Handle specific structured errors from ai.ts
+      if (error?.code === "QUOTA_EXCEEDED" || error?.code === "NO_BALANCE" || error?.code === "INVALID_KEY") {
+        setLastError({
+          provider: error.provider || selectedProvider,
+          message: error.message
+        });
+        setFailedProviders(prev => new Set(prev).add(selectedProvider));
+        setIsAiModalOpen(true); // Re-open the selection modal
+        return;
+      }
+
       if (error?.code === "QUOTA_EXCEEDED") {
         setIsQuotaModalOpen(true);
-        useAppStore.setState({ status: 'ready' });
         return;
       }
 
       const msg = error?.message || String(error);
       alert("Erro ao gerar configurações:\n\n" + msg);
-      useAppStore.setState({ status: 'ready' });
     }
   };
 
