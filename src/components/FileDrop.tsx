@@ -37,7 +37,7 @@ export const FileDrop: React.FC<FileDropProps> = ({ onFileChange }) => {
   if (wizard.fileName) {
     return (
       <div className="flex items-center gap-3 p-4 bg-surface-raised border border-border-strong rounded-xl w-full max-w-md mx-auto">
-        <FileCode className="w-8 h-8 text-primary" />
+        <img src="/slicerai-icon.svg" alt="SlicerAI" className="w-8 h-8 rounded-xl" style={{filter: "none", opacity: 1}}/>
         <div className="flex-1 min-w-0">
           <p className="text-sm font-medium truncate">{wizard.fileName}</p>
           <p className="text-xs text-muted-foreground">
