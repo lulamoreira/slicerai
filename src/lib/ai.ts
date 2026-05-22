@@ -121,7 +121,10 @@ export const repairJSON = (json: string): string => {
 export const generateSettings = async (
   wizard: WizardState,
   userProfile: any,
-  history: any[] = []
+  history: any[] = [],
+  improvementImage?: string,
+  currentVersion?: number,
+  previousResults?: AIResponse
 ): Promise<AIResponse> => {
   const historyContext = history && history.length > 0
     ? `HISTÓRICO DE IMPRESSÕES ANTERIORES DO USUÁRIO (use para calibrar sua recomendação):
@@ -155,7 +158,20 @@ INSTRUÇÃO: Com base nesse histórico, identifique preferências do usuário e 
     6. Escolha uma cor de filamento funcional e apropriada para o propósito do objeto.
     7. O usuário NÃO fornece estas escolhas (incluindo suportes e seam position) - VOCÊ decide baseado na sua expertise técnica.
     8. Você tem acesso ao histórico de impressões do usuário acima. Use-o para: 1) Identificar as preferências de impressora e material do usuário, 2) Calibrar as recomendações de temperatura e velocidade com base no que funcionou anteriormente, 3) Melhorar as decisões de suporte e qualidade ao longo do tempo. Se esta for a primeira impressão (sem histórico), use padrões seguros.
+    9. SE FOR FORNECIDA UMA IMAGEM DE MELHORIA: Analise o print screen do fatiamento, identifique problemas visíveis como stringing excessivo, má adesão, suportes desnecessários, qualidade de superfície ruim, ou tempo de impressão muito alto, e gere um perfil melhorado corrigindo esses problemas. Explique em improveReason o que foi identificado e o que foi ajustado. O novo perfil gerado deve ter o número da versão incrementado.
   `;
+
+  const improvementContext = improvementImage 
+    ? `
+ALERTA DE MELHORIA (Versão v${currentVersion}):
+O usuário enviou um print screen do fatiamento no Bambu Studio usando as configurações da versão v${currentVersion} (fornecidas abaixo).
+Analise a imagem em anexo e melhore os parâmetros.
+
+CONFIGURAÇÕES v${currentVersion} ATUAIS:
+${JSON.stringify(previousResults, null, 2)}
+
+INSTRUÇÃO ADICIONAL: "O usuário aplicou o perfil v${currentVersion} e fatiou o modelo. Analise o print screen do fatiamento, identifique problemas visíveis como stringing excessivo, má adesão, suportes desnecessários, qualidade de superfície ruim, ou tempo de impressão muito alto, e gere um perfil melhorado corrigindo esses problemas. Explique em \`improveReason\` o que foi identificado e o que foi ajustado."
+` : '';
 
   const userMessage = `
 Analise este modelo 3D e gere as melhores configurações para o Bambu Studio.
@@ -196,7 +212,22 @@ Retorne este JSON exato (todos os campos obrigatórios):
 }
   `;
 
-  const fullPrompt = `${historyContext}\n\n${systemPrompt}\n\n${userMessage}`;
+  const fullPrompt = `${historyContext}\n\n${improvementContext}\n\n${systemPrompt}\n\n${userMessage}`;
+
+  const messageContents: any[] = [];
+  if (improvementImage) {
+    messageContents.push({
+      text: fullPrompt
+    });
+    messageContents.push({
+      inlineData: {
+        mimeType: "image/jpeg",
+        data: improvementImage.split(',')[1] // remove data:image/jpeg;base64,
+      }
+    });
+  } else {
+    messageContents.push({ text: fullPrompt });
+  }
 
   let response;
   const generationConfig = {
