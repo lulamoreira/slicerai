@@ -160,6 +160,7 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
                     <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-[9px] px-1 py-0 h-3.5 uppercase tracking-tighter">
                       📐 {lang === "PT" ? "Geometria" : "Geometry"}
                     </Badge>
+
                   )}
                 </div>
               </button>
