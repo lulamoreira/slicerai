@@ -459,7 +459,7 @@ const ProviderButton = ({ id, name, description, hasKey, isSelected, isFailed, o
       "flex flex-col items-start p-4 rounded-xl border transition-all text-left relative overflow-hidden group",
       isSelected
         ? "bg-primary/10 border-2 border-primary shadow-[0_0_15px_rgba(0,200,180,0.1)]"
-        : "bg-muted border border-border hover:border-primary/50 hover:bg-muted/80",
+        : "bg-muted/50 border border-border hover:border-primary/50 hover:bg-muted/80",
       (!hasKey || isFailed) && "opacity-50 cursor-not-allowed"
     )}
   >
