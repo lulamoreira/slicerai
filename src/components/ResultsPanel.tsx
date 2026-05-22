@@ -162,9 +162,29 @@ export const ResultsPanel: React.FC = () => {
         
         {showBambuModal && (
           <BambuSettingsModal 
-            results={results} 
-            wizard={wizard} 
-            onClose={() => setShowBambuModal(false)} 
+            open={showBambuModal}
+            onClose={() => setShowBambuModal(false)}
+            settings={{
+              printer: (wizard as any).printer || "X1 Carbon",
+              nozzle: (wizard as any).nozzle || "0.4",
+              layerHeight: results.layerHeight || results.quality?.layer_height || 0.20,
+              wallLoops: results.wallLoops || results.strength?.wall_loops || 3,
+              topLayers: results.topLayers || results.strength?.top_layers || 4,
+              bottomLayers: results.bottomLayers || results.strength?.bottom_layers || 4,
+              infillDensity: results.infillPercent || results.strength?.infill_density || 15,
+              infillPattern: results.infillPattern || results.strength?.infill_pattern || "Gyroid",
+              printSpeed: results.printSpeed || results.speed?.inner_wall || 150,
+              travelSpeed: 200,
+              enableSupport: !!((results.supportType && results.supportType !== "none" && results.supportType !== "Sem suporte") || results.support?.needed),
+              supportType: results.supportType || results.support?.type || "normal(auto)",
+              supportThreshold: results.supportAngle || results.support?.threshold_angle || 30,
+              brimWidth: 0,
+              nozzleTemp: results.nozzleTemp || results.temperature?.nozzle || 220,
+              bedTemp: results.bedTemp || results.temperature?.bed || 65,
+              enableIroning: !!(results.ironing || results.quality?.ironing),
+              filamentType: (wizard as any).filament || "PLA",
+              profileName: `SlicerAI - ${results.profile_name_suggestion || (wizard as any).fileName || 'perfil'}`,
+            }}
           />
         )}
 
