@@ -265,7 +265,7 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
                     {Object.entries(settings.improvements).map(([field, reason]) => (
                       <div key={field} className="p-3 bg-[#00AE42]/5 border border-[#00AE42]/20 rounded-lg">
                         <p className="text-xs font-bold text-[#00AE42] uppercase mb-1">{field}</p>
-                        <p className="text-xs text-foreground/80">{reason}</p>
+                        <p className="text-xs text-gray-200">{reason}</p>
                       </div>
                     ))}
                   </div>
