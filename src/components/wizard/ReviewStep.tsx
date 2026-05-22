@@ -290,16 +290,13 @@ export const ReviewStep: React.FC = () => {
           <div className="grid grid-cols-1 gap-3 my-6">
             <button
               disabled={!deepseekKey && profile?.api_key_mode !== 'centralized'}
-              onClick={async () => {
+              onClick={() => {
                 setAiProvider('deepseek');
                 setIsQuotaModalOpen(false);
-                // We need to wait a tiny bit for the state to update or just pass it directly
-                // handleConfirmGeneration uses current selectedProvider if we don't be careful
-                // but handleConfirmGeneration reads from aiProvider store if we trigger it right
-                setTimeout(() => handleGenerateClick(), 100);
+                setTimeout(() => handleConfirmGeneration(), 100);
               }}
               className={cn(
-                "flex flex-col items-start p-4 rounded-xl border transition-all text-left relative",
+                "flex flex-col items-start p-4 rounded-xl border transition-all text-left relative overflow-hidden group",
                 (!deepseekKey && profile?.api_key_mode !== 'centralized')
                   ? "bg-black/20 border-border/20 opacity-50 cursor-not-allowed"
                   : "bg-surface-raised border-border/30 hover:border-primary/50 hover:bg-surface-raised/80"
@@ -319,10 +316,10 @@ export const ReviewStep: React.FC = () => {
               onClick={() => {
                 setAiProvider('groq');
                 setIsQuotaModalOpen(false);
-                setTimeout(() => handleGenerateClick(), 100);
+                setTimeout(() => handleConfirmGeneration(), 100);
               }}
               className={cn(
-                "flex flex-col items-start p-4 rounded-xl border transition-all text-left relative",
+                "flex flex-col items-start p-4 rounded-xl border transition-all text-left relative overflow-hidden group",
                 (!groqApiKey && profile?.api_key_mode !== 'centralized')
                   ? "bg-black/20 border-border/20 opacity-50 cursor-not-allowed"
                   : "bg-surface-raised border-border/30 hover:border-primary/50 hover:bg-surface-raised/80"
@@ -349,6 +346,7 @@ export const ReviewStep: React.FC = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
     </div>
 
   );
