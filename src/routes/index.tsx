@@ -134,30 +134,32 @@ function HomeComponent() {
             {orientationAdvice.suggested && !orientationAdvice.dismissed && (
               <div className="absolute top-4 left-4 right-4 animate-in slide-in-from-top-4 duration-500 z-20">
 
-                <div className="p-4 bg-[var(--primary-subtle)] backdrop-blur-md border border-[var(--primary-glow)] rounded-xl flex items-center justify-between shadow-2xl">
-                  <div className="flex items-center gap-3">
-                    <Info className="w-5 h-5 text-primary" />
+                <div className="p-3 md:p-4 bg-[var(--primary-subtle)] backdrop-blur-md border border-[var(--primary-glow)] rounded-xl flex items-center justify-between shadow-2xl gap-2">
+                  <div className="flex items-center gap-2 md:gap-3">
+                    <Info className="w-4 h-4 md:w-5 md:h-5 text-primary shrink-0" />
                     <div>
-                      <p className="text-sm font-bold text-foreground">💡 Orientação Otimizada</p>
-                      <p className="text-xs text-foreground-soft">Rotar 90° no eixo X pode eliminar suportes. Considerar?</p>
+                      <p className="text-[11px] md:text-sm font-bold text-foreground">💡 Orientação</p>
+                      <p className="text-[9px] md:text-xs text-foreground-soft leading-tight">Rotar 90° X pode otimizar suportes.</p>
                     </div>
                   </div>
+
                   <div className="flex gap-2">
                     <button 
                       onClick={() => {
                         updateWizard({ shouldRotate90X: true })
                         setOrientationAdvice({ dismissed: true })
                       }}
-                      className="px-4 py-1.5 bg-primary text-[#0d0d14] text-[10px] font-bold tracking-widest rounded-lg hover:bg-primary-hover transition-colors shadow-lg"
+                      className="px-3 md:px-4 py-1.5 bg-primary text-[#0d0d14] text-[9px] md:text-[10px] font-bold tracking-widest rounded-lg hover:bg-primary-hover transition-colors shadow-lg"
                     >
                       SIM
                     </button>
                     <button 
                       onClick={() => setOrientationAdvice({ dismissed: true })}
-                      className="px-4 py-1.5 bg-surface-raised text-foreground text-[10px] font-bold tracking-widest rounded-lg hover:bg-surface-hover transition-colors border border-border"
+                      className="px-3 md:px-4 py-1.5 bg-surface-raised text-foreground text-[9px] md:text-[10px] font-bold tracking-widest rounded-lg hover:bg-surface-hover transition-colors border border-border"
                     >
-                      IGNORAR
+                      NÃO
                     </button>
+
                   </div>
                 </div>
               </div>
