@@ -200,12 +200,13 @@ export const ResultsPanel: React.FC = () => {
 
 
       {/* Content */}
-      <div className="mt-8 pt-8 border-t border-border space-y-6 pb-20 md:pb-0">
+      <div className="flex-1 min-h-0">
         {renderTabContent()}
       </div>
 
+
       {/* Refinement Area */}
-      <div className="mt-8 pt-8 border-t border-border space-y-6">
+      <div className="mt-8 pt-8 border-t border-border space-y-6 pb-24 md:pb-8">
         {isFinalized ? (
           <div className="p-6 bg-[#00AE42]/10 border border-[#00AE42]/30 rounded-xl text-center animate-in zoom-in-95 duration-300">
             <p className="text-[#00AE42] font-bold text-lg mb-1">Perfil finalizado na v{profileVersion} — boas impressões! 🎉</p>
