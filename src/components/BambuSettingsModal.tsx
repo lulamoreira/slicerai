@@ -247,7 +247,7 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
             <div className="space-y-6 py-2">
               <div className="space-y-2">
                 <h3 className="text-sm font-bold text-green-400 flex items-center gap-2 uppercase tracking-wider">
-                  <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-400" />
                   {t.strategyTitle}
                 </h3>
                 <p className="text-sm leading-relaxed text-gray-200 bg-white/5 p-4 rounded-xl border border-border/10 italic">
