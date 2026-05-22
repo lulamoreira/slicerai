@@ -13,7 +13,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Button } from "@/components/ui/button";
 
 export const ReviewStep: React.FC = () => {
-  const { wizard, setResults, status, geometry } = useAppStore();
+  const { wizard, setResults, status, geometry, profileHistory } = useAppStore();
   const { profile } = useAuthStore();
   const { 
     apiKey, groqApiKey, deepseekKey, openrouterKey, aiProvider, 
