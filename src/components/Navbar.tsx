@@ -86,14 +86,22 @@ export const Navbar: React.FC<NavbarProps> = ({ onShowSettings, onShowHistory })
 
   return (
     <header className="h-[52px] border-b border-border bg-surface sticky top-0 z-40 px-6 flex items-center justify-between">
-      <div className="flex items-center gap-3">
+      <button
+        onClick={() => {
+          resetApp();
+          navigate({ to: '/' });
+        }}
+        className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+        aria-label="Voltar para a tela inicial"
+      >
         <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
           <Hexagon className="w-5 h-5 text-[#0d0d14] fill-[#0d0d14]/20" />
         </div>
         <h1 className="font-extrabold tracking-tight text-lg text-foreground hidden sm:block">
           SlicerAI <span className="text-primary font-normal italic">for Bambu</span>
         </h1>
-      </div>
+      </button>
+
 
       <div className="flex items-center gap-1 sm:gap-2">
         {status !== 'idle' && (
