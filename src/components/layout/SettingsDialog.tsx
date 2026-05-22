@@ -254,13 +254,25 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
                     <div className="relative flex-1">
                         <input 
                         type={showKey ? "text" : "password"}
-                        value={aiProvider === 'gemini' ? apiKey : groqApiKey}
+                        value={
+                          aiProvider === 'gemini' ? apiKey : 
+                          aiProvider === 'groq' ? groqApiKey : 
+                          aiProvider === 'deepseek' ? deepseekKey : 
+                          openrouterKey
+                        }
                         onChange={(e) => {
                           const newKey = e.target.value;
                           if (aiProvider === 'gemini') setApiKey(newKey);
-                          else setGroqApiKey(newKey);
+                          else if (aiProvider === 'groq') setGroqApiKey(newKey);
+                          else if (aiProvider === 'deepseek') setDeepseekKey(newKey);
+                          else setOpenrouterKey(newKey);
                         }}
-                        placeholder={aiProvider === 'gemini' ? "AIza..." : "gsk_..."}
+                        placeholder={
+                          aiProvider === 'gemini' ? "AIza..." : 
+                          aiProvider === 'groq' ? "gsk_..." : 
+                          aiProvider === 'deepseek' ? "sk-..." : 
+                          "sk-or-..."
+                        }
                         className="w-full bg-surface-raised border border-border-strong rounded-xl p-3.5 text-xs font-mono font-bold outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-foreground pr-12"
                         />
                         <button 
