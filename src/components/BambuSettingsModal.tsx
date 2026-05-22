@@ -64,7 +64,7 @@ const LABELS: Record<Lang, Record<string, string>> = {
 function DecisionNote({ text }: { text?: string }) {
   if (!text) return null;
   return (
-    <p className="text-xs text-muted-foreground italic mb-2 mt-0.5 flex items-start gap-1.5 px-1 opacity-80">
+    <p className="text-xs text-gray-400 italic mb-2 mt-0.5 flex items-start gap-1.5 px-1 opacity-100">
       <span className="shrink-0 mt-0.5">💡</span>
       <span>{text}</span>
     </p>
@@ -73,12 +73,12 @@ function DecisionNote({ text }: { text?: string }) {
 
 function Row({ label, value, onCopy, decision }: { label: string; value: string; onCopy: () => void; decision?: string }) {
   return (
-    <div className="py-2 border-b border-border/30">
+    <div className="py-2 border-b border-border/10">
       <div className="flex items-center justify-between group">
-        <span className="text-sm text-muted-foreground">{label}</span>
+        <span className="text-sm text-white/90 font-medium">{label}</span>
         <div className="flex items-center gap-2">
-          <span className="text-sm font-mono font-medium">{value}</span>
-          <button onClick={onCopy} className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-muted rounded">
+          <span className="text-sm font-mono font-semibold text-white">{value}</span>
+          <button onClick={onCopy} className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-white/10 rounded text-gray-400 hover:text-white">
             <Copy className="w-3 h-3" />
           </button>
         </div>
@@ -239,22 +239,22 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
             </div>
           )}
 
-          <div className="mt-4 pt-3 border-t border-border/40">
-            <p className="text-xs text-muted-foreground mb-2 uppercase tracking-wide">Filament</p>
+          <div className="mt-4 pt-3 border-t border-white/10">
+            <p className="text-[10px] text-gray-400 mb-2 uppercase tracking-[0.2em] font-bold">Filament</p>
             <Row label={t.filament} value={settings.filamentType} onCopy={() => copy(settings.filamentType)} />
-            <Row label={t.nozzleTemp} value={`${settings.nozzleTemp}°C`} onCopy={() => copy(String(settings.nozzleTemp))} />
+            <Row label={t.nozzleTemp} value={`${settings.nozzleTemp}°C`} onCopy={() => copy(String(settings.nozzleTemp))} decision={settings.decisions?.temperatures} />
             <Row label={t.bedTemp} value={`${settings.bedTemp}°C`} onCopy={() => copy(String(settings.bedTemp))} />
           </div>
         </div>
 
-        <div className="px-4 pb-4 pt-3 shrink-0 border-t border-border/40 flex flex-col gap-2">
-          <p className="text-xs text-muted-foreground text-center">{t.howToImport}</p>
+        <div className="px-4 pb-4 pt-3 shrink-0 border-t border-white/10 flex flex-col gap-2 bg-[#1a1a1a]">
+          <p className="text-[10px] text-gray-400 text-center font-medium italic mb-1">{t.howToImport}</p>
           <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={copyAll} className="flex-1 text-xs gap-1">
+            <Button variant="outline" size="sm" onClick={copyAll} className="flex-1 text-xs gap-1 border-gray-500 text-white hover:bg-gray-700 bg-transparent">
               <Copy className="w-3 h-3" /> {t.copyAll}
             </Button>
             <Button size="sm" onClick={() => downloadBambuProfile(settings)}
-              className="flex-1 text-xs gap-1 bg-[#00AE42] hover:bg-[#009938] text-white">
+              className="flex-1 text-xs gap-1 bg-[#00AE42] hover:bg-[#009938] text-white font-bold">
               <Download className="w-3 h-3" /> {lang === "PT" ? "Baixar .bbscfg" : "Download .bbscfg"}
             </Button>
           </div>
