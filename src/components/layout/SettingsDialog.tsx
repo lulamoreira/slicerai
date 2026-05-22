@@ -28,6 +28,8 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
     apiKey, setApiKey,
     aiProvider, setAiProvider,
     groqApiKey, setGroqApiKey,
+    deepseekKey, setDeepseekKey,
+    openrouterKey, setOpenrouterKey,
     costPerKg, setCostPerKg, 
     language, setLanguage,
     theme, setTheme,
