@@ -134,8 +134,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onShowSettings, onShowHistory })
           >
             {theme === 'dark' && <Moon className="w-5 h-5" />}
             {theme === 'light' && <Sun className="w-5 h-5" />}
-            {theme === 'contrast' && <div className="w-5 h-5 bg-foreground border border-background" />}
-            {theme === 'rainbow' && <span className="text-lg">🌈</span>}
+            {(theme as string) === 'contrast' && <div className="w-5 h-5 bg-foreground border border-background" />}
+            {(theme as string) === 'rainbow' && <span className="text-lg">🌈</span>}
+
           </button>
           
           {showDropdown && (
@@ -144,8 +145,9 @@ export const Navbar: React.FC<NavbarProps> = ({ onShowSettings, onShowHistory })
               <div className="absolute right-0 mt-2 w-40 bg-surface border border-border rounded-xl shadow-2xl z-50 p-1 animate-in fade-in slide-in-from-top-2">
                 <ThemeOption icon={<Sun className="w-4 h-4" />} label="Claro" active={theme === 'light'} onClick={() => { setTheme('light'); setShowDropdown(false); }} />
                 <ThemeOption icon={<Moon className="w-4 h-4" />} label="Escuro" active={theme === 'dark'} onClick={() => { setTheme('dark'); setShowDropdown(false); }} />
-                <ThemeOption icon={<div className="w-4 h-4 bg-foreground border border-background" />} label="Contraste" active={theme === 'contrast'} onClick={() => { setTheme('contrast'); setShowDropdown(false); }} />
-                <ThemeOption icon={<span className="text-sm">🌈</span>} label="Multicolor" active={theme === 'rainbow'} onClick={() => { setTheme('rainbow'); setShowDropdown(false); }} />
+                <ThemeOption icon={<div className="w-4 h-4 bg-foreground border border-background" />} label="Contraste" active={(theme as string) === 'contrast'} onClick={() => { setTheme('contrast'); setShowDropdown(false); }} />
+                <ThemeOption icon={<span className="text-sm">🌈</span>} label="Multicolor" active={(theme as string) === 'rainbow'} onClick={() => { setTheme('rainbow'); setShowDropdown(false); }} />
+
               </div>
             </>
           )}
