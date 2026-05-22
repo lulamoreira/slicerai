@@ -71,13 +71,14 @@ function DecisionNote({ text }: { text?: string }) {
       <span>{text}</span>
     </p>
   );
+
 }
 
 function Row({ label, value, onCopy, decision }: { label: string; value: string; onCopy: () => void; decision?: string }) {
   return (
-    <div className="py-2 border-b border-border/10">
+    <div className="py-2 border-b border-gray-700">
       <div className="flex items-center justify-between group">
-        <span className="text-sm text-white/90 font-medium">{label}</span>
+        <span className="text-sm text-gray-200 font-medium">{label}</span>
         <div className="flex items-center gap-2">
           <span className="text-sm font-mono font-semibold text-white">{value}</span>
           <button onClick={onCopy} className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-white/10 rounded text-gray-400 hover:text-white">
@@ -88,6 +89,7 @@ function Row({ label, value, onCopy, decision }: { label: string; value: string;
       <DecisionNote text={decision} />
     </div>
   );
+
 }
 
 export function BambuSettingsModal({ open, onClose, settings }: Props) {
@@ -130,7 +132,7 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="w-full h-full md:h-auto max-w-lg md:max-h-[90vh] flex flex-col p-0 gap-0 bg-[#1a1a1a] text-white border-white/10 rounded-none md:rounded-[2.5rem]">
+      <DialogContent className="w-full h-full md:h-auto max-w-lg md:max-h-[90vh] flex flex-col p-0 gap-0 bg-[#1c1c1e] text-white border-white/10 rounded-none md:rounded-[2.5rem]">
         <DialogHeader className="px-4 pt-4 pb-0 shrink-0">
           <div className="flex items-center justify-between">
             <DialogTitle className="text-base font-semibold text-white">Process — SlicerAI</DialogTitle>
@@ -148,7 +150,7 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
             <Badge variant="outline" className="text-xs bg-gray-700 text-white border-gray-600 px-2 py-0.5">⌀ {settings.nozzle}mm</Badge>
             <Badge variant="outline" className="text-xs bg-gray-700 text-white border-gray-600 px-2 py-0.5">{settings.filamentType}</Badge>
           </div>
-          <div className="flex mt-3 border-b border-white/10 overflow-x-auto no-scrollbar">
+          <div className="flex mt-3 border-b border-gray-700 overflow-x-auto no-scrollbar">
             {tabs.map((tab) => (
               <button key={tab} onClick={() => setActiveTab(tab)}
                 className={`px-4 py-2 text-xs font-bold uppercase tracking-wider transition-all border-b-2 -mb-px whitespace-nowrap ${activeTab === tab ? "border-green-400 text-white" : "border-transparent text-gray-400 hover:text-white"}`}>
@@ -176,10 +178,11 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
               <Row label={t.ironing} value={settings.enableIroning ? "✓ On" : "✗ Off"} onCopy={() => copy(settings.enableIroning ? "1" : "0")} decision={settings.decisions?.ironing} />
               <Row label={t.seamPosition} value={settings.seamPosition || "aligned"} onCopy={() => copy(settings.seamPosition || "aligned")} decision={settings.decisions?.seam} />
               {settings.seamReason && (
-                <p className="text-[11px] text-muted-foreground italic mb-2 -mt-1 px-1">
+                <p className="text-[11px] text-gray-400 italic mb-2 -mt-1 px-1">
                   {settings.seamReason}
                 </p>
               )}
+
             </div>
           )}
           {activeTab === "Strength" && (
@@ -223,10 +226,11 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
               <Row label={t.enableSupport} value={settings.enableSupport ? "✓ On" : "✗ Off"} onCopy={() => copy(settings.enableSupport ? "1" : "0")} decision={settings.decisions?.support} />
 
               {settings.supportReason && (
-                <p className="text-[11px] text-muted-foreground italic mb-2 -mt-1 px-1">
+                <p className="text-[11px] text-gray-400 italic mb-2 -mt-1 px-1">
                   {settings.supportReason}
                 </p>
               )}
+
               {settings.enableSupport && (
                 <>
                   <Row label={t.supportType} value={settings.supportType || "normal(auto)"} onCopy={() => copy(settings.supportType || "normal(auto)")} />
