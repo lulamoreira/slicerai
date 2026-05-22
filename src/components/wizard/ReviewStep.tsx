@@ -236,6 +236,8 @@ export const ReviewStep: React.FC = () => {
                   {aiProvider === 'gemini' ? "OTIMIZAÇÃO GOOGLE GEMINI 2.0" : 
                    aiProvider === 'groq' ? "OTIMIZAÇÃO GROQ Llama 3.3" :
                    aiProvider === 'deepseek' ? "OTIMIZAÇÃO DEEPSEEK V3" :
+                   aiProvider === 'claude' ? "OTIMIZAÇÃO CLAUDE 3.5 HAIKU" :
+                   aiProvider === 'openai' ? "OTIMIZAÇÃO GPT-4O MINI" :
                    "OTIMIZAÇÃO OPENROUTER"}
                 </span>
               </div>
