@@ -17,7 +17,7 @@ type Lang = "EN" | "PT";
 
 const LABELS: Record<Lang, Record<string, string>> = {
   EN: {
-    quality: "Quality", strength: "Strength", speed: "Speed", support: "Support",
+    quality: "Quality", strength: "Strength", speed: "Speed", support: "Support", analysis: "Analysis",
     layerHeight: "Layer height", initialLayer: "Initial layer height",
     topLayers: "Top shell layers", bottomLayers: "Bottom shell layers",
     wallLoops: "Wall loops", infillDensity: "Sparse infill density",
@@ -32,9 +32,11 @@ const LABELS: Record<Lang, Record<string, string>> = {
     howToImport: "How to import: File → Import → Import Configs",
     copyAll: "Copy all", copied: "Copied!",
     seamPosition: "Seam position",
+    strategyTitle: "Print Strategy",
+    improvementsTitle: "Improvements in this version:",
   },
   PT: {
-    quality: "Qualidade", strength: "Resistência", speed: "Velocidade", support: "Suporte",
+    quality: "Qualidade", strength: "Resistência", speed: "Velocidade", support: "Suporte", analysis: "Análise",
     layerHeight: "Altura da camada", initialLayer: "Altura camada inicial",
     topLayers: "Camadas superiores", bottomLayers: "Camadas inferiores",
     wallLoops: "Paredes", infillDensity: "Densidade do preenchimento",
@@ -49,19 +51,34 @@ const LABELS: Record<Lang, Record<string, string>> = {
     howToImport: "Como importar: Arquivo → Importar → Importar Configurações",
     copyAll: "Copiar tudo", copied: "Copiado!",
     seamPosition: "Posição da costura",
+    strategyTitle: "Estratégia de Impressão",
+    improvementsTitle: "O que melhorei nesta versão:",
   },
 };
 
-function Row({ label, value, onCopy }: { label: string; value: string; onCopy: () => void }) {
+function DecisionNote({ text }: { text?: string }) {
+  if (!text) return null;
   return (
-    <div className="flex items-center justify-between py-2 border-b border-border/30 group">
-      <span className="text-sm text-muted-foreground">{label}</span>
-      <div className="flex items-center gap-2">
-        <span className="text-sm font-mono font-medium">{value}</span>
-        <button onClick={onCopy} className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-muted rounded">
-          <Copy className="w-3 h-3" />
-        </button>
+    <p className="text-xs text-muted-foreground italic mb-2 mt-0.5 flex items-start gap-1.5 px-1 opacity-80">
+      <span className="shrink-0 mt-0.5">💡</span>
+      <span>{text}</span>
+    </p>
+  );
+}
+
+function Row({ label, value, onCopy, decision }: { label: string; value: string; onCopy: () => void; decision?: string }) {
+  return (
+    <div className="py-2 border-b border-border/30">
+      <div className="flex items-center justify-between group">
+        <span className="text-sm text-muted-foreground">{label}</span>
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-mono font-medium">{value}</span>
+          <button onClick={onCopy} className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-muted rounded">
+            <Copy className="w-3 h-3" />
+          </button>
+        </div>
       </div>
+      <DecisionNote text={decision} />
     </div>
   );
 }
