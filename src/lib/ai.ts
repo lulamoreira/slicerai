@@ -298,23 +298,38 @@ Retorne este JSON exato (todos os campos obrigatórios):
       messages.push({ role: "user", content: fullPrompt });
     }
 
-    response = await fetch(
-      "https://api.groq.com/openai/v1/chat/completions",
-      {
-        method: "POST",
-        headers: { 
-          "Authorization": `Bearer ${cleanKey}`,
-          "Content-Type": "application/json" 
-        },
-        body: JSON.stringify({
-          model: improvementImage ? "llama-3.2-11b-vision-preview" : "llama-3.3-70b-versatile",
-          messages,
-          temperature: 0.2,
-          max_tokens: 8192,
-          response_format: { type: "json_object" }
-        }),
+    const groqModels = improvementImage 
+      ? ["llava-v1.5-7b-4096-preview", "llama-3.2-90b-vision-preview"] 
+      : ["llama-3.3-70b-versatile"];
+    
+    let groqResponse;
+    for (const model of groqModels) {
+      groqResponse = await fetch(
+        "https://api.groq.com/openai/v1/chat/completions",
+        {
+          method: "POST",
+          headers: { 
+            "Authorization": `Bearer ${cleanKey}`,
+            "Content-Type": "application/json" 
+          },
+          body: JSON.stringify({
+            model,
+            messages,
+            temperature: 0.2,
+            max_tokens: improvementImage ? 2048 : 8192,
+            response_format: { type: "json_object" }
+          }),
+        }
+      );
+      if (groqResponse.ok) break;
+      const errData = await groqResponse.json().catch(() => ({}));
+      if (improvementImage && (groqResponse.status === 400 || errData?.error?.message?.includes("decommissioned") || errData?.error?.code === "model_not_found")) {
+        console.log(`Groq: model ${model} failed, trying next fallback...`);
+        continue;
       }
-    );
+      break;
+    }
+    response = groqResponse;
   } else if (aiProvider === 'deepseek') {
     const deepseekKey = useSettingsStore.getState().deepseekKey;
     if (!deepseekKey) throw new Error('NO_API_KEY');
