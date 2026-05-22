@@ -84,6 +84,7 @@ export interface AIResponse {
     interface_pattern: string;
     tree_support_angle: number;
     on_build_plate_only: boolean;
+    supportReason?: string;
   };
   temperature: {
     nozzle: number;

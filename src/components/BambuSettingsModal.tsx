@@ -163,6 +163,11 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
           {activeTab === "Support" && (
             <div>
               <Row label={t.enableSupport} value={settings.enableSupport ? "✓ On" : "✗ Off"} onCopy={() => copy(settings.enableSupport ? "1" : "0")} />
+              {settings.supportReason && (
+                <p className="text-[11px] text-muted-foreground italic mb-2 -mt-1 px-1">
+                  {settings.supportReason}
+                </p>
+              )}
               {settings.enableSupport && (
                 <>
                   <Row label={t.supportType} value={settings.supportType || "normal(auto)"} onCopy={() => copy(settings.supportType || "normal(auto)")} />

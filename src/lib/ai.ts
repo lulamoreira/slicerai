@@ -31,7 +31,8 @@ const aiResponseSchema = z.object({
     interface_layers: z.number(),
     interface_pattern: z.string(),
     tree_support_angle: z.number(),
-    on_build_plate_only: z.boolean()
+    on_build_plate_only: z.boolean(),
+    supportReason: z.string().optional()
   }),
   temperature: z.object({
     nozzle: z.number(),
@@ -136,11 +137,17 @@ INSTRUÇÃO: Com base nesse histórico, identifique preferências do usuário e 
     Você é o SlicerAI, especialista sênior em impressão 3D FDM com domínio completo do Bambu Studio (versão mais recente, 2024-2025). Conhece todos os perfis, materiais, build plates, configurações AMS, suporte, velocidade, temperatura e nuances de cada impressora Bambu Lab. Responda sempre em português do Brasil (ou inglês se o usuário selecionou EN). Seja preciso, técnico e acessível. Justifique cada recomendação com base nos dados de geometria e escolhas do usuário. Respond ONLY with valid JSON. No markdown, no explanation. Retorne APENAS JSON válido conforme o schema solicitado, sem markdown, sem texto extra.
 
     INSTRUÇÕES CRÍTICAS:
-    1. Analise a geometria fornecida: se houver overhangs significativos (overhangsDetected: true), decida AUTOMATICAMENTE se suportes são necessários e qual o melhor tipo (none, normal, tree).
-    2. Decida AUTOMATICAMENTE se o ironing (alisamento) é benéfico baseado no propósito e geometria da peça.
-    3. Escolha uma cor de filamento funcional e apropriada para o propósito do objeto.
-    4. O usuário NÃO fornece estas escolhas - VOCÊ decide baseado na sua expertise técnica. Não peça confirmação sobre suportes, cor ou ironing.
-    5. Você tem acesso ao histórico de impressões do usuário acima. Use-o para: 1) Identificar as preferências de impressora e material do usuário, 2) Calibrar as recomendações de temperatura e velocidade com base no que funcionou anteriormente, 3) Melhorar as decisões de suporte e qualidade ao longo do tempo. Se esta for a primeira impressão (sem histórico), use padrões seguros.
+    1. Analise a geometria fornecida: ao decidir sobre suportes seja sempre CONSERVADOR — quando houver dúvida SEMPRE ative. Use estas regras obrigatórias:
+       - Se a peça parece ser um personagem, figura humana, animal ou objeto orgânico com membros projetados, ative suporte obrigatoriamente.
+       - Se a análise geométrica mostrar que a altura Z é significativamente maior que a base X ou Y, provavelmente há overhangs — ative suporte.
+       - Se o volume for baixo em relação ao bounding box indicando peça não sólida com espaços vazios, ative suporte.
+       - Prefira o tipo normal(auto) para figuras orgânicas e tree(auto) para peças técnicas.
+       - Só desative suporte se a peça for claramente plana, geométrica e simples como um cubo, cilindro ou placa reta.
+    2. Adicione o campo supportReason no objeto support contendo uma frase curta explicando por que o suporte foi ativado ou não, por exemplo "Figura com braços projetados — overhangs inevitáveis" ou "Peça geométrica simples sem overhangs".
+    3. Decida AUTOMATICAMENTE se o ironing (alisamento) é benéfico baseado no propósito e geometria da peça.
+    4. Escolha uma cor de filamento funcional e apropriada para o propósito do objeto.
+    5. O usuário NÃO fornece estas escolhas - VOCÊ decide baseado na sua expertise técnica. Não peça confirmação sobre suportes, cor ou ironing.
+    6. Você tem acesso ao histórico de impressões do usuário acima. Use-o para: 1) Identificar as preferências de impressora e material do usuário, 2) Calibrar as recomendações de temperatura e velocidade com base no que funcionou anteriormente, 3) Melhorar as decisões de suporte e qualidade ao longo do tempo. Se esta for a primeira impressão (sem histórico), use padrões seguros.
   `;
 
   const userMessage = `
@@ -170,7 +177,7 @@ Retorne este JSON exato (todos os campos obrigatórios):
 {
   "quality": { "layer_height": number, "first_layer_height": number, "seam_position": string, "ironing": boolean, "ironing_flow": number, "ironing_speed": number },
   "strength": { "infill_density": number, "infill_pattern": string, "wall_loops": number, "top_layers": number, "bottom_layers": number, "top_surface_pattern": string, "bottom_surface_pattern": string },
-  "support": { "needed": boolean, "type": string, "threshold_angle": number, "top_z_distance": number, "bottom_z_distance": number, "xy_distance": number, "interface_layers": number, "interface_pattern": string, "tree_support_angle": number, "on_build_plate_only": boolean },
+  "support": { "needed": boolean, "type": string, "threshold_angle": number, "top_z_distance": number, "bottom_z_distance": number, "xy_distance": number, "interface_layers": number, "interface_pattern": string, "tree_support_angle": number, "on_build_plate_only": boolean, "supportReason": string },
   "temperature": { "nozzle": number, "nozzle_first_layer": number, "bed": number, "bed_first_layer": number, "chamber": number, "chamber_required": boolean, "part_cooling_fan": number, "part_cooling_first_layer": number },
   "speed": { "mode": string, "outer_wall": number, "inner_wall": number, "top_surface": number, "bottom_surface": number, "infill": number, "travel": number, "first_layer": number, "bridge": number, "overhang_slow": number },
   "ams": { "wipe_tower_enabled": boolean, "wipe_tower_width": number, "flush_multiplier": number, "flush_into_infill": boolean, "flush_into_objects": boolean, "prime_all_extruders": boolean },
