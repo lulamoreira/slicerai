@@ -272,6 +272,7 @@ export const ReviewStep: React.FC = () => {
             <ProviderButton 
               id="gemini" 
               name="Google Gemini 2.0" 
+              description="Gratuito com limite diário"
               hasKey={!!apiKey || profile?.api_key_mode === 'centralized'} 
               isSelected={selectedProvider === 'gemini'} 
               isFailed={failedProviders.has('gemini')}
@@ -283,6 +284,7 @@ export const ReviewStep: React.FC = () => {
             <ProviderButton 
               id="groq" 
               name="Groq Llama 3.3" 
+              description="Gratuito e rápido"
               hasKey={!!groqApiKey || profile?.api_key_mode === 'centralized'} 
               isSelected={selectedProvider === 'groq'} 
               isFailed={failedProviders.has('groq')}
@@ -294,6 +296,7 @@ export const ReviewStep: React.FC = () => {
             <ProviderButton 
               id="deepseek" 
               name="DeepSeek V3" 
+              description="Gratuito — $5 de crédito inicial"
               hasKey={!!deepseekKey || profile?.api_key_mode === 'centralized'} 
               isSelected={selectedProvider === 'deepseek'} 
               isFailed={failedProviders.has('deepseek')}
@@ -305,7 +308,7 @@ export const ReviewStep: React.FC = () => {
             <ProviderButton 
               id="openrouter" 
               name="OpenRouter" 
-              description="Meta Llama 3.3 70B — gratuito"
+              description="Modelos gratuitos disponíveis"
               hasKey={!!openrouterKey || profile?.api_key_mode === 'centralized'} 
               isSelected={selectedProvider === 'openrouter'} 
               isFailed={failedProviders.has('openrouter')}
