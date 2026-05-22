@@ -272,15 +272,30 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
             </div>
           )}
 
-          <div className="mt-4 pt-3 border-t border-white/10">
-            <p className="text-[10px] text-gray-400 mb-2 uppercase tracking-[0.2em] font-bold">Filament</p>
-            <Row label={t.filament} value={settings.filamentType} onCopy={() => copy(settings.filamentType)} />
-            <Row label={t.nozzleTemp} value={`${settings.nozzleTemp}°C`} onCopy={() => copy(String(settings.nozzleTemp))} decision={settings.decisions?.temperatures} />
-            <Row label={t.bedTemp} value={`${settings.bedTemp}°C`} onCopy={() => copy(String(settings.bedTemp))} />
+        </div>
+
+        <div className="mt-4 pt-3 border-t border-gray-700 px-4">
+          <p className="text-[10px] text-gray-300 mb-2 uppercase tracking-[0.2em] font-bold">🧵 FILAMENTO</p>
+          <Row label={t.filament} value={settings.filamentType} onCopy={() => copy(settings.filamentType)} />
+          <Row label={t.nozzleTemp} value={`${settings.nozzleTemp}°C`} onCopy={() => copy(String(settings.nozzleTemp))} decision={settings.decisions?.temperatures} />
+          <Row label={t.bedTemp} value={`${settings.bedTemp}°C`} onCopy={() => copy(String(settings.bedTemp))} />
+          
+          <div className="mt-4 bg-amber-950/40 border border-amber-600/50 rounded-lg p-3 space-y-2">
+            <p className="text-[11px] leading-relaxed text-gray-200 font-medium">
+              <span className="mr-1">⚠️</span>
+              Este perfil exporta 2 arquivos no mesmo .bbscfg: o perfil de impressão e o perfil de filamento. Para aplicar no Bambu Studio:
+            </p>
+            <ol className="text-[10px] space-y-1 text-gray-300 list-decimal list-inside">
+              <li>Clique em Arquivo → Importar → Importar Configurações e selecione o arquivo .bbscfg baixado.</li>
+              <li>No painel esquerdo, clique no dropdown de Processo e em 'Predefinições do usuário' selecione <span className="text-white font-semibold">[{settings.profileName || "SlicerAI_Profile"}]</span>.</li>
+              <li>No mesmo painel, clique no dropdown de Filamento e em 'Predefinições do usuário' selecione <span className="text-white font-semibold">[{settings.profileName || "SlicerAI_Profile"}]_filament</span>.</li>
+              <li>As temperaturas e configurações estarão aplicadas automaticamente.</li>
+            </ol>
           </div>
         </div>
 
-        <div className="px-4 pb-4 pt-3 shrink-0 border-t border-white/10 flex flex-col gap-2 bg-[#1a1a1a]">
+        <div className="px-4 pb-4 pt-3 shrink-0 border-t border-gray-700 flex flex-col gap-2 bg-[#1c1c1e]">
+
           <p className="text-[10px] text-gray-400 text-center font-medium italic mb-1">{t.howToImport}</p>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={copyAll} className="flex-1 text-xs gap-1 border-gray-500 text-white hover:bg-gray-700 bg-transparent">
