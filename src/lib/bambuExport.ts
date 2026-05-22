@@ -118,7 +118,8 @@ export async function downloadBambuProfile(settings: BambuSettings): Promise<voi
     ? `${settings.profileName}${versionSuffix}` 
     : `SlicerAI_${printer.replace(/ /g, "_")}_${Date.now()}${versionSuffix}`;
 
-  const preset: Record<string, unknown> = {
+  const processPreset: Record<string, unknown> = {
+    type: "process",
     print_settings_id: "",
     version: "1.9.0.0",
     from: "user",
@@ -164,7 +165,6 @@ export async function downloadBambuProfile(settings: BambuSettings): Promise<voi
       }
     ),
     brim_width: String(settings.brimWidth ?? 0),
-
     enable_ironing: settings.enableIroning ? "1" : "0",
     inner_wall_speed: String(settings.printSpeed),
     outer_wall_speed: String(Math.round(settings.printSpeed * 0.6)),
@@ -173,14 +173,40 @@ export async function downloadBambuProfile(settings: BambuSettings): Promise<voi
     top_surface_speed: String(Math.round(settings.printSpeed * 0.5)),
     travel_speed: String(settings.travelSpeed || 200),
     initial_layer_speed: "30",
-    nozzle_temperature: String(settings.nozzleTemp),
-    nozzle_temperature_initial_layer: String(settings.nozzleTemp + 5),
-    bed_temperature: String(settings.bedTemp),
-    bed_temperature_initial_layer: String(settings.bedTemp + 5),
+  };
+
+  const filamentInheritsMap: Record<string, string> = {
+    "PLA": "Generic PLA @base",
+    "ABS": "Generic ABS @base",
+    "PETG": "Generic PETG @base",
+    "TPU": "Generic TPU @base",
+    "ASA": "Generic ASA @base",
+    "PA": "Generic PA @base",
+    "PC": "Generic PC @base"
+  };
+
+  const filamentPreset: Record<string, unknown> = {
+    type: "filament",
+    filament_settings_id: "",
+    version: "1.9.0.0",
+    from: "user",
+    instantiation: "true",
+    name: `${profileName}_filament`,
+    inherits: filamentInheritsMap[settings.filamentType] || "Generic PLA @base",
+    compatible_printers: [compatPrinter],
+    nozzle_temperature: [String(settings.nozzleTemp)],
+    nozzle_temperature_initial_layer: [String(settings.nozzleTemp + 5)],
+    hot_plate_temp: [String(settings.bedTemp)],
+    hot_plate_temp_initial_layer: [String(settings.bedTemp + 5)],
+    filament_type: [settings.filamentType],
+    filament_flow_ratio: ["1"],
+    filament_retraction_length: ["0.4"]
   };
 
   const zip = new JSZip();
-  zip.file(`${profileName}.json`, JSON.stringify(preset, null, 2));
+  zip.file(`${profileName}_process.json`, JSON.stringify(processPreset, null, 2));
+  zip.file(`${profileName}_filament.json`, JSON.stringify(filamentPreset, null, 2));
+
   const blob = await zip.generateAsync({ type: "blob" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");

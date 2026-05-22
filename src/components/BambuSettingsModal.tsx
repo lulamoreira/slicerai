@@ -71,13 +71,14 @@ function DecisionNote({ text }: { text?: string }) {
       <span>{text}</span>
     </p>
   );
+
 }
 
 function Row({ label, value, onCopy, decision }: { label: string; value: string; onCopy: () => void; decision?: string }) {
   return (
-    <div className="py-2 border-b border-border/10">
+    <div className="py-2 border-b border-gray-700">
       <div className="flex items-center justify-between group">
-        <span className="text-sm text-white/90 font-medium">{label}</span>
+        <span className="text-sm text-gray-200 font-medium">{label}</span>
         <div className="flex items-center gap-2">
           <span className="text-sm font-mono font-semibold text-white">{value}</span>
           <button onClick={onCopy} className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-white/10 rounded text-gray-400 hover:text-white">
@@ -88,6 +89,7 @@ function Row({ label, value, onCopy, decision }: { label: string; value: string;
       <DecisionNote text={decision} />
     </div>
   );
+
 }
 
 export function BambuSettingsModal({ open, onClose, settings }: Props) {
@@ -128,9 +130,10 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
     Quality: t.quality, Strength: t.strength, Speed: t.speed, Support: t.support, Analysis: t.analysis,
   };
 
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="w-full h-full md:h-auto max-w-lg md:max-h-[90vh] flex flex-col p-0 gap-0 bg-[#1a1a1a] text-white border-white/10 rounded-none md:rounded-[2.5rem]">
+      <DialogContent className="w-full h-full md:h-auto max-w-lg md:max-h-[90vh] flex flex-col p-0 gap-0 bg-[#1c1c1e] text-white border-white/10 rounded-none md:rounded-[2.5rem]">
         <DialogHeader className="px-4 pt-4 pb-0 shrink-0">
           <div className="flex items-center justify-between">
             <DialogTitle className="text-base font-semibold text-white">Process — SlicerAI</DialogTitle>
@@ -148,12 +151,12 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
             <Badge variant="outline" className="text-xs bg-gray-700 text-white border-gray-600 px-2 py-0.5">⌀ {settings.nozzle}mm</Badge>
             <Badge variant="outline" className="text-xs bg-gray-700 text-white border-gray-600 px-2 py-0.5">{settings.filamentType}</Badge>
           </div>
-          <div className="flex mt-3 border-b border-white/10 overflow-x-auto no-scrollbar">
+          <div className="flex mt-3 border-b border-gray-700 overflow-x-auto no-scrollbar">
             {tabs.map((tab) => (
               <button key={tab} onClick={() => setActiveTab(tab)}
-                className={`px-4 py-2 text-xs font-bold uppercase tracking-wider transition-all border-b-2 -mb-px whitespace-nowrap ${activeTab === tab ? "border-green-400 text-white" : "border-transparent text-gray-400 hover:text-white"}`}>
+                className={`px-4 py-2 text-xs font-bold uppercase tracking-wider transition-all border-b-2 -mb-px whitespace-nowrap group ${activeTab === tab ? "border-green-400 text-white" : "border-transparent"}`}>
                 <div className="flex items-center gap-1.5">
-                  {tabLabel[tab]}
+                  <span className={activeTab === tab ? "text-white" : "text-gray-500 group-hover:text-gray-200"}>{tabLabel[tab]}</span>
                   {tab === "Support" && (
                     <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-[9px] px-1 py-0 h-3.5 uppercase tracking-tighter">
                       📐 {lang === "PT" ? "Geometria" : "Geometry"}
@@ -162,8 +165,8 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
                 </div>
               </button>
             ))}
-
           </div>
+
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto px-4 py-2 min-h-0">
@@ -176,10 +179,11 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
               <Row label={t.ironing} value={settings.enableIroning ? "✓ On" : "✗ Off"} onCopy={() => copy(settings.enableIroning ? "1" : "0")} decision={settings.decisions?.ironing} />
               <Row label={t.seamPosition} value={settings.seamPosition || "aligned"} onCopy={() => copy(settings.seamPosition || "aligned")} decision={settings.decisions?.seam} />
               {settings.seamReason && (
-                <p className="text-[11px] text-muted-foreground italic mb-2 -mt-1 px-1">
+                <p className="text-[11px] text-gray-400 italic mb-2 -mt-1 px-1">
                   {settings.seamReason}
                 </p>
               )}
+
             </div>
           )}
           {activeTab === "Strength" && (
@@ -215,18 +219,20 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
                       volume: settings.geometryStats.volume,
                       triangleCount: settings.geometryStats.triangleCount
                     }) === "organic" 
-                      ? (lang === "PT" ? "Modelo orgânico — Tree Organic" : "Organic Model — Tree Organic")
-                      : (lang === "PT" ? "Modelo técnico — Normal Grid" : "Technical Model — Normal Grid")}
-                  </p>
-                </div>
-              )}
+                        ? (lang === "PT" ? "Modelo orgânico — Tree Organic" : "Organic Model — Tree Organic")
+                        : (lang === "PT" ? "Modelo técnico — Normal Grid" : "Technical Model — Normal Grid")}
+                    </p>
+                  </div>
+                )}
+
               <Row label={t.enableSupport} value={settings.enableSupport ? "✓ On" : "✗ Off"} onCopy={() => copy(settings.enableSupport ? "1" : "0")} decision={settings.decisions?.support} />
 
               {settings.supportReason && (
-                <p className="text-[11px] text-muted-foreground italic mb-2 -mt-1 px-1">
+                <p className="text-[11px] text-gray-400 italic mb-2 -mt-1 px-1">
                   {settings.supportReason}
                 </p>
               )}
+
               {settings.enableSupport && (
                 <>
                   <Row label={t.supportType} value={settings.supportType || "normal(auto)"} onCopy={() => copy(settings.supportType || "normal(auto)")} />
@@ -240,26 +246,27 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
           {activeTab === "Analysis" && (
             <div className="space-y-6 py-2">
               <div className="space-y-2">
-                <h3 className="text-sm font-bold text-primary flex items-center gap-2 uppercase tracking-wider">
-                  <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                <h3 className="text-sm font-bold text-green-400 flex items-center gap-2 uppercase tracking-wider">
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-400" />
                   {t.strategyTitle}
                 </h3>
-                <p className="text-sm leading-relaxed text-foreground bg-white/5 p-4 rounded-xl border border-white/10 italic">
+                <p className="text-sm leading-relaxed text-gray-200 bg-white/5 p-4 rounded-xl border border-border/10 italic">
                   "{settings.decisions?.overall || "A IA está processando a melhor estratégia para este modelo..."}"
                 </p>
               </div>
 
               {settings.improvements && Object.keys(settings.improvements).length > 0 && (
                 <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-500">
-                  <h3 className="text-sm font-bold text-[#00AE42] flex items-center gap-2 uppercase tracking-wider">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#00AE42]" />
+                  <h3 className="text-sm font-bold text-green-500 flex items-center gap-2 uppercase tracking-wider">
+                    <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
                     {t.improvementsTitle}
                   </h3>
                   <div className="grid gap-2">
                     {Object.entries(settings.improvements).map(([field, reason]) => (
-                      <div key={field} className="p-3 bg-[#00AE42]/5 border border-[#00AE42]/20 rounded-lg">
-                        <p className="text-xs font-bold text-[#00AE42] uppercase mb-1">{field}</p>
-                        <p className="text-xs text-foreground/80">{reason}</p>
+                      <div key={field} className="p-3 bg-green-500/5 border border-green-500/20 rounded-lg">
+                        <p className="text-xs font-bold text-green-500 uppercase mb-1">{field}</p>
+
+                        <p className="text-xs text-gray-200">{reason}</p>
                       </div>
                     ))}
                   </div>
@@ -268,22 +275,37 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
             </div>
           )}
 
-          <div className="mt-4 pt-3 border-t border-white/10">
-            <p className="text-[10px] text-gray-400 mb-2 uppercase tracking-[0.2em] font-bold">Filament</p>
-            <Row label={t.filament} value={settings.filamentType} onCopy={() => copy(settings.filamentType)} />
-            <Row label={t.nozzleTemp} value={`${settings.nozzleTemp}°C`} onCopy={() => copy(String(settings.nozzleTemp))} decision={settings.decisions?.temperatures} />
-            <Row label={t.bedTemp} value={`${settings.bedTemp}°C`} onCopy={() => copy(String(settings.bedTemp))} />
+        </div>
+
+        <div className="mt-4 pt-3 border-t border-gray-700 px-4">
+          <p className="text-[10px] text-gray-300 mb-2 uppercase tracking-[0.2em] font-bold">🧵 FILAMENTO</p>
+          <Row label={t.filament} value={settings.filamentType} onCopy={() => copy(settings.filamentType)} />
+          <Row label={t.nozzleTemp} value={`${settings.nozzleTemp}°C`} onCopy={() => copy(String(settings.nozzleTemp))} decision={settings.decisions?.temperatures} />
+          <Row label={t.bedTemp} value={`${settings.bedTemp}°C`} onCopy={() => copy(String(settings.bedTemp))} />
+          
+          <div className="mt-4 bg-amber-950/40 border border-amber-600/50 rounded-lg p-3 space-y-2">
+            <p className="text-[11px] leading-relaxed text-gray-200 font-medium">
+              <span className="mr-1">⚠️</span>
+              Este perfil exporta 2 arquivos no mesmo .bbscfg: o perfil de impressão e o perfil de filamento. Para aplicar no Bambu Studio:
+            </p>
+            <ol className="text-[10px] space-y-1 text-gray-300 list-decimal list-inside">
+              <li>Clique em Arquivo → Importar → Importar Configurações e selecione o arquivo .bbscfg baixado.</li>
+              <li>No painel esquerdo, clique no dropdown de Processo e em 'Predefinições do usuário' selecione <span className="text-white font-semibold">[{settings.profileName || "SlicerAI_Profile"}]</span>.</li>
+              <li>No mesmo painel, clique no dropdown de Filamento e em 'Predefinições do usuário' selecione <span className="text-white font-semibold">[{settings.profileName || "SlicerAI_Profile"}]_filament</span>.</li>
+              <li>As temperaturas e configurações estarão aplicadas automaticamente.</li>
+            </ol>
           </div>
         </div>
 
-        <div className="px-4 pb-4 pt-3 shrink-0 border-t border-white/10 flex flex-col gap-2 bg-[#1a1a1a]">
+        <div className="px-4 pb-4 pt-3 shrink-0 border-t border-gray-700 flex flex-col gap-2 bg-[#1c1c1e]">
+
           <p className="text-[10px] text-gray-400 text-center font-medium italic mb-1">{t.howToImport}</p>
           <div className="flex gap-2">
             <Button variant="outline" size="sm" onClick={copyAll} className="flex-1 text-xs gap-1 border-gray-500 text-white hover:bg-gray-700 bg-transparent">
               <Copy className="w-3 h-3" /> {t.copyAll}
             </Button>
             <Button size="sm" onClick={() => downloadBambuProfile(settings)}
-              className="flex-1 text-xs gap-1 bg-[#00AE42] hover:bg-[#009938] text-white font-bold">
+              className="flex-1 text-xs gap-1 bg-green-500 hover:bg-green-600 text-white font-bold">
               <Download className="w-3 h-3" /> {lang === "PT" ? "Baixar .bbscfg" : "Download .bbscfg"}
             </Button>
           </div>
