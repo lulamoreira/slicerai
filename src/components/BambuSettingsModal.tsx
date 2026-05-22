@@ -119,9 +119,9 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
     toast.success(t.copied);
   };
 
-  const tabs: Tab[] = ["Quality", "Strength", "Speed", "Support"];
+  const tabs: Tab[] = ["Quality", "Strength", "Speed", "Support", "Analysis"];
   const tabLabel: Record<Tab, string> = {
-    Quality: t.quality, Strength: t.strength, Speed: t.speed, Support: t.support,
+    Quality: t.quality, Strength: t.strength, Speed: t.speed, Support: t.support, Analysis: t.analysis,
   };
 
   return (
