@@ -299,7 +299,7 @@ Retorne este JSON exato (todos os campos obrigatórios):
   const content = (aiProvider === 'groq' || aiProvider === 'deepseek' || aiProvider === 'openrouter')
     ? data?.choices?.[0]?.message?.content 
     : data?.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!content) throw new Error("Empty response from Gemini");
+  if (!content) throw new Error(`Empty response from ${aiProvider}`);
   const repaired = repairJSON(content);
   return aiResponseSchema.parse(JSON.parse(repaired));
 };
