@@ -30,6 +30,10 @@ export const Route = createRootRouteWithContext()({
       { name: "twitter:card", content: "summary_large_image" },
       { property: "og:type", content: "website" },
     ],
+    links: [
+      { rel: 'icon', type: 'image/svg+xml', href: '/icon.svg' },
+      { rel: 'apple-touch-icon', href: '/icon.svg' },
+    ],
   }),
   component: RootComponent,
 })
