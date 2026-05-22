@@ -1,4 +1,6 @@
 import JSZip from "jszip";
+import { detectModelType, getSupportProfile } from "./supportProfiles";
+
 
 const INHERITS_MAP: Record<string, Record<string, string>> = {
   "X1 Carbon": {
@@ -96,7 +98,13 @@ export interface BambuSettings {
   seamReason?: string;
   profileName?: string;
   version?: number;
+  geometryStats?: {
+    boundingBox: { x: number; y: number; z: number };
+    volume: number;
+    triangleCount: number;
+  };
 }
+
 
 export async function downloadBambuProfile(settings: BambuSettings): Promise<void> {
   const printer = settings.printer || "X1 Carbon";
@@ -129,23 +137,34 @@ export async function downloadBambuProfile(settings: BambuSettings): Promise<voi
     sparse_infill_density: `${settings.infillDensity}%`,
     sparse_infill_pattern: settings.infillPattern || "grid",
     enable_support: settings.enableSupport ? "1" : "0",
-    support_type: settings.supportType || "normal(auto)",
-    support_style: settings.supportStyle || "snug",
-    support_threshold_angle: String(settings.supportThreshold ?? 45),
-    support_interface_top_layers: "3",
-    support_interface_bottom_layers: "2",
-    support_interface_pattern: settings.supportInterfacePattern || "concentric",
-    support_interface_spacing: "0.2",
-    support_top_z_distance: "0.2",
-    support_bottom_z_distance: "0",
-    support_object_xy_distance: "0.35",
-    support_remove_small_overhang: "1",
-    support_critical_regions_only: "0",
-    tree_support_branch_angle: "45",
-    tree_support_branch_diameter: "3",
-    tree_support_tip_diameter: "0.8",
-    tree_support_wall_count: "1",
+    ...(settings.geometryStats ? 
+      getSupportProfile(detectModelType({
+        width: settings.geometryStats.boundingBox.x,
+        depth: settings.geometryStats.boundingBox.y,
+        height: settings.geometryStats.boundingBox.z,
+        volume: settings.geometryStats.volume,
+        triangleCount: settings.geometryStats.triangleCount
+      })) : {
+        support_type: settings.supportType || "normal(auto)",
+        support_style: settings.supportStyle || "snug",
+        support_threshold_angle: String(settings.supportThreshold ?? 45),
+        support_interface_top_layers: "3",
+        support_interface_bottom_layers: "2",
+        support_interface_pattern: settings.supportInterfacePattern || "concentric",
+        support_interface_spacing: "0.2",
+        support_top_z_distance: "0.2",
+        support_bottom_z_distance: "0",
+        support_object_xy_distance: "0.35",
+        support_remove_small_overhang: "1",
+        support_critical_regions_only: "0",
+        tree_support_branch_angle: "45",
+        tree_support_branch_diameter: "3",
+        tree_support_tip_diameter: "0.8",
+        tree_support_wall_count: "1",
+      }
+    ),
     brim_width: String(settings.brimWidth ?? 0),
+
     enable_ironing: settings.enableIroning ? "1" : "0",
     inner_wall_speed: String(settings.printSpeed),
     outer_wall_speed: String(Math.round(settings.printSpeed * 0.6)),
