@@ -23,6 +23,8 @@ export const ReviewStep: React.FC = () => {
   const [isAiModalOpen, setIsAiModalOpen] = React.useState(false);
   const [isQuotaModalOpen, setIsQuotaModalOpen] = React.useState(false);
   const [selectedProvider, setSelectedProvider] = React.useState(aiProvider);
+  const [lastError, setLastError] = React.useState<{ provider: string; message: string } | null>(null);
+  const [failedProviders, setFailedProviders] = React.useState<Set<string>>(new Set());
 
 
 
