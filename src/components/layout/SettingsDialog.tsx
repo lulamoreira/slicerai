@@ -63,14 +63,11 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
         return { ok: true, message: '✅ Conectado com sucesso!' }
       }
 
-      const error = await response.json().catch(() => ({}))
-      const msg = error?.error?.message || response.statusText
-
-      if (response.status === 400) return { ok: false, message: `Chave inválida: ${msg}` }
-      if (response.status === 403) return { ok: false, message: 'Acesso negado — verifique se a API está ativa no Google AI Studio' }
-      if (response.status === 429) return { ok: false, message: '⚠️ Limite atingido — aguarde alguns minutos' }
-
-      return { ok: false, message: `Erro ${response.status}: ${msg}` }
+      const errorBody = await response.json().catch(() => ({}));
+      return { 
+        ok: false, 
+        message: `Gemini [${response.status}]: ${errorBody?.error?.message || errorBody?.error?.status || response.statusText || "Erro desconhecido"}` 
+      };
 
     } catch (e: any) {
       if (e?.message?.includes('fetch')) {
