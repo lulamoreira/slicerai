@@ -171,14 +171,14 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
             <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted px-1">
               PROVEDOR DE IA
             </label>
-            <div className="flex p-1 bg-surface-raised rounded-xl border border-border-strong gap-1 shadow-inner max-w-sm">
+            <div className="grid grid-cols-2 gap-1.5 p-1 bg-surface-raised rounded-xl border border-border-strong shadow-inner">
               <button 
                 onClick={() => {
                   setAiProvider('gemini');
                   setTestResult('idle');
                 }}
                 className={cn(
-                  "flex-1 py-2.5 rounded-lg text-[10px] font-bold tracking-[0.2em] transition-all",
+                  "py-2.5 rounded-lg text-[10px] font-bold tracking-[0.2em] transition-all",
                   aiProvider === 'gemini' ? "bg-primary text-[#0d0d14] shadow-md" : "text-muted hover:text-primary hover:bg-primary-subtle"
                 )}
               >
@@ -190,11 +190,35 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
                   setTestResult('idle');
                 }}
                 className={cn(
-                  "flex-1 py-2.5 rounded-lg text-[10px] font-bold tracking-[0.2em] transition-all",
+                  "py-2.5 rounded-lg text-[10px] font-bold tracking-[0.2em] transition-all",
                   aiProvider === 'groq' ? "bg-primary text-[#0d0d14] shadow-md" : "text-muted hover:text-primary hover:bg-primary-subtle"
                 )}
               >
                 GROQ
+              </button>
+              <button 
+                onClick={() => {
+                  setAiProvider('deepseek');
+                  setTestResult('idle');
+                }}
+                className={cn(
+                  "py-2.5 rounded-lg text-[10px] font-bold tracking-[0.2em] transition-all",
+                  aiProvider === 'deepseek' ? "bg-primary text-[#0d0d14] shadow-md" : "text-muted hover:text-primary hover:bg-primary-subtle"
+                )}
+              >
+                DEEPSEEK
+              </button>
+              <button 
+                onClick={() => {
+                  setAiProvider('openrouter');
+                  setTestResult('idle');
+                }}
+                className={cn(
+                  "py-2.5 rounded-lg text-[10px] font-bold tracking-[0.2em] transition-all",
+                  aiProvider === 'openrouter' ? "bg-primary text-[#0d0d14] shadow-md" : "text-muted hover:text-primary hover:bg-primary-subtle"
+                )}
+              >
+                OPENROUTER
               </button>
             </div>
           </div>
