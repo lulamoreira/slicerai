@@ -97,7 +97,7 @@ export const ReviewStep: React.FC = () => {
           <Row icon={Clock} label="Tempo estimado" value={volume === undefined ? "—" : `~${Math.floor(estimatedTime / 60)}h ${estimatedTime % 60}min`} mono />
           <div className="col-span-1 sm:col-span-2 p-4 bg-primary/10 border border-primary/20 rounded-xl flex items-center gap-3">
             <Sparkles className="w-4 h-4 text-primary" />
-            <span className="text-[10px] font-bold uppercase tracking-widest text-primary">A IA vai decidir suportes, cores e ironing com base na geometria</span>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-primary">A IA vai decidir suportes, cores, seam position e ironing com base na geometria</span>
           </div>
         </div>
       </div>
