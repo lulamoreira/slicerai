@@ -12,7 +12,7 @@ interface Props {
   settings: BambuSettings;
 }
 
-type Tab = "Quality" | "Strength" | "Speed" | "Support";
+type Tab = "Quality" | "Strength" | "Speed" | "Support" | "Analysis";
 type Lang = "EN" | "PT";
 
 const LABELS: Record<Lang, Record<string, string>> = {
