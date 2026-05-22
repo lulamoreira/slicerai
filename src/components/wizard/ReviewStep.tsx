@@ -108,7 +108,7 @@ export const ReviewStep: React.FC = () => {
       useAppStore.setState({ status: 'ready' });
 
       // Handle specific structured errors from ai.ts
-      if (error?.code === "QUOTA_EXCEEDED" || error?.code === "NO_BALANCE" || error?.code === "INVALID_KEY") {
+      if (error?.code === "QUOTA_EXCEEDED" || error?.code === "NO_BALANCE" || error?.code === "INVALID_KEY" || error?.code === "OPENROUTER_NO_MODELS") {
         setLastError({
           provider: error.provider || selectedProvider,
           message: error.message
@@ -286,6 +286,7 @@ export const ReviewStep: React.FC = () => {
             <ProviderButton 
               id="openrouter" 
               name="OpenRouter" 
+              description="Meta Llama 3.3 70B — gratuito"
               hasKey={!!openrouterKey || profile?.api_key_mode === 'centralized'} 
               isSelected={selectedProvider === 'openrouter'} 
               isFailed={failedProviders.has('openrouter')}
@@ -396,9 +397,10 @@ export const ReviewStep: React.FC = () => {
   );
 };
 
-const ProviderButton = ({ id, name, hasKey, isSelected, isFailed, onClick }: { 
+const ProviderButton = ({ id, name, description, hasKey, isSelected, isFailed, onClick }: { 
   id: string; 
   name: string; 
+  description?: string;
   hasKey: boolean; 
   isSelected: boolean; 
   isFailed?: boolean;
@@ -425,6 +427,11 @@ const ProviderButton = ({ id, name, hasKey, isSelected, isFailed, onClick }: {
       </div>
       {isSelected && <div className="w-2 h-2 rounded-full bg-primary" />}
     </div>
+    {description && !isFailed && hasKey && (
+      <span className="text-[10px] text-muted-foreground mt-1 font-medium italic">
+        {description}
+      </span>
+    )}
     {!hasKey && (
       <span className="text-[10px] text-warning flex items-center gap-1 mt-1 font-medium">
         <AlertCircle className="w-3 h-3" />
