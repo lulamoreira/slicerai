@@ -30,6 +30,8 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
     groqApiKey, setGroqApiKey,
     deepseekKey, setDeepseekKey,
     openrouterKey, setOpenrouterKey,
+    claudeKey, setClaudeKey,
+    openaiKey, setOpenaiKey,
     costPerKg, setCostPerKg, 
     language, setLanguage,
     theme, setTheme,
@@ -84,7 +86,9 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
       aiProvider === 'gemini' ? apiKey : 
       aiProvider === 'groq' ? groqApiKey : 
       aiProvider === 'deepseek' ? deepseekKey : 
-      openrouterKey;
+      aiProvider === 'openrouter' ? openrouterKey :
+      aiProvider === 'claude' ? claudeKey :
+      openaiKey;
     if (!currentKey) {
       toast.error("Insira uma chave API primeiro");
       return;
@@ -110,11 +114,30 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
           url = "https://api.deepseek.com/v1/models";
         } else if (aiProvider === 'openrouter') {
           url = "https://openrouter.ai/api/v1/models";
+        } else if (aiProvider === 'claude') {
+          url = "https://api.anthropic.com/v1/messages"; // Special case below
+          headers = {
+            "x-api-key": currentKey,
+            "anthropic-version": "2023-06-01",
+            "Content-Type": "application/json",
+            "dangerouslyAllowBrowser": "true"
+          };
+          method = "POST";
+        } else if (aiProvider === 'openai') {
+          url = "https://api.openai.com/v1/chat/completions";
+          method = "POST";
         }
+
+        const body = aiProvider === 'claude' 
+          ? JSON.stringify({ model: "claude-3-5-haiku-20241022", max_tokens: 1, messages: [{role: "user", content: "hi"}] })
+          : aiProvider === 'openai'
+          ? JSON.stringify({ model: "gpt-4o-mini", max_tokens: 1, messages: [{role: "user", content: "hi"}] })
+          : undefined;
 
         const response = await fetch(url, {
           method,
-          headers
+          headers,
+          body
         });
 
         if (response.ok) {
@@ -220,8 +243,51 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
               >
                 OPENROUTER
               </button>
+              <button 
+                onClick={() => {
+                  setAiProvider('claude');
+                  setTestResult('idle');
+                }}
+                className={cn(
+                  "py-2.5 rounded-lg text-[10px] font-bold tracking-[0.2em] transition-all flex items-center justify-center gap-1",
+                  aiProvider === 'claude' ? "bg-primary text-[#0d0d14] shadow-md" : "text-muted hover:text-primary hover:bg-primary-subtle"
+                )}
+              >
+                CLAUDE <span className="bg-red-500 text-white text-[7px] px-1 rounded">PAGO 💳</span>
+              </button>
+              <button 
+                onClick={() => {
+                  setAiProvider('openai');
+                  setTestResult('idle');
+                }}
+                className={cn(
+                  "py-2.5 rounded-lg text-[10px] font-bold tracking-[0.2em] transition-all flex items-center justify-center gap-1",
+                  aiProvider === 'openai' ? "bg-primary text-[#0d0d14] shadow-md" : "text-muted hover:text-primary hover:bg-primary-subtle"
+                )}
+              >
+                OPENAI <span className="bg-red-500 text-white text-[7px] px-1 rounded">PAGO 💳</span>
+              </button>
             </div>
           </div>
+
+          {(aiProvider === 'claude' || aiProvider === 'openai') && (
+            <div className="p-4 bg-warning/10 border border-warning/30 rounded-xl flex items-start gap-3 -mt-6">
+              <AlertCircle className="w-5 h-5 text-warning shrink-0 mt-0.5" />
+              <div className="space-y-1">
+                <p className="text-[10px] text-warning leading-relaxed font-bold uppercase tracking-wider">
+                  ⚠️ Este provedor é pago. Você será cobrado diretamente pela {aiProvider === 'claude' ? 'Anthropic' : 'OpenAI'} conforme seu uso. Não é gratuito.
+                </p>
+                <a 
+                  href={aiProvider === 'claude' ? "https://console.anthropic.com/settings/billing" : "https://platform.openai.com/settings/organization/billing"} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-[9px] text-warning hover:underline font-bold uppercase tracking-widest flex items-center gap-1"
+                >
+                  Ver Painel de Billing <ExternalLink className="w-2.5 h-2.5" />
+                </a>
+              </div>
+            </div>
+          )}
 
           {/* AI Key Section */}
           <div className="space-y-4">
@@ -230,7 +296,9 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
                   {aiProvider === 'gemini' ? 'Google Gemini 2.0 Flash API Key' : 
                    aiProvider === 'groq' ? 'GROQ API KEY' : 
                    aiProvider === 'deepseek' ? 'DeepSeek API KEY' : 
-                   'OpenRouter API KEY'}
+                   aiProvider === 'openrouter' ? 'OpenRouter API KEY' :
+                   aiProvider === 'claude' ? 'CLAUDE API KEY' :
+                   'OPENAI API KEY'}
                 </label>
                 <div className="flex items-center gap-1 opacity-50">
                     <Wifi className="w-2.5 h-2.5" />
@@ -258,7 +326,9 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
                           aiProvider === 'gemini' ? apiKey : 
                           aiProvider === 'groq' ? groqApiKey : 
                           aiProvider === 'deepseek' ? deepseekKey : 
-                          openrouterKey
+                          aiProvider === 'openrouter' ? openrouterKey :
+                          aiProvider === 'claude' ? claudeKey :
+                          openaiKey
                         }
                         onChange={(e) => {
                           const val = e.target.value;
@@ -266,7 +336,9 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
                             if (aiProvider === 'gemini') setApiKey(val);
                             else if (aiProvider === 'groq') setGroqApiKey(val);
                             else if (aiProvider === 'deepseek') setDeepseekKey(val);
-                            else setOpenrouterKey(val);
+                            else if (aiProvider === 'openrouter') setOpenrouterKey(val);
+                            else if (aiProvider === 'claude') setClaudeKey(val);
+                            else setOpenaiKey(val);
                           } catch (err: any) {
                             toast.error(err.message);
                           }
@@ -275,7 +347,9 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
                           aiProvider === 'gemini' ? "AIza..." : 
                           aiProvider === 'groq' ? "gsk_..." : 
                           aiProvider === 'deepseek' ? "sk-..." : 
-                          "sk-or-..."
+                          aiProvider === 'openrouter' ? "sk-or-..." :
+                          aiProvider === 'claude' ? "sk-ant-..." :
+                          "sk-..."
                         }
                         className="w-full bg-surface-raised border border-border-strong rounded-xl p-3.5 text-xs font-mono font-bold outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-foreground pr-12"
                         />
@@ -312,7 +386,9 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
                     aiProvider === 'gemini' ? "https://aistudio.google.com/apikey" : 
                     aiProvider === 'groq' ? "https://console.groq.com" : 
                     aiProvider === 'deepseek' ? "https://platform.deepseek.com" : 
-                    "https://openrouter.ai"
+                    aiProvider === 'openrouter' ? "https://openrouter.ai" :
+                    aiProvider === 'claude' ? "https://console.anthropic.com" :
+                    "https://platform.openai.com"
                   }
                   target="_blank"
                   rel="noopener noreferrer"
@@ -322,11 +398,15 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
                     ? (aiProvider === 'gemini' ? 'OBTER CHAVE GRÁTIS' : 
                        aiProvider === 'groq' ? 'Obter chave grátis em console.groq.com' : 
                        aiProvider === 'deepseek' ? 'Obter chave grátis em platform.deepseek.com' : 
-                       'Obter chave grátis em openrouter.ai') 
+                       aiProvider === 'openrouter' ? 'Obter chave grátis em openrouter.ai' :
+                       aiProvider === 'claude' ? 'Obter chave em console.anthropic.com' :
+                       'Obter chave em platform.openai.com') 
                     : (aiProvider === 'gemini' ? 'GET FREE KEY' : 
                        aiProvider === 'groq' ? 'Get free key at console.groq.com' : 
                        aiProvider === 'deepseek' ? 'Get free key at platform.deepseek.com' : 
-                       'Get free key at openrouter.ai')} <ExternalLink className="w-3 h-3" />
+                       aiProvider === 'openrouter' ? 'Get free key at openrouter.ai' :
+                       aiProvider === 'claude' ? 'Get key at console.anthropic.com' :
+                       'Get key at platform.openai.com')} <ExternalLink className="w-3 h-3" />
                 </a>
                 <p className="text-[9px] text-muted font-bold uppercase tracking-widest px-2 leading-relaxed italic opacity-50">
                     {language === 'pt-BR' 
@@ -336,14 +416,22 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
                             ? "Obtenha sua chave gratuita em console.groq.com. Sua chave é salva localmente."
                             : aiProvider === 'deepseek'
                             ? "Obtenha sua chave em platform.deepseek.com. Sua chave é salva localmente."
-                            : "Obtenha sua chave em openrouter.ai. Sua chave é salva localmente.")
+                            : aiProvider === 'openrouter'
+                            ? "Obtenha sua chave em openrouter.ai. Sua chave é salva localmente."
+                            : aiProvider === 'claude'
+                            ? "1. Acesse console.anthropic.com — 2. Crie uma conta — 3. Vá em 'API Keys' — 4. Clique em 'Create Key' — 5. Adicione créditos em 'Billing' — o modelo claude-3-5-haiku é o mais barato, cerca de $0.001 por análise"
+                            : "1. Acesse platform.openai.com — 2. Crie uma conta — 3. Vá em 'API Keys' — 4. Clique em 'Create new secret key' — 5. Adicione créditos em 'Billing' — o modelo gpt-4o-mini é o mais barato, cerca de $0.001 por análise")
                         : (aiProvider === 'gemini'
                             ? "Get your free key at aistudio.google.com/apikey. No credit card required."
                             : aiProvider === 'groq'
                             ? "Get your free key at console.groq.com. Your key is saved locally."
                             : aiProvider === 'deepseek'
                             ? "Get your key at platform.deepseek.com. Your key is saved locally."
-                            : "Get your key at openrouter.ai. Your key is saved locally.")}
+                            : aiProvider === 'openrouter'
+                            ? "Get your key at openrouter.ai. Your key is saved locally."
+                            : aiProvider === 'claude'
+                            ? "1. Access console.anthropic.com — 2. Create account — 3. Go to 'API Keys' — 4. Click 'Create Key' — 5. Add credits in 'Billing' — claude-3-5-haiku is the cheapest, about $0.001 per analysis"
+                            : "1. Access platform.openai.com — 2. Create account — 3. Go to 'API Keys' — 4. Click 'Create new secret key' — 5. Add credits in 'Billing' — gpt-4o-mini is the cheapest, about $0.001 per analysis")}
                 </p>
               </>
             )}
