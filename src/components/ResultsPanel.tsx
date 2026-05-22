@@ -359,34 +359,36 @@ export const ResultsPanel: React.FC = () => {
         <div className="flex flex-wrap gap-3">
           <button 
             onClick={resetApp}
-            className="flex-1 min-w-[120px] flex items-center justify-center gap-2 px-4 py-3.5 bg-transparent border border-border-strong rounded-xl text-[10px] font-bold tracking-widest text-foreground hover:text-primary hover:border-primary hover:bg-surface-hover transition-all"
+            className="flex-1 min-w-[120px] flex items-center justify-center gap-2 px-4 py-4 bg-surface-raised border border-border rounded-xl text-[10px] font-black tracking-widest text-foreground hover:text-primary hover:border-primary hover:bg-surface-hover transition-all"
           >
-            <RotateCcw className="w-3.5 h-3.5" />
-            REFAZER TUDO
+            <RotateCcw className="w-4 h-4" />
+            REFAZER
           </button>
           <button 
             onClick={() => handleDownload()}
-            className="flex-1 min-w-[120px] flex items-center justify-center gap-2 px-4 py-3.5 bg-transparent border border-border-strong rounded-xl text-[10px] font-bold tracking-widest text-foreground hover:text-primary hover:border-primary hover:bg-surface-hover transition-all"
+            className="flex-1 min-w-[120px] flex items-center justify-center gap-2 px-4 py-4 bg-surface-raised border border-border rounded-xl text-[10px] font-black tracking-widest text-foreground hover:text-primary hover:border-primary hover:bg-surface-hover transition-all"
           >
-            <Download className="w-3.5 h-3.5" />
-            BAIXAR .bbscfg
+            <Download className="w-4 h-4" />
+            BAIXAR
           </button>
           <button 
             onClick={handleShare}
-            className="flex-1 min-w-[120px] flex items-center justify-center gap-2 px-4 py-3.5 bg-transparent border border-border-strong rounded-xl text-[10px] font-bold tracking-widest text-foreground hover:text-primary hover:border-primary hover:bg-surface-hover transition-all"
+            className="flex-1 min-w-[120px] flex items-center justify-center gap-2 px-4 py-4 bg-surface-raised border border-border rounded-xl text-[10px] font-black tracking-widest text-foreground hover:text-primary hover:border-primary hover:bg-surface-hover transition-all"
           >
-            <Share className="w-3.5 h-3.5" />
-            COMPARTILHAR
+            <Share className="w-4 h-4" />
+            PARTILHAR
           </button>
+
         </div>
 
         <button
           onClick={() => setShowBambuModal(true)}
-          className="w-full flex items-center justify-center gap-3 px-6 py-4 rounded-xl bg-primary text-[#0d0d14] font-bold text-[11px] tracking-widest hover:bg-primary-hover transition-all shadow-lg mt-4"
+          className="w-full flex items-center justify-center gap-3 px-6 py-5 rounded-2xl bg-primary text-[#0d0d14] font-black text-[11px] tracking-[0.2em] uppercase hover:bg-primary-hover hover:scale-[1.01] active:scale-[0.99] transition-all shadow-xl shadow-primary/20 mt-6"
         >
-          <Monitor className="w-4 h-4" />
-          VER TODAS AS CONFIGURAÇÕES
+          <Monitor className="w-5 h-5" />
+          VER CONFIGURAÇÕES COMPLETAS
         </button>
+
         
         {showBambuModal && (
           <BambuSettingsModal 
