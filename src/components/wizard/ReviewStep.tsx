@@ -459,35 +459,43 @@ const ProviderButton = ({ id, name, description, hasKey, isSelected, isFailed, o
     disabled={!hasKey || isFailed}
     className={cn(
       "flex flex-col items-start p-4 rounded-xl border transition-all text-left relative overflow-hidden group",
-      (!hasKey || isFailed)
-        ? "bg-black/20 border-border/20 opacity-50 cursor-not-allowed" 
-        : isSelected
-          ? "bg-primary/10 border-primary ring-1 ring-primary"
-          : "bg-surface-raised border-border/30 hover:border-primary/50 hover:bg-surface-raised/80"
+      isSelected
+        ? "bg-primary/10 border-2 border-primary shadow-[0_0_15px_rgba(0,200,180,0.1)]"
+        : "bg-muted border border-border hover:border-primary/50 hover:bg-muted/80",
+      (!hasKey || isFailed) && "opacity-50 cursor-not-allowed"
     )}
   >
     <div className="flex items-center justify-between w-full">
       <div className="flex items-center gap-2">
-        <span className={cn("font-bold text-sm", isSelected ? "text-primary" : isFailed ? "text-red-400" : "text-white")}>
+        <span className={cn(
+          "font-bold text-sm",
+          isSelected ? "text-primary" : "text-foreground"
+        )}>
           {name}
         </span>
         {isFailed && <AlertCircle className="w-3.5 h-3.5 text-red-500" />}
       </div>
-      {isSelected && <div className="w-2 h-2 rounded-full bg-primary" />}
+      {isSelected && <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />}
     </div>
+
     {description && !isFailed && hasKey && (
-      <span className="text-[10px] text-muted-foreground mt-1 font-medium italic">
+      <span className={cn(
+        "text-[10px] mt-1 font-medium italic",
+        isSelected ? "text-primary/80" : "text-muted-foreground"
+      )}>
         {description}
       </span>
     )}
+
     {!hasKey && (
-      <span className="text-[10px] text-warning flex items-center gap-1 mt-1 font-medium">
+      <span className="text-[10px] text-red-500 flex items-center gap-1 mt-1 font-bold">
         <AlertCircle className="w-3 h-3" />
-        Sem chave cadastrada
+        Sem chave cadastrada — configure nas Configurações
       </span>
     )}
+    
     {isFailed && (
-      <span className="text-[10px] text-red-400 flex items-center gap-1 mt-1 font-medium">
+      <span className="text-[10px] text-red-500 flex items-center gap-1 mt-1 font-bold">
         <AlertCircle className="w-3 h-3" />
         Falha no provedor
       </span>
