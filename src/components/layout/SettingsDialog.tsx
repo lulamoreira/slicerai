@@ -97,21 +97,31 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
       result = await testGeminiConnection(currentKey);
     } else {
       try {
-        const response = await fetch(
-          "https://api.groq.com/openai/v1/models",
-          {
-            method: "GET",
-            headers: { 
-              "Authorization": `Bearer ${currentKey}`,
-              "Content-Type": "application/json" 
-            }
-          }
-        );
+        let url = "";
+        let headers: any = {
+          "Authorization": `Bearer ${currentKey}`,
+          "Content-Type": "application/json"
+        };
+        let method = "GET";
+
+        if (aiProvider === 'groq') {
+          url = "https://api.groq.com/openai/v1/models";
+        } else if (aiProvider === 'deepseek') {
+          url = "https://api.deepseek.com/v1/models";
+        } else if (aiProvider === 'openrouter') {
+          url = "https://openrouter.ai/api/v1/models";
+        }
+
+        const response = await fetch(url, {
+          method,
+          headers
+        });
+
         if (response.ok) {
-          result = { ok: true, message: '✅ Groq conectado com sucesso!' };
+          result = { ok: true, message: `✅ ${aiProvider.charAt(0).toUpperCase() + aiProvider.slice(1)} conectado com sucesso!` };
         } else {
           const err = await response.json().catch(() => ({}));
-          result = { ok: false, message: `Erro Groq: ${err?.error?.message || response.statusText}` };
+          result = { ok: false, message: `Erro ${aiProvider}: ${err?.error?.message || err?.error?.status || response.statusText}` };
         }
       } catch (e: any) {
         result = { ok: false, message: `Erro de rede: ${e.message}` };
