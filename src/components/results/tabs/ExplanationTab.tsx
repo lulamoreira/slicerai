@@ -1,4 +1,5 @@
 import React from "react";
+import { useAppStore } from "../../../store/useAppStore";
 import { AIResponse } from "../../../lib/types";
 import { cn } from "../../../lib/utils";
 import { 
