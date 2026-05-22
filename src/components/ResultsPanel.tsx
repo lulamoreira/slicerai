@@ -179,6 +179,7 @@ export const ResultsPanel: React.FC = () => {
               supportType: results.support.type,
               supportThreshold: results.support.threshold_angle,
               brimWidth: results.adhesion.brim_width || 0,
+              supportReason: results.support.supportReason,
               nozzleTemp: results.temperature.nozzle,
               bedTemp: results.temperature.bed,
               enableIroning: results.quality.ironing,

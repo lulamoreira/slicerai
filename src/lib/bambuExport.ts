@@ -84,6 +84,7 @@ export interface BambuSettings {
   enableSupport: boolean;
   supportType: string;
   supportThreshold: number;
+  supportReason?: string;
   brimWidth: number;
   nozzleTemp: number;
   bedTemp: number;
