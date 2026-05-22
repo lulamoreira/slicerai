@@ -174,8 +174,9 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-[#0d0d12]/90 backdrop-blur-xl animate-in fade-in duration-500" onClick={onClose}>
-      <div className="w-full max-w-lg bg-surface/90 border border-border/50 rounded-[2.5rem] p-10 shadow-2xl relative overflow-hidden" onClick={e => e.stopPropagation()}>
-        <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-primary via-[#33f0dc] to-primary/50 opacity-80" />
+      <div className="w-full h-full md:h-auto max-w-lg bg-surface/90 border border-border/50 rounded-none md:rounded-[2.5rem] p-6 md:p-10 shadow-2xl relative overflow-hidden" onClick={e => e.stopPropagation()}>
+        <div className="absolute top-0 left-0 w-full h-1 md:h-1.5 bg-gradient-to-r from-primary via-[#33f0dc] to-primary/50 opacity-80" />
+
 
         
         <button onClick={onClose} className="absolute top-6 right-6 p-1.5 text-muted hover:text-primary transition-all hover:bg-primary-subtle rounded-lg">
@@ -190,7 +191,7 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
         </h2>
 
 
-        <div className="space-y-10 custom-scrollbar max-h-[60vh] pr-2 overflow-y-auto">
+        <div className="space-y-10 custom-scrollbar max-h-[70vh] md:max-h-[60vh] pr-2 overflow-y-auto">
           {/* AI Provider Selector */}
           <div className="space-y-4">
             <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted px-1">

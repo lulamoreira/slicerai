@@ -123,49 +123,54 @@ function HomeComponent() {
           </div>
       )}
 
-      <main className="flex-1 flex flex-col md:flex-row h-[calc(100vh-64px)] overflow-hidden">
+      <main className="flex-1 flex flex-col md:flex-row h-full md:h-[calc(100vh-64px)] overflow-y-auto md:overflow-hidden">
         {/* Left Panel: Preview */}
-        <div className="w-full md:w-[40%] h-[240px] md:h-auto p-4 md:p-6 flex flex-col gap-4 bg-[var(--background)] relative border-r border-border shrink-0">
+        <div className="w-full md:w-[40%] h-[300px] sm:h-[400px] md:h-auto p-4 md:p-6 flex flex-col gap-4 bg-[var(--background)] relative border-b md:border-b-0 md:border-r border-border shrink-0">
+
           <div className="flex-1 relative min-h-[160px]">
             <ModelViewer />
 
-            {/* Orientation Advisor Banner — desktop only */}
+            {/* Orientation Advisor Banner */}
             {orientationAdvice.suggested && !orientationAdvice.dismissed && (
-              <div className="hidden md:block absolute top-4 left-4 right-4 animate-in slide-in-from-top-4 duration-500 z-20">
-                <div className="p-4 bg-[var(--primary-subtle)] backdrop-blur-md border border-[var(--primary-glow)] rounded-xl flex items-center justify-between shadow-2xl">
-                  <div className="flex items-center gap-3">
-                    <Info className="w-5 h-5 text-primary" />
+              <div className="absolute top-4 left-4 right-4 animate-in slide-in-from-top-4 duration-500 z-20">
+
+                <div className="p-3 md:p-4 bg-[var(--primary-subtle)] backdrop-blur-md border border-[var(--primary-glow)] rounded-xl flex items-center justify-between shadow-2xl gap-2">
+                  <div className="flex items-center gap-2 md:gap-3">
+                    <Info className="w-4 h-4 md:w-5 md:h-5 text-primary shrink-0" />
                     <div>
-                      <p className="text-sm font-bold text-foreground">💡 Orientação Otimizada</p>
-                      <p className="text-xs text-foreground-soft">Rotar 90° no eixo X pode eliminar suportes. Considerar?</p>
+                      <p className="text-[11px] md:text-sm font-bold text-foreground">💡 Orientação</p>
+                      <p className="text-[9px] md:text-xs text-foreground-soft leading-tight">Rotar 90° X pode otimizar suportes.</p>
                     </div>
                   </div>
+
                   <div className="flex gap-2">
                     <button 
                       onClick={() => {
                         updateWizard({ shouldRotate90X: true })
                         setOrientationAdvice({ dismissed: true })
                       }}
-                      className="px-4 py-1.5 bg-primary text-[#0d0d14] text-[10px] font-bold tracking-widest rounded-lg hover:bg-primary-hover transition-colors shadow-lg"
+                      className="px-3 md:px-4 py-1.5 bg-primary text-[#0d0d14] text-[9px] md:text-[10px] font-bold tracking-widest rounded-lg hover:bg-primary-hover transition-colors shadow-lg"
                     >
                       SIM
                     </button>
                     <button 
                       onClick={() => setOrientationAdvice({ dismissed: true })}
-                      className="px-4 py-1.5 bg-surface-raised text-foreground text-[10px] font-bold tracking-widest rounded-lg hover:bg-surface-hover transition-colors border border-border"
+                      className="px-3 md:px-4 py-1.5 bg-surface-raised text-foreground text-[9px] md:text-[10px] font-bold tracking-widest rounded-lg hover:bg-surface-hover transition-colors border border-border"
                     >
-                      IGNORAR
+                      NÃO
                     </button>
+
                   </div>
                 </div>
               </div>
             )}
           </div>
 
-          {/* Extended Stats Card — desktop only */}
-          <div className="hidden md:block animate-in slide-in-from-bottom-4 duration-500">
+          {/* Extended Stats Card */}
+          <div className="animate-in slide-in-from-bottom-4 duration-500 mb-20 md:mb-0">
             <StatsCard />
           </div>
+
         </div>
 
         {/* Right Panel: Wizard / Results */}

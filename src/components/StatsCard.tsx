@@ -26,28 +26,29 @@ export const StatsCard: React.FC = () => {
       </div>
 
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8 font-mono">
+      <div className="grid grid-cols-2 md:grid-cols-2 gap-y-4 gap-x-4 md:gap-x-8 font-mono">
         <StatItem 
           icon={Ruler} 
           label="Dimensões" 
-          value={`${geometry.boundingBox.x.toFixed(1)} × ${geometry.boundingBox.y.toFixed(1)} × ${geometry.boundingBox.z.toFixed(1)} mm`} 
+          value={`${geometry.boundingBox.x.toFixed(0)}×${geometry.boundingBox.y.toFixed(0)}×${geometry.boundingBox.z.toFixed(0)}`} 
         />
         <StatItem 
           icon={Box} 
           label="Volume" 
-          value={`${geometry.volume.toFixed(1)} cm³`} 
+          value={`${geometry.volume.toFixed(1)}cm³`} 
         />
         <StatItem 
           icon={Layers} 
           label="Área" 
-          value={`${geometry.surfaceArea.toFixed(1)} cm²`} 
+          value={`${geometry.surfaceArea.toFixed(0)}cm²`} 
         />
         <StatItem 
           icon={Weight} 
           label="Peso Est." 
-          value={`${weight}g (R$ ${cost})`} 
+          value={`${weight}g`} 
         />
       </div>
+
 
       <div className="pt-4 border-t border-border grid grid-cols-2 gap-3">
         <StatusBadge 

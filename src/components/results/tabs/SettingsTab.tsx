@@ -87,12 +87,15 @@ const ConfigSection = ({ section }: { section: any }) => {
       </div>
       <div className="p-6 mono text-[0.8rem] leading-relaxed text-foreground-soft">
         {section.params.map((p: any, i: number) => (
-          <div key={i} className="flex gap-4">
-            <span className="text-muted w-48 shrink-0">{p.key}</span>
-            <span className="text-foreground font-bold">=</span>
-            <span className="text-primary font-bold">{p.value.toString()}</span>
+          <div key={i} className="flex flex-col sm:flex-row sm:gap-4 mb-2 sm:mb-0">
+            <span className="text-muted sm:w-48 shrink-0">{p.key}</span>
+            <div className="flex gap-2 items-center">
+              <span className="text-foreground font-bold hidden sm:inline">=</span>
+              <span className="text-primary font-bold">{p.value.toString()}</span>
+            </div>
           </div>
         ))}
+
       </div>
     </div>
   );
