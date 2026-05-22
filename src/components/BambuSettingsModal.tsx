@@ -155,7 +155,7 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
               <button key={tab} onClick={() => setActiveTab(tab)}
                 className={`px-4 py-2 text-xs font-bold uppercase tracking-wider transition-all border-b-2 -mb-px whitespace-nowrap ${activeTab === tab ? "border-green-400 text-white" : "border-transparent text-gray-400 hover:text-white"}`}>
                 <div className="flex items-center gap-1.5">
-                  {tabLabel[tab]}
+                  <span className="text-gray-200">{tabLabel[tab]}</span>
                   {tab === "Support" && (
                     <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-[9px] px-1 py-0 h-3.5 uppercase tracking-tighter">
                       📐 {lang === "PT" ? "Geometria" : "Geometry"}
