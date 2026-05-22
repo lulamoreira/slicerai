@@ -78,6 +78,7 @@ export interface AIResponse {
   support: {
     needed: boolean;
     type: string;
+    style: string;
     threshold_angle: number;
     top_z_distance: number;
     bottom_z_distance: number;

@@ -26,6 +26,7 @@ const aiResponseSchema = z.object({
   support: z.object({
     needed: z.boolean(),
     type: z.string(),
+    style: z.string(),
     threshold_angle: z.number(),
     top_z_distance: z.number(),
     bottom_z_distance: z.number(),
@@ -162,7 +163,12 @@ INSTRUÇÃO: Com base nesse histórico, identifique preferências do usuário e 
        - Prefira o tipo normal(auto) para figuras orgânicas e tree(auto) para peças técnicas.
        - Só desative suporte se a peça for claramente plana, geométrica e simples como um cubo, cilindro ou placa reta.
     2. Adicione the field supportReason no objeto support contendo uma frase curta explicando por que o suporte foi ativado ou não, por exemplo "Figura com braços projetados — overhangs inevitáveis" ou "Peça geométrica simples sem overhangs".
-    3. Escolha o seam_position mais adequado para a peça usando estes critérios:
+    3. Escolha o support_style e support_interface_pattern ideais:
+       - Use "snug" como estilo para figuras, personagens e formas orgânicas (segue o contorno e remove mais fácil).
+       - Use "grid" como estilo para peças mecânicas e técnicas.
+       - Use "concentric" como padrão de interface para peças com curvas.
+       - Use "rectilinear" como padrão de interface para geometrias retas e técnicas.
+    4. Escolha o seam_position mais adequado para a peça usando estes critérios:
        - Use "back" para figuras humanas, personagens e animais pois esconde a costura na parte traseira.
        - Use "aligned" para peças técnicas e mecânicas onde a costura alinhada facilita pós-processamento.
        - Use "nearest" para peças com geometria complexa e muitas curvas onde velocidade importa mais.
@@ -219,7 +225,7 @@ Retorne este JSON exato (todos os campos obrigatórios):
 {
   "quality": { "layer_height": number, "first_layer_height": number, "seam_position": string, "seamReason": string, "improveReason": string, "ironing": boolean, "ironing_flow": number, "ironing_speed": number },
   "strength": { "infill_density": number, "infill_pattern": string, "wall_loops": number, "top_layers": number, "bottom_layers": number, "top_surface_pattern": string, "bottom_surface_pattern": string },
-  "support": { "needed": boolean, "type": string, "threshold_angle": number, "top_z_distance": number, "bottom_z_distance": number, "xy_distance": number, "interface_layers": number, "interface_pattern": string, "tree_support_angle": number, "on_build_plate_only": boolean, "supportReason": string },
+  "support": { "needed": boolean, "type": string, "style": string, "threshold_angle": number, "top_z_distance": number, "bottom_z_distance": number, "xy_distance": number, "interface_layers": number, "interface_pattern": string, "tree_support_angle": number, "on_build_plate_only": boolean, "supportReason": string },
   "temperature": { "nozzle": number, "nozzle_first_layer": number, "bed": number, "bed_first_layer": number, "chamber": number, "chamber_required": boolean, "part_cooling_fan": number, "part_cooling_first_layer": number },
   "speed": { "mode": string, "outer_wall": number, "inner_wall": number, "top_surface": number, "bottom_surface": number, "infill": number, "travel": number, "first_layer": number, "bridge": number, "overhang_slow": number },
   "ams": { "wipe_tower_enabled": boolean, "wipe_tower_width": number, "flush_multiplier": number, "flush_into_infill": boolean, "flush_into_objects": boolean, "prime_all_extruders": boolean },

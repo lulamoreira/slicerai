@@ -29,6 +29,7 @@ const LABELS: Record<Lang, Record<string, string>> = {
     travelSpeed: "Travel speed", infillSpeed: "Sparse infill speed",
     topSpeed: "Top surface speed", initSpeed: "Initial layer speed",
     enableSupport: "Enable support", supportType: "Support type",
+    supportStyle: "Support style", supportInterface: "Interface pattern",
     supportAngle: "Support threshold angle", brimWidth: "Brim width",
     nozzleTemp: "Nozzle temperature", bedTemp: "Bed temperature",
     filament: "Filament type", printer: "Printer", nozzle: "Nozzle diameter",
@@ -48,6 +49,7 @@ const LABELS: Record<Lang, Record<string, string>> = {
     travelSpeed: "Velocidade de deslocamento", infillSpeed: "Velocidade preenchimento",
     topSpeed: "Velocidade superfície topo", initSpeed: "Velocidade camada inicial",
     enableSupport: "Ativar suporte", supportType: "Tipo de suporte",
+    supportStyle: "Estilo do suporte", supportInterface: "Padrão da interface",
     supportAngle: "Ângulo do suporte", brimWidth: "Largura do brim",
     nozzleTemp: "Temperatura do bico", bedTemp: "Temperatura da mesa",
     filament: "Tipo de filamento", printer: "Impressora", nozzle: "Diâmetro do bico",
@@ -199,6 +201,8 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
               {settings.enableSupport && (
                 <>
                   <Row label={t.supportType} value={settings.supportType || "normal(auto)"} onCopy={() => copy(settings.supportType || "normal(auto)")} />
+                  <Row label={t.supportStyle} value={settings.supportStyle || "snug"} onCopy={() => copy(settings.supportStyle || "snug")} />
+                  <Row label={t.supportInterface} value={settings.supportInterfacePattern || "concentric"} onCopy={() => copy(settings.supportInterfacePattern || "concentric")} />
                   <Row label={t.supportAngle} value={`${settings.supportThreshold ?? 45}°`} onCopy={() => copy(String(settings.supportThreshold ?? 45))} />
                 </>
               )}
