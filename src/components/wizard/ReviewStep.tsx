@@ -4,15 +4,25 @@ import { generateSettings } from "../../lib/ai";
 import { useAuthStore } from "../../store/useAuthStore";
 import { 
   Sparkles, Printer, Box, Layers, Play, CheckCircle2,
-  Package, Grid3x3, Target, Scale, Clock, Triangle, Palette, Wrench, Settings as SettingsIcon
+  Package, Grid3x3, Target, Scale, Clock, Triangle, Palette, Wrench, Settings as SettingsIcon,
+  Cpu, AlertCircle
 } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { MATERIAL_DENSITIES } from "../../lib/geometry";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 export const ReviewStep: React.FC = () => {
   const { wizard, setResults, status, geometry } = useAppStore();
   const { profile } = useAuthStore();
-  const { apiKey, groqApiKey, deepseekKey, openrouterKey, aiProvider, addToHistory, history: printHistory } = useSettingsStore();
+  const { 
+    apiKey, groqApiKey, deepseekKey, openrouterKey, aiProvider, 
+    setAiProvider, addToHistory, history: printHistory 
+  } = useSettingsStore();
+
+  const [isAiModalOpen, setIsAiModalOpen] = React.useState(false);
+  const [selectedProvider, setSelectedProvider] = React.useState(aiProvider);
+
 
   // Reactive weight: prefer live geometry from store; fallback to PLA density placeholder.
   const volume = geometry?.volume ?? wizard.geometryStats?.volume;
@@ -32,13 +42,26 @@ export const ReviewStep: React.FC = () => {
     window.dispatchEvent(new CustomEvent('slicerai:open-settings'));
   };
 
-  const handleGenerate = async () => {
+  const handleGenerateClick = () => {
+    setSelectedProvider(aiProvider);
+    setIsAiModalOpen(true);
+  };
+
+  const handleConfirmGeneration = async () => {
+    setIsAiModalOpen(false);
+    
+    // Update provider in store if it changed
+    if (selectedProvider !== aiProvider) {
+      setAiProvider(selectedProvider);
+    }
+
     const isCentralized = profile?.api_key_mode === 'centralized';
     const currentApiKey = 
-      aiProvider === 'gemini' ? apiKey : 
-      aiProvider === 'groq' ? groqApiKey :
-      aiProvider === 'deepseek' ? deepseekKey :
+      selectedProvider === 'gemini' ? apiKey : 
+      selectedProvider === 'groq' ? groqApiKey :
+      selectedProvider === 'deepseek' ? deepseekKey :
       openrouterKey;
+
     if (!currentApiKey && !isCentralized) {
       openSettings();
       return;
@@ -61,17 +84,18 @@ export const ReviewStep: React.FC = () => {
         timestamp: new Date().toISOString(),
         wizard: { ...wizard },
         results: { ...results },
-        thumbnail, // Including thumbnail as it was previously there and user mentioned it
+        thumbnail,
       };
       
       addToHistory(newEntry as any);
     } catch (error: any) {
-      console.error('Gemini error:', error);
+      console.error('Generation error:', error);
       const msg = error?.message || String(error);
       alert("Erro ao gerar configurações:\n\n" + msg);
       useAppStore.setState({ status: 'ready' });
     }
   };
+
 
   const isGenerating = status === 'generating';
 
@@ -142,15 +166,13 @@ export const ReviewStep: React.FC = () => {
         </div>
 
         <button
-          onClick={handleGenerate}
-          disabled={isGenerating || (!(aiProvider === 'gemini' ? apiKey : aiProvider === 'groq' ? groqApiKey : aiProvider === 'deepseek' ? deepseekKey : openrouterKey) && profile?.api_key_mode !== 'centralized')}
+          onClick={handleGenerateClick}
+          disabled={isGenerating}
           className={cn(
             "w-full py-10 rounded-xl flex flex-col items-center justify-center gap-3 transition-all relative overflow-hidden group",
             isGenerating
               ? "bg-surface-raised cursor-wait"
-              : (!apiKey && profile?.api_key_mode !== 'centralized')
-                ? "bg-surface-raised opacity-[0.35] cursor-not-allowed pointer-events-none"
-                : "bg-primary text-[#0d0d14] hover:bg-primary-hover shadow-[var(--primary-glow)]"
+              : "bg-primary text-[#0d0d14] hover:bg-primary-hover shadow-[var(--primary-glow)]"
           )}
         >
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/20 to-transparent -translate-x-full group-hover:animate-shimmer" />
@@ -175,9 +197,111 @@ export const ReviewStep: React.FC = () => {
           )}
         </button>
       </div>
+
+      <Dialog open={isAiModalOpen} onOpenChange={setIsAiModalOpen}>
+        <DialogContent className="max-w-md bg-[#1e2127] text-white border-border/50 p-6">
+          <DialogHeader className="space-y-3">
+            <DialogTitle className="text-xl font-bold flex items-center gap-2">
+              <Cpu className="w-5 h-5 text-primary" />
+              Escolha a IA para gerar
+            </DialogTitle>
+            <p className="text-sm text-muted-foreground">
+              Você pode trocar a qualquer momento nas Configurações.
+            </p>
+          </DialogHeader>
+
+          <div className="grid grid-cols-1 gap-3 my-6">
+            <ProviderButton 
+              id="gemini" 
+              name="Google Gemini 2.0" 
+              hasKey={!!apiKey || profile?.api_key_mode === 'centralized'} 
+              isSelected={selectedProvider === 'gemini'} 
+              onClick={() => setSelectedProvider('gemini')} 
+            />
+            <ProviderButton 
+              id="groq" 
+              name="Groq Llama 3.3" 
+              hasKey={!!groqApiKey || profile?.api_key_mode === 'centralized'} 
+              isSelected={selectedProvider === 'groq'} 
+              onClick={() => setSelectedProvider('groq')} 
+            />
+            <ProviderButton 
+              id="deepseek" 
+              name="DeepSeek V3" 
+              hasKey={!!deepseekKey || profile?.api_key_mode === 'centralized'} 
+              isSelected={selectedProvider === 'deepseek'} 
+              onClick={() => setSelectedProvider('deepseek')} 
+            />
+            <ProviderButton 
+              id="openrouter" 
+              name="OpenRouter" 
+              hasKey={!!openrouterKey || profile?.api_key_mode === 'centralized'} 
+              isSelected={selectedProvider === 'openrouter'} 
+              onClick={() => setSelectedProvider('openrouter')} 
+            />
+          </div>
+
+          <DialogFooter className="flex gap-3 mt-2 sm:justify-end">
+            <Button 
+              variant="outline" 
+              onClick={() => setIsAiModalOpen(false)}
+              className="bg-transparent border-border/50 text-white hover:bg-white/5"
+            >
+              Cancelar
+            </Button>
+            <Button 
+              onClick={handleConfirmGeneration}
+              disabled={!(
+                selectedProvider === 'gemini' ? (!!apiKey || profile?.api_key_mode === 'centralized') :
+                selectedProvider === 'groq' ? (!!groqApiKey || profile?.api_key_mode === 'centralized') :
+                selectedProvider === 'deepseek' ? (!!deepseekKey || profile?.api_key_mode === 'centralized') :
+                (!!openrouterKey || profile?.api_key_mode === 'centralized')
+              )}
+              className="bg-[#00AE42] hover:bg-[#009938] text-white font-bold"
+            >
+              Gerar agora
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
+
+const ProviderButton = ({ id, name, hasKey, isSelected, onClick }: { 
+  id: string; 
+  name: string; 
+  hasKey: boolean; 
+  isSelected: boolean; 
+  onClick: () => void 
+}) => (
+  <button
+    onClick={onClick}
+    disabled={!hasKey}
+    className={cn(
+      "flex flex-col items-start p-4 rounded-xl border transition-all text-left relative overflow-hidden group",
+      !hasKey 
+        ? "bg-black/20 border-border/20 opacity-50 cursor-not-allowed" 
+        : isSelected
+          ? "bg-primary/10 border-primary ring-1 ring-primary"
+          : "bg-surface-raised border-border/30 hover:border-primary/50 hover:bg-surface-raised/80"
+    )}
+  >
+    <div className="flex items-center justify-between w-full">
+      <span className={cn("font-bold text-sm", isSelected ? "text-primary" : "text-white")}>
+        {name}
+      </span>
+      {isSelected && <div className="w-2 h-2 rounded-full bg-primary" />}
+    </div>
+    {!hasKey && (
+      <span className="text-[10px] text-warning flex items-center gap-1 mt-1 font-medium">
+        <AlertCircle className="w-3 h-3" />
+        Sem chave cadastrada
+      </span>
+    )}
+  </button>
+);
+
 
 const Row = ({ icon: Icon, label, value, highlight, mono }: { icon: any; label: string; value: string; highlight?: boolean; mono?: boolean }) => (
   <div className="flex items-center gap-3 min-w-0">
