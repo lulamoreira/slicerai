@@ -250,7 +250,7 @@ Retorne este JSON exato (todos os campos obrigatórios):
     const errBody = await response.json().catch(() => ({}));
     const providerName = aiProvider === 'groq' ? 'Groq' : 'Gemini';
     throw new Error(
-      `${providerName} ${response.status}: ${errBody?.error?.message || response.statusText}`
+      `${providerName} [${response.status}]: ${errBody?.error?.message || errBody?.error?.status || response.statusText || "Erro desconhecido"}`
     );
   }
 
