@@ -9,6 +9,7 @@ const aiResponseSchema = z.object({
     first_layer_height: z.number(),
     seam_position: z.string(),
     seamReason: z.string().optional(),
+    improveReason: z.string().optional(),
     ironing: z.boolean(),
     ironing_flow: z.number(),
     ironing_speed: z.number()
