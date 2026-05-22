@@ -306,7 +306,32 @@ export const BambuSettingsModal: React.FC<BambuSettingsModalProps> = ({ results,
         {/* Footer */}
         <div className="p-6 border-t border-border bg-surface-raised/30 flex flex-col gap-3">
           <button
-            onClick={() => downloadBambuProfile(results, wizard, suggestedName)}
+            onClick={() => {
+              const suggestedName = results.profile_name_suggestion || (wizard as any).fileName || 'perfil';
+              const profileName = `SlicerAI - ${suggestedName}`;
+              
+              downloadBambuProfile({
+                printer: (wizard as any).printer || "X1 Carbon",
+                nozzle: (wizard as any).nozzle || "0.4",
+                layerHeight: results.layerHeight || results.quality?.layer_height || 0.20,
+                wallLoops: results.wallLoops || results.strength?.wall_loops || 3,
+                topLayers: results.topLayers || results.strength?.top_layers || 4,
+                bottomLayers: results.bottomLayers || results.strength?.bottom_layers || 4,
+                infillDensity: results.infillPercent || results.strength?.infill_density || 15,
+                infillPattern: results.infillPattern || results.strength?.infill_pattern || "Gyroid",
+                printSpeed: results.printSpeed || results.speed?.inner_wall || 150,
+                travelSpeed: 200,
+                enableSupport: (results.supportType && results.supportType !== "none" && results.supportType !== "Sem suporte") || results.support?.needed,
+                supportType: results.supportType || results.support?.type || "normal(auto)",
+                supportThreshold: results.supportAngle || results.support?.threshold_angle || 30,
+                brimWidth: 0,
+                nozzleTemp: results.nozzleTemp || results.temperature?.nozzle || 220,
+                bedTemp: results.bedTemp || results.temperature?.bed || 65,
+                enableIroning: !!(results.ironing || results.quality?.ironing),
+                filamentType: (wizard as any).filament || "PLA",
+                profileName: profileName,
+              });
+            }}
             className="w-full py-4 bg-[#00aeef] hover:bg-[#0099d4] text-white rounded-xl text-[11px] font-bold tracking-widest transition-all shadow-lg flex items-center justify-center gap-2"
           >
             <Download className="w-4 h-4" />
