@@ -147,7 +147,7 @@ INSTRUÇÃO: Com base nesse histórico, identifique preferências do usuário e 
        - Se o volume for baixo em relação ao bounding box indicando peça não sólida com espaços vazios, ative suporte.
        - Prefira o tipo normal(auto) para figuras orgânicas e tree(auto) para peças técnicas.
        - Só desative suporte se a peça for claramente plana, geométrica e simples como um cubo, cilindro ou placa reta.
-    2. Adicione o campo supportReason no objeto support contendo uma frase curta explicando por que o suporte foi ativado ou não, por exemplo "Figura com braços projetados — overhangs inevitáveis" ou "Peça geométrica simples sem overhangs".
+    2. Adicione the field supportReason no objeto support contendo uma frase curta explicando por que o suporte foi ativado ou não, por exemplo "Figura com braços projetados — overhangs inevitáveis" ou "Peça geométrica simples sem overhangs".
     3. Escolha o seam_position mais adequado para a peça usando estes critérios:
        - Use "back" para figuras humanas, personagens e animais pois esconde a costura na parte traseira.
        - Use "aligned" para peças técnicas e mecânicas onde a costura alinhada facilita pós-processamento.
@@ -248,7 +248,7 @@ Retorne este JSON exato (todos os campos obrigatórios):
           "Authorization": `Bearer ${session?.access_token}`
         },
         body: JSON.stringify({
-          contents: [{ parts: [{ text: fullPrompt }] }],
+          contents: [{ parts: messageContents }],
           generationConfig,
         }),
       }
@@ -257,6 +257,19 @@ Retorne este JSON exato (todos os campos obrigatórios):
     const groqApiKey = useSettingsStore.getState().groqApiKey;
     if (!groqApiKey) throw new Error('NO_API_KEY');
     const cleanKey = groqApiKey.trim().replace(/[^\x20-\x7E]/g, "");
+
+    const messages = [];
+    if (improvementImage) {
+      messages.push({
+        role: "user",
+        content: [
+          { type: "text", text: fullPrompt },
+          { type: "image_url", image_url: { url: improvementImage } }
+        ]
+      });
+    } else {
+      messages.push({ role: "user", content: fullPrompt });
+    }
 
     response = await fetch(
       "https://api.groq.com/openai/v1/chat/completions",
@@ -267,8 +280,8 @@ Retorne este JSON exato (todos os campos obrigatórios):
           "Content-Type": "application/json" 
         },
         body: JSON.stringify({
-          model: "llama-3.3-70b-versatile",
-          messages: [{ role: "user", content: fullPrompt }],
+          model: improvementImage ? "llama-3.2-11b-vision-preview" : "llama-3.3-70b-versatile",
+          messages,
           temperature: 0.2,
           max_tokens: 8192,
           response_format: { type: "json_object" }
@@ -290,7 +303,7 @@ Retorne este JSON exato (todos os campos obrigatórios):
         },
         body: JSON.stringify({
           model: "deepseek-chat",
-          messages: [{ role: "user", content: fullPrompt }],
+          messages: [{ role: "user", content: fullPrompt + (improvementImage ? " [IMAGE ATTACHED BUT NOT SUPPORTED BY DEEPSEEK - PLEASE ANALYZE TEXT CONTEXT]" : "") }],
           temperature: 0.2,
           max_tokens: 4096,
         }),
@@ -300,6 +313,19 @@ Retorne este JSON exato (todos os campos obrigatórios):
     const openrouterKey = useSettingsStore.getState().openrouterKey;
     if (!openrouterKey) throw new Error('NO_API_KEY');
     const cleanKey = openrouterKey.trim().replace(/[^\x20-\x7E]/g, "");
+
+    const messages = [];
+    if (improvementImage) {
+      messages.push({
+        role: "user",
+        content: [
+          { type: "text", text: fullPrompt },
+          { type: "image_url", image_url: { url: improvementImage } }
+        ]
+      });
+    } else {
+      messages.push({ role: "user", content: fullPrompt });
+    }
 
     response = await fetch(
       "https://openrouter.ai/api/v1/chat/completions",
@@ -311,8 +337,8 @@ Retorne este JSON exato (todos os campos obrigatórios):
           "HTTP-Referer": "https://slicerai.app"
         },
         body: JSON.stringify({
-          model: "deepseek/deepseek-r1:free",
-          messages: [{ role: "user", content: fullPrompt }],
+          model: improvementImage ? "google/gemini-2.0-flash-001" : "deepseek/deepseek-r1:free",
+          messages,
           temperature: 0.2,
           max_tokens: 4096,
         }),
@@ -328,7 +354,7 @@ Retorne este JSON exato (todos os campos obrigatórios):
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          contents: [{ parts: [{ text: fullPrompt }] }],
+          contents: [{ parts: messageContents }],
           generationConfig,
         }),
       }
