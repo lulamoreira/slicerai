@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useAppStore, useSettingsStore } from "../store/useAppStore";
 import { useAuthStore } from "../store/useAuthStore";
 import { 
@@ -40,7 +40,10 @@ export const Navbar: React.FC<NavbarProps> = ({ onShowSettings, onShowHistory })
       console.log('Navbar profile role:', profile?.role);
     }
   }, [profile]);
-  const [showDropdown, setShowDropdown] = useState(false);
+  const [themeOpen, setThemeOpen] = useState(false);
+  const [userOpen, setUserOpen] = useState(false);
+  const themeRef = useRef<HTMLDivElement>(null);
+  const userRef = useRef<HTMLDivElement>(null);
   const [showAccountModal, setShowAccountModal] = useState(false);
   const [showHelpModal, setShowHelpModal] = useState(false);
   const navigate = useNavigate();
@@ -50,6 +53,22 @@ export const Navbar: React.FC<NavbarProps> = ({ onShowSettings, onShowHistory })
     toast.success('Deslogado com sucesso');
     navigate({ to: '/login' });
   };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (themeRef.current && !themeRef.current.contains(event.target as Node)) {
+        setThemeOpen(false);
+      }
+      if (userRef.current && !userRef.current.contains(event.target as Node)) {
+        setUserOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const getInitials = (name: string, email: string) => {
     if (!name) return email ? email.charAt(0).toUpperCase() : 'U';
@@ -126,9 +145,13 @@ export const Navbar: React.FC<NavbarProps> = ({ onShowSettings, onShowHistory })
           )}
         </button>
         
-        <div className="relative">
+        <div className="relative" ref={themeRef}>
           <button 
-            onClick={() => setShowDropdown(!showDropdown && !showAccountModal && !showHelpModal ? true : false)}
+            onClick={(e) => {
+              e.stopPropagation();
+              setThemeOpen(!themeOpen);
+              setUserOpen(false);
+            }}
             className="p-1.5 hover:bg-primary-subtle rounded-lg transition-all text-muted hover:text-primary"
             title="Mudar Tema"
           >
@@ -139,17 +162,13 @@ export const Navbar: React.FC<NavbarProps> = ({ onShowSettings, onShowHistory })
 
           </button>
           
-          {showDropdown && (
-            <>
-              <div className="fixed inset-0 z-40" onClick={() => setShowDropdown(false)} />
-              <div className="absolute right-0 mt-2 w-40 bg-surface border border-border rounded-xl shadow-2xl z-50 p-1 animate-in fade-in slide-in-from-top-2">
-                <ThemeOption icon={<Sun className="w-4 h-4" />} label="Claro" active={theme === 'light'} onClick={() => { setTheme('light'); setShowDropdown(false); }} />
-                <ThemeOption icon={<Moon className="w-4 h-4" />} label="Escuro" active={theme === 'dark'} onClick={() => { setTheme('dark'); setShowDropdown(false); }} />
-                <ThemeOption icon={<div className="w-4 h-4 bg-foreground border border-background" />} label="Contraste" active={(theme as string) === 'contrast'} onClick={() => { setTheme('contrast'); setShowDropdown(false); }} />
-                <ThemeOption icon={<span className="text-sm">🌈</span>} label="Multicolor" active={(theme as string) === 'rainbow'} onClick={() => { setTheme('rainbow'); setShowDropdown(false); }} />
-
-              </div>
-            </>
+          {themeOpen && (
+            <div className="absolute right-0 top-full mt-2 w-40 bg-surface border border-border rounded-xl shadow-2xl z-50 p-1 animate-in fade-in slide-in-from-top-2 max-w-[90vw]">
+              <ThemeOption icon={<Sun className="w-4 h-4" />} label="Claro" active={theme === 'light'} onClick={() => { setTheme('light'); setThemeOpen(false); }} />
+              <ThemeOption icon={<Moon className="w-4 h-4" />} label="Escuro" active={theme === 'dark'} onClick={() => { setTheme('dark'); setThemeOpen(false); }} />
+              <ThemeOption icon={<div className="w-4 h-4 bg-foreground border border-background" />} label="Contraste" active={(theme as string) === 'contrast'} onClick={() => { setTheme('contrast'); setThemeOpen(false); }} />
+              <ThemeOption icon={<span className="text-sm">🌈</span>} label="Multicolor" active={(theme as string) === 'rainbow'} onClick={() => { setTheme('rainbow'); setThemeOpen(false); }} />
+            </div>
           )}
         </div>
 
@@ -186,66 +205,67 @@ export const Navbar: React.FC<NavbarProps> = ({ onShowSettings, onShowHistory })
         </button>
 
         {user ? (
-          <div className="relative">
+          <div className="relative" ref={userRef}>
             <button 
-              onClick={() => setShowDropdown(!showDropdown)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setUserOpen(!userOpen);
+                setThemeOpen(false);
+              }}
               className="flex items-center gap-2 pl-2 pr-1 py-1 hover:bg-surface-raised rounded-full border border-border transition-all"
             >
               <div className="w-7 h-7 bg-primary rounded-full flex items-center justify-center text-[10px] font-bold text-[#0d0d14]">
                 {getInitials(profile?.full_name || '', user.email || '')}
               </div>
-              <ChevronDown className={cn("w-3.5 h-3.5 text-muted transition-transform", showDropdown && "rotate-180")} />
+              <ChevronDown className={cn("w-3.5 h-3.5 text-muted transition-transform", userOpen && "rotate-180")} />
             </button>
 
-            {showDropdown && (
-              <>
-                <div className="fixed inset-0 z-40" onClick={() => setShowDropdown(false)} />
-                <div className="absolute right-0 mt-3 w-64 bg-surface border border-border rounded-2xl shadow-2xl z-50 p-2 animate-in fade-in slide-in-from-top-4 duration-300">
-                  <div className="px-4 py-3 border-b border-border mb-2">
-                    <p className="text-xs font-bold text-foreground truncate">
-                      {profile?.full_name || user.email}
-                    </p>
-                     {profile?.full_name && profile.full_name.trim() !== (user.email || '').trim() && (
-                      <p className="text-[10px] text-muted font-medium truncate mt-0.5">{user.email}</p>
-                    )}
-                  </div>
+            {userOpen && (
+              <div className="absolute right-0 top-full mt-3 w-64 bg-surface border border-border rounded-2xl shadow-2xl z-50 p-2 animate-in fade-in slide-in-from-top-4 duration-300 max-w-[90vw]">
+                <div className="px-4 py-3 border-b border-border mb-2">
+                  <p className="text-xs font-bold text-foreground truncate">
+                    {profile?.full_name || user.email}
+                  </p>
+                    {profile?.full_name && profile.full_name.trim() !== (user.email || '').trim() && (
+                    <p className="text-[10px] text-muted font-medium truncate mt-0.5">{user.email}</p>
+                  )}
+                </div>
+                
+                <div className="space-y-1">
+                  <button 
+                    onClick={() => {
+                      setUserOpen(false);
+                      setShowAccountModal(true);
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-surface-raised rounded-xl text-[10px] font-bold text-foreground-soft hover:text-foreground transition-all uppercase tracking-widest text-left"
+                  >
+                    <UserCircle className="w-4 h-4 text-primary" />
+                    Minha Conta
+                  </button>
                   
-                  <div className="space-y-1">
+                  {profile?.role === 'admin' && (
                     <button 
                       onClick={() => {
-                        setShowDropdown(false);
-                        setShowAccountModal(true);
+                        setUserOpen(false);
+                        navigate({ to: '/admin' });
                       }}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-surface-raised rounded-xl text-[10px] font-bold text-foreground-soft hover:text-foreground transition-all uppercase tracking-widest text-left"
+                      className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-primary/10 rounded-xl text-[10px] font-bold text-primary transition-all uppercase tracking-widest text-left"
                     >
-                      <UserCircle className="w-4 h-4 text-primary" />
-                      Minha Conta
+                      🛡️ Painel Admin
                     </button>
-                    
-                    {profile?.role === 'admin' && (
-                      <button 
-                        onClick={() => {
-                          setShowDropdown(false);
-                          navigate({ to: '/admin' });
-                        }}
-                        className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-primary/10 rounded-xl text-[10px] font-bold text-primary transition-all uppercase tracking-widest text-left"
-                      >
-                        🛡️ Painel Admin
-                      </button>
-                    )}
-                    
-                    <div className="h-px bg-border my-2 mx-2" />
-                    
-                    <button 
-                      onClick={handleLogout}
-                      className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-destructive/10 rounded-xl text-[10px] font-bold text-destructive transition-all uppercase tracking-widest"
-                    >
-                      <LogOut className="w-4 h-4" />
-                      Sair
-                    </button>
-                  </div>
+                  )}
+                  
+                  <div className="h-px bg-border my-2 mx-2" />
+                  
+                  <button 
+                    onClick={handleLogout}
+                    className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-destructive/10 rounded-xl text-[10px] font-bold text-destructive transition-all uppercase tracking-widest"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Sair
+                  </button>
                 </div>
-              </>
+              </div>
             )}
           </div>
         ) : (
