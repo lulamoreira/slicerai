@@ -169,9 +169,8 @@ function LoginComponent() {
         <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-primary via-accent to-destructive" />
         
         <div className="text-center mb-10">
-          <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg shadow-primary/20 group hover:rotate-12 transition-transform duration-500">
-            <Hexagon className="w-10 h-10 text-[#0d0d14] fill-[#0d0d14]/20" />
-          </div>
+          <img src="/slicerai-icon.png" alt="SlicerAI" className="w-20 h-20 rounded-2xl shadow-lg mx-auto mb-6" />
+
           <h1 className="text-3xl font-black tracking-tighter text-foreground uppercase">
             SlicerAI <span className="text-primary italic font-normal">for Bambu</span>
           </h1>
