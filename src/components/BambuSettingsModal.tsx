@@ -305,7 +305,7 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
               <Copy className="w-3 h-3" /> {t.copyAll}
             </Button>
             <Button size="sm" onClick={() => downloadBambuProfile(settings)}
-              className="flex-1 text-xs gap-1 bg-[#00AE42] hover:bg-[#009938] text-white font-bold">
+              className="flex-1 text-xs gap-1 bg-green-500 hover:bg-green-600 text-white font-bold">
               <Download className="w-3 h-3" /> {lang === "PT" ? "Baixar .bbscfg" : "Download .bbscfg"}
             </Button>
           </div>
