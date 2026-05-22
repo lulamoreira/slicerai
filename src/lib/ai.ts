@@ -337,13 +337,52 @@ Retorne este JSON exato (todos os campos obrigatórios):
           "HTTP-Referer": "https://slicerai.app"
         },
         body: JSON.stringify({
-          model: improvementImage ? "google/gemini-2.0-flash-001" : "deepseek/deepseek-r1:free",
+          model: improvementImage ? "google/gemini-2.0-flash-001" : "meta-llama/llama-3.3-70b-instruct:free",
           messages,
           temperature: 0.2,
           max_tokens: 4096,
         }),
       }
     );
+
+    // Automatic fallback for OpenRouter free models if the first one fails
+    if (!response.ok && response.status === 404 && !improvementImage) {
+      console.log("OpenRouter: primary model not found, trying fallback 1...");
+      const fallbacks = ["google/gemma-3-27b-it:free", "mistralai/mistral-7b-instruct:free"];
+      
+      for (const fallbackModel of fallbacks) {
+        response = await fetch(
+          "https://openrouter.ai/api/v1/chat/completions",
+          {
+            method: "POST",
+            headers: { 
+              "Authorization": `Bearer ${cleanKey}`,
+              "Content-Type": "application/json",
+              "HTTP-Referer": "https://slicerai.app"
+            },
+            body: JSON.stringify({
+              model: fallbackModel,
+              messages,
+              temperature: 0.2,
+              max_tokens: 4096,
+            }),
+          }
+        );
+        if (response.ok) break;
+        console.log(`OpenRouter: fallback ${fallbackModel} failed, checking next...`);
+      }
+    }
+
+    if (!response.ok && !improvementImage) {
+      const errData = await response.json().catch(() => ({}));
+      if (response.status === 404 || errData?.error?.code === 404) {
+        throw {
+          code: "OPENROUTER_NO_MODELS",
+          provider: "OpenRouter",
+          message: "OpenRouter: nenhum modelo gratuito disponível no momento. Tente outro provedor."
+        };
+      }
+    }
   } else {
     const apiKey = useSettingsStore.getState().apiKey;
     if (!apiKey) throw new Error('NO_API_KEY');
