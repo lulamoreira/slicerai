@@ -12,6 +12,9 @@ import {
 } from "lucide-react";
 
 export const ExplanationTab = ({ results }: { results: AIResponse }) => {
+  const { profileHistory } = useAppStore();
+  const isV2Plus = profileHistory.length > 1;
+  
   const cards = [
     { icon: Layers, label: "Estratégia Geral", text: results.decisions.overall, isOverall: true },
     { icon: Layers, label: "Layer Height", text: results.decisions.layerHeight },
