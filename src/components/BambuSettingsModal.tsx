@@ -128,28 +128,28 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg max-h-[90vh] flex flex-col p-0 gap-0 bg-[#1e2127] text-white border-border/50">
+      <DialogContent className="max-w-lg max-h-[90vh] flex flex-col p-0 gap-0 bg-[#1a1a1a] text-white border-white/10">
         <DialogHeader className="px-4 pt-4 pb-0 shrink-0">
           <div className="flex items-center justify-between">
-            <DialogTitle className="text-base font-semibold">Process — SlicerAI</DialogTitle>
-            <div className="flex items-center gap-1 bg-muted/20 rounded p-0.5">
+            <DialogTitle className="text-base font-semibold text-white">Process — SlicerAI</DialogTitle>
+            <div className="flex items-center gap-1 bg-white/5 rounded p-0.5 border border-white/10">
               {(["EN", "PT"] as Lang[]).map((l) => (
                 <button key={l} onClick={() => setLang(l)}
-                  className={`px-2 py-0.5 rounded text-xs font-medium transition-colors ${lang === l ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-white"}`}>
+                  className={`px-3 py-0.5 rounded text-[10px] font-bold transition-all ${lang === l ? "bg-green-500 text-white shadow-lg" : "text-gray-400 hover:text-white"}`}>
                   {l}
                 </button>
               ))}
             </div>
           </div>
           <div className="flex gap-2 mt-2 flex-wrap">
-            <Badge variant="outline" className="text-xs">{settings.printer}</Badge>
-            <Badge variant="outline" className="text-xs">⌀ {settings.nozzle}mm</Badge>
-            <Badge variant="outline" className="text-xs">{settings.filamentType}</Badge>
+            <Badge variant="outline" className="text-xs bg-gray-700 text-white border-gray-600 px-2 py-0.5">{settings.printer}</Badge>
+            <Badge variant="outline" className="text-xs bg-gray-700 text-white border-gray-600 px-2 py-0.5">⌀ {settings.nozzle}mm</Badge>
+            <Badge variant="outline" className="text-xs bg-gray-700 text-white border-gray-600 px-2 py-0.5">{settings.filamentType}</Badge>
           </div>
-          <div className="flex mt-3 border-b border-border/40">
+          <div className="flex mt-3 border-b border-white/10 overflow-x-auto no-scrollbar">
             {tabs.map((tab) => (
               <button key={tab} onClick={() => setActiveTab(tab)}
-                className={`px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px ${activeTab === tab ? "border-primary text-white" : "border-transparent text-muted-foreground hover:text-white"}`}>
+                className={`px-4 py-2 text-xs font-bold uppercase tracking-wider transition-all border-b-2 -mb-px whitespace-nowrap ${activeTab === tab ? "border-green-400 text-white" : "border-transparent text-gray-400 hover:text-white"}`}>
                 {tabLabel[tab]}
               </button>
             ))}
