@@ -1,8 +1,11 @@
-import React from "react";
-import { X, Copy, Check, Download, Layers, Zap, Gauge, Shield } from "lucide-react";
+import { useState } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
+import { Button } from "./ui/button";
+import { Badge } from "./ui/badge";
+import { Copy, Download, Layers, Shield, Zap, Gauge, X } from "lucide-react";
+import { downloadBambuProfile, BambuSettings } from "../lib/bambuExport";
 import { toast } from "sonner";
 import { cn } from "../lib/utils";
-import { downloadBambuProfile } from "../lib/bambuExport";
 
 interface BambuSettingsModalProps {
   results: any;
@@ -10,130 +13,98 @@ interface BambuSettingsModalProps {
   onClose: () => void;
 }
 
-const translations = {
+type Tab = "Quality" | "Strength" | "Speed" | "Support";
+type Lang = "EN" | "PT";
+
+const LABELS: Record<Lang, Record<string, string>> = {
   EN: {
-    header: "Bambu Studio Settings",
-    quality: "Quality",
-    strength: "Strength",
-    speed: "Speed",
-    support: "Support",
-    filament: "Filament",
-    layerHeight: "Layer height",
-    initialLayerHeight: "Initial layer height",
-    seam: "Seam",
-    seamPosition: "Seam position",
-    wall: "Wall",
-    wallLoops: "Wall loops",
-    topShellLayers: "Top shell layers",
-    bottomShellLayers: "Bottom shell layers",
-    infill: "Infill",
-    sparseInfillDensity: "Sparse infill density",
-    sparseInfillPattern: "Sparse infill pattern",
-    ironing: "Ironing",
-    innerWallSpeed: "Inner wall speed",
-    outerWallSpeed: "Outer wall speed",
-    sparseInfillSpeed: "Sparse infill speed",
-    topSurfaceSpeed: "Top surface speed",
-    enableSupport: "Enable support",
-    supportType: "Support type",
-    thresholdAngle: "Threshold angle",
-    temperature: "Temperature",
-    nozzleTemperature: "Nozzle temperature",
-    bedTemperature: "Bed temperature",
+    quality: "Quality", strength: "Strength", speed: "Speed", support: "Support",
+    layerHeight: "Layer height", initialLayer: "Initial layer height",
+    topLayers: "Top shell layers", bottomLayers: "Bottom shell layers",
+    wallLoops: "Wall loops", infillDensity: "Sparse infill density",
+    infillPattern: "Sparse infill pattern", ironing: "Enable ironing",
+    printSpeed: "Inner wall speed", outerWallSpeed: "Outer wall speed",
+    travelSpeed: "Travel speed", infillSpeed: "Sparse infill speed",
+    topSpeed: "Top surface speed", initSpeed: "Initial layer speed",
+    enableSupport: "Enable support", supportType: "Support type",
+    supportAngle: "Support threshold angle", brimWidth: "Brim width",
+    nozzleTemp: "Nozzle temperature", bedTemp: "Bed temperature",
+    filament: "Filament type", printer: "Printer", nozzle: "Nozzle diameter",
+    howToImport: "How to import: File → Import → Import Configs",
+    copyAll: "Copy all", copied: "Copied!",
     download: "Download for Bambu Studio (.bbscfg)",
     close: "Close",
     enabled: "Enabled",
     disabled: "Disabled",
+    seam: "Seam",
+    seamPosition: "Seam position",
     aligned: "Aligned",
-    copied: "copied!",
+    temperature: "Temperature",
+    nozzleTemperature: "Nozzle temperature",
+    bedTemperature: "Bed temperature",
   },
   PT: {
-    header: "Configurações para o Bambu Studio",
-    quality: "Qualidade",
-    strength: "Resistência",
-    speed: "Velocidade",
-    support: "Suporte",
-    filament: "Filamento",
-    layerHeight: "Altura da camada",
-    initialLayerHeight: "Altura 1ª camada",
-    seam: "Costura",
-    seamPosition: "Posição da costura",
-    wall: "Parede",
-    wallLoops: "Paredes",
-    topShellLayers: "Camadas top",
-    bottomShellLayers: "Camadas base",
-    infill: "Preenchimento",
-    sparseInfillDensity: "Preenchimento",
-    sparseInfillPattern: "Padrão",
-    ironing: "Ironing",
-    innerWallSpeed: "Parede interna",
-    outerWallSpeed: "Parede externa",
-    sparseInfillSpeed: "Preenchimento",
-    topSurfaceSpeed: "Superfície top",
-    enableSupport: "Suporte",
-    supportType: "Tipo",
-    thresholdAngle: "Ângulo limite",
-    temperature: "Temperatura",
-    nozzleTemperature: "Temperatura bocal",
-    bedTemperature: "Temperatura mesa",
+    quality: "Qualidade", strength: "Resistência", speed: "Velocidade", support: "Suporte",
+    layerHeight: "Altura da camada", initialLayer: "Altura camada inicial",
+    topLayers: "Camadas superiores", bottomLayers: "Camadas inferiores",
+    wallLoops: "Paredes", infillDensity: "Densidade do preenchimento",
+    infillPattern: "Padrão do preenchimento", ironing: "Ativar ironing",
+    printSpeed: "Velocidade parede interna", outerWallSpeed: "Velocidade parede externa",
+    travelSpeed: "Velocidade de deslocamento", infillSpeed: "Velocidade preenchimento",
+    topSpeed: "Velocidade superfície topo", initSpeed: "Velocidade camada inicial",
+    enableSupport: "Ativar suporte", supportType: "Tipo de suporte",
+    supportAngle: "Ângulo do suporte", brimWidth: "Largura do brim",
+    nozzleTemp: "Temperatura do bico", bedTemp: "Temperatura da mesa",
+    filament: "Tipo de filamento", printer: "Impressora", nozzle: "Diâmetro do bico",
+    howToImport: "Como importar: Arquivo → Importar → Importar Configurações",
+    copyAll: "Copiar tudo", copied: "Copiado!",
     download: "Baixar para Bambu Studio (.bbscfg)",
     close: "Fechar",
     enabled: "Ativado",
     disabled: "Desativado",
+    seam: "Costura",
+    seamPosition: "Posição da costura",
     aligned: "Alinhada",
-    copied: "copiado!",
-  }
+    temperature: "Temperatura",
+    nozzleTemperature: "Temperatura bocal",
+    bedTemperature: "Temperatura mesa",
+  },
 };
 
-const SettingRow = ({ label, value, lang }: { label: string; value: string | number; lang: "EN" | "PT" }) => {
-  const [copied, setCopied] = React.useState(false);
-
-  const handleCopy = () => {
-    navigator.clipboard.writeText(value.toString());
-    setCopied(true);
-    toast.success(`${label} ${translations[lang].copied}`);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  const isEnabled = value === translations[lang].enabled;
-  const isDisabled = value === translations[lang].disabled;
-
+function Row({ label, value, onCopy, isStatus = false }: { label: string; value: string | number; onCopy: () => void; isStatus?: boolean }) {
   return (
-    <div className="flex items-center justify-between py-2 border-b border-border/40 last:border-0 group">
-      <span className="text-xs text-muted-foreground">{label}</span>
+    <div className="flex items-center justify-between py-2 border-b border-border/30 group">
+      <span className="text-sm text-muted-foreground">{label}</span>
       <div className="flex items-center gap-2">
-        {isEnabled || isDisabled ? (
-          <span className={cn(
-            "text-[10px] font-bold px-2 py-0.5 rounded-full",
-            isEnabled ? "bg-emerald-500/10 text-emerald-500" : "bg-muted text-muted-foreground"
-          )}>
+        {isStatus ? (
+          <Badge variant={value === "Ativado" || value === "Enabled" ? "default" : "secondary"} className="text-[10px] uppercase">
             {value}
-          </span>
+          </Badge>
         ) : (
-          <span className="text-sm font-bold text-foreground">{value}</span>
+          <span className="text-sm font-mono font-medium">{value}</span>
         )}
-        <button
-          onClick={handleCopy}
-          className="p-1 rounded-md hover:bg-surface-raised text-muted-foreground hover:text-foreground transition-all opacity-0 group-hover:opacity-100"
-        >
-          {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+        <button onClick={onCopy} className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-muted rounded">
+          <Copy className="w-3 h-3" />
         </button>
       </div>
     </div>
   );
-};
+}
 
-export const BambuSettingsModal: React.FC<BambuSettingsModalProps> = ({ results, wizard, onClose }) => {
-  const [lang, setLang] = React.useState<"EN" | "PT">("PT");
-  const [activeTab, setActiveTab] = React.useState<string>("Quality");
-  const t = translations[lang];
+export const BambuSettingsModal = ({ results, wizard, onClose }: BambuSettingsModalProps) => {
+  const [lang, setLang] = useState<Lang>("PT");
+  const [activeTab, setActiveTab] = useState<Tab>("Quality");
+  const t = LABELS[lang];
 
-  if (!results) return null;
+  const handleCopy = (label: string, value: string | number) => {
+    navigator.clipboard.writeText(value.toString());
+    toast.success(`${label} ${t.copied}`);
+  };
 
   const suggestedName = results.profile_name_suggestion || (wizard as any).fileName || 'perfil';
   const profileName = `SlicerAI - ${suggestedName}`;
 
-  const tabs = [
+  const tabs: { id: Tab; label: string; icon: any }[] = [
     { id: "Quality", label: t.quality, icon: Layers },
     { id: "Strength", label: t.strength, icon: Shield },
     { id: "Speed", label: t.speed, icon: Zap },
@@ -150,14 +121,14 @@ export const BambuSettingsModal: React.FC<BambuSettingsModalProps> = ({ results,
                 <Layers className="w-3.5 h-3.5" /> {t.layerHeight}
               </h4>
               <div className="bg-surface-raised/50 rounded-xl p-3 border border-border/50">
-                <SettingRow label={t.layerHeight} value={`${results.layerHeight || results.quality?.layer_height || 0.20} mm`} lang={lang} />
-                <SettingRow label={t.initialLayerHeight} value={`${results.layerHeight || results.quality?.layer_height || 0.20} mm`} lang={lang} />
+                <Row label={t.layerHeight} value={`${results.layerHeight || results.quality?.layer_height || 0.20} mm`} onCopy={() => handleCopy(t.layerHeight, `${results.layerHeight || results.quality?.layer_height || 0.20} mm`)} />
+                <Row label={t.initialLayer} value={`${results.layerHeight || results.quality?.layer_height || 0.20} mm`} onCopy={() => handleCopy(t.initialLayer, `${results.layerHeight || results.quality?.layer_height || 0.20} mm`)} />
               </div>
             </div>
             <div className="space-y-1">
               <h4 className="text-[11px] font-bold text-foreground uppercase tracking-wider mb-2">{t.seam}</h4>
               <div className="bg-surface-raised/50 rounded-xl p-3 border border-border/50">
-                <SettingRow label={t.seamPosition} value={t.aligned} lang={lang} />
+                <Row label={t.seamPosition} value={t.aligned} onCopy={() => handleCopy(t.seamPosition, t.aligned)} />
               </div>
             </div>
           </div>
@@ -167,25 +138,25 @@ export const BambuSettingsModal: React.FC<BambuSettingsModalProps> = ({ results,
           <div className="space-y-4">
             <div className="space-y-1">
               <h4 className="text-[11px] font-bold text-foreground uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                <Shield className="w-3.5 h-3.5" /> {t.wall}
+                <Shield className="w-3.5 h-3.5" /> {t.wallLoops}
               </h4>
               <div className="bg-surface-raised/50 rounded-xl p-3 border border-border/50">
-                <SettingRow label={t.wallLoops} value={results.wallLoops || results.strength?.wall_loops || 3} lang={lang} />
-                <SettingRow label={t.topShellLayers} value={results.topLayers || results.strength?.top_layers || 4} lang={lang} />
-                <SettingRow label={t.bottomShellLayers} value={results.bottomLayers || results.strength?.bottom_layers || 4} lang={lang} />
+                <Row label={t.wallLoops} value={results.wallLoops || results.strength?.wall_loops || 3} onCopy={() => handleCopy(t.wallLoops, results.wallLoops || results.strength?.wall_loops || 3)} />
+                <Row label={t.topLayers} value={results.topLayers || results.strength?.top_layers || 4} onCopy={() => handleCopy(t.topLayers, results.topLayers || results.strength?.top_layers || 4)} />
+                <Row label={t.bottomLayers} value={results.bottomLayers || results.strength?.bottom_layers || 4} onCopy={() => handleCopy(t.bottomLayers, results.bottomLayers || results.strength?.bottom_layers || 4)} />
               </div>
             </div>
             <div className="space-y-1">
-              <h4 className="text-[11px] font-bold text-foreground uppercase tracking-wider mb-2">{t.infill}</h4>
+              <h4 className="text-[11px] font-bold text-foreground uppercase tracking-wider mb-2">{t.infillDensity}</h4>
               <div className="bg-surface-raised/50 rounded-xl p-3 border border-border/50">
-                <SettingRow label={t.sparseInfillDensity} value={`${results.infillPercent || results.strength?.infill_density || 15} %`} lang={lang} />
-                <SettingRow label={t.sparseInfillPattern} value={results.infillPattern || results.strength?.infill_pattern || "Gyroid"} lang={lang} />
+                <Row label={t.infillDensity} value={`${results.infillPercent || results.strength?.infill_density || 15} %`} onCopy={() => handleCopy(t.infillDensity, `${results.infillPercent || results.strength?.infill_density || 15} %`)} />
+                <Row label={t.infillPattern} value={results.infillPattern || results.strength?.infill_pattern || "Gyroid"} onCopy={() => handleCopy(t.infillPattern, results.infillPattern || results.strength?.infill_pattern || "Gyroid")} />
               </div>
             </div>
             <div className="space-y-1">
               <h4 className="text-[11px] font-bold text-foreground uppercase tracking-wider mb-2">{t.ironing}</h4>
               <div className="bg-surface-raised/50 rounded-xl p-3 border border-border/50">
-                <SettingRow label={t.ironing} value={(results.ironing || results.quality?.ironing) ? t.enabled : t.disabled} lang={lang} />
+                <Row label={t.ironing} value={(results.ironing || results.quality?.ironing) ? t.enabled : t.disabled} isStatus onCopy={() => handleCopy(t.ironing, (results.ironing || results.quality?.ironing) ? t.enabled : t.disabled)} />
               </div>
             </div>
           </div>
@@ -199,10 +170,10 @@ export const BambuSettingsModal: React.FC<BambuSettingsModalProps> = ({ results,
                 <Zap className="w-3.5 h-3.5" /> {t.speed}
               </h4>
               <div className="bg-surface-raised/50 rounded-xl p-3 border border-border/50">
-                <SettingRow label={t.innerWallSpeed} value={`${baseSpeed} mm/s`} lang={lang} />
-                <SettingRow label={t.outerWallSpeed} value={`${Math.round(baseSpeed * 0.6)} mm/s`} lang={lang} />
-                <SettingRow label={t.sparseInfillSpeed} value={`${baseSpeed} mm/s`} lang={lang} />
-                <SettingRow label={t.topSurfaceSpeed} value={`${Math.round(baseSpeed * 0.5)} mm/s`} lang={lang} />
+                <Row label={t.printSpeed} value={`${baseSpeed} mm/s`} onCopy={() => handleCopy(t.printSpeed, `${baseSpeed} mm/s`)} />
+                <Row label={t.outerWallSpeed} value={`${Math.round(baseSpeed * 0.6)} mm/s`} onCopy={() => handleCopy(t.outerWallSpeed, `${Math.round(baseSpeed * 0.6)} mm/s`)} />
+                <Row label={t.infillSpeed} value={`${baseSpeed} mm/s`} onCopy={() => handleCopy(t.infillSpeed, `${baseSpeed} mm/s`)} />
+                <Row label={t.topSpeed} value={`${Math.round(baseSpeed * 0.5)} mm/s`} onCopy={() => handleCopy(t.topSpeed, `${Math.round(baseSpeed * 0.5)} mm/s`)} />
               </div>
             </div>
           </div>
@@ -216,70 +187,87 @@ export const BambuSettingsModal: React.FC<BambuSettingsModalProps> = ({ results,
                 <Gauge className="w-3.5 h-3.5" /> {t.support}
               </h4>
               <div className="bg-surface-raised/50 rounded-xl p-3 border border-border/50">
-                <SettingRow label={t.enableSupport} value={hasSupport ? t.enabled : t.disabled} lang={lang} />
-                <SettingRow label={t.supportType} value={results.supportType || results.support?.type || "normal(auto)"} lang={lang} />
-                <SettingRow label={t.thresholdAngle} value={`${results.supportAngle || results.support?.threshold_angle || 30} °`} lang={lang} />
+                <Row label={t.enableSupport} value={hasSupport ? t.enabled : t.disabled} isStatus onCopy={() => handleCopy(t.enableSupport, hasSupport ? t.enabled : t.disabled)} />
+                <Row label={t.supportType} value={results.supportType || results.support?.type || "normal(auto)"} onCopy={() => handleCopy(t.supportType, results.supportType || results.support?.type || "normal(auto)")} />
+                <Row label={t.supportAngle} value={`${results.supportAngle || results.support?.threshold_angle || 30} °`} onCopy={() => handleCopy(t.supportAngle, `${results.supportAngle || results.support?.threshold_angle || 30} °`)} />
               </div>
             </div>
           </div>
         );
-      default:
-        return null;
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/90 backdrop-blur-md">
-      <div className="w-full max-w-lg bg-surface border border-border rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-        {/* Header */}
-        <div className="p-4 border-b border-border bg-surface-raised/30 flex items-center justify-between">
-          <div className="flex flex-col">
-            <span className="text-[10px] text-muted-foreground uppercase font-black tracking-widest mb-0.5">Profile Selection</span>
-            <div className="flex items-center gap-2 bg-background border border-border px-3 py-1.5 rounded-md text-sm font-bold text-foreground">
-              {profileName}
-            </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center bg-surface-raised border border-border rounded-lg p-1">
-              <button
-                onClick={() => setLang("EN")}
-                className={cn(
-                  "px-2 py-1 text-[10px] font-bold rounded-md transition-all",
-                  lang === "EN" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                EN
-              </button>
-              <button
-                onClick={() => setLang("PT")}
-                className={cn(
-                  "px-2 py-1 text-[10px] font-bold rounded-md transition-all",
-                  lang === "PT" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                PT-BR
-              </button>
-            </div>
-            <button
-              onClick={onClose}
-              className="p-1.5 rounded-lg hover:bg-surface-raised text-muted-foreground hover:text-foreground transition-all"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
+  const handleDownload = () => {
+    downloadBambuProfile({
+      printer: (wizard as any).printer || "X1 Carbon",
+      nozzle: (wizard as any).nozzle || "0.4",
+      layerHeight: results.layerHeight || results.quality?.layer_height || 0.20,
+      wallLoops: results.wallLoops || results.strength?.wall_loops || 3,
+      topLayers: results.topLayers || results.strength?.top_layers || 4,
+      bottomLayers: results.bottomLayers || results.strength?.bottom_layers || 4,
+      infillDensity: results.infillPercent || results.strength?.infill_density || 15,
+      infillPattern: results.infillPattern || results.strength?.infill_pattern || "Gyroid",
+      printSpeed: results.printSpeed || results.speed?.inner_wall || 150,
+      travelSpeed: 200,
+      enableSupport: !!((results.supportType && results.supportType !== "none" && results.supportType !== "Sem suporte") || results.support?.needed),
+      supportType: results.supportType || results.support?.type || "normal(auto)",
+      supportThreshold: results.supportAngle || results.support?.threshold_angle || 30,
+      brimWidth: 0,
+      nozzleTemp: results.nozzleTemp || results.temperature?.nozzle || 220,
+      bedTemp: results.bedTemp || results.temperature?.bed || 65,
+      enableIroning: !!(results.ironing || results.quality?.ironing),
+      filamentType: (wizard as any).filament || "PLA",
+      profileName: profileName,
+    });
+  };
 
-        {/* Tab Bar */}
+  return (
+    <Dialog open={true} onOpenChange={onClose}>
+      <DialogContent className="max-w-lg p-0 bg-surface border-border overflow-hidden flex flex-col max-h-[90vh]">
+        <DialogHeader className="p-4 border-b border-border bg-surface-raised/30">
+          <div className="flex items-center justify-between">
+            <div className="flex flex-col text-left">
+              <span className="text-[10px] text-muted-foreground uppercase font-black tracking-widest mb-0.5">Profile Selection</span>
+              <div className="flex items-center gap-2 bg-background border border-border px-3 py-1.5 rounded-md text-sm font-bold text-foreground">
+                {profileName}
+              </div>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="flex items-center bg-surface-raised border border-border rounded-lg p-1">
+                <button
+                  onClick={() => setLang("EN")}
+                  className={cn(
+                    "px-2 py-1 text-[10px] font-bold rounded-md transition-all",
+                    lang === "EN" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  EN
+                </button>
+                <button
+                  onClick={() => setLang("PT")}
+                  className={cn(
+                    "px-2 py-1 text-[10px] font-bold rounded-md transition-all",
+                    lang === "PT" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  PT-BR
+                </button>
+              </div>
+            </div>
+          </div>
+        </DialogHeader>
+
         <div className="flex border-b border-border bg-surface-raised/10">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={cn(
-                "flex-1 py-3 text-[11px] font-bold transition-all relative",
+                "flex-1 py-3 text-[11px] font-bold transition-all relative flex flex-col items-center gap-1",
                 activeTab === tab.id ? "text-foreground" : "text-muted-foreground hover:text-foreground"
               )}
             >
+              <tab.icon className="w-4 h-4" />
               {tab.label}
               {activeTab === tab.id && (
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary mx-4" />
@@ -288,7 +276,6 @@ export const BambuSettingsModal: React.FC<BambuSettingsModalProps> = ({ results,
           ))}
         </div>
 
-        {/* Content */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
           {getActiveTabContent()}
 
@@ -297,54 +284,35 @@ export const BambuSettingsModal: React.FC<BambuSettingsModalProps> = ({ results,
                {t.temperature}
             </h4>
             <div className="bg-surface-raised/50 rounded-xl p-3 border border-border/50">
-              <SettingRow label={t.nozzleTemperature} value={`${results.nozzleTemp || results.temperature?.nozzle || 220} °C`} lang={lang} />
-              <SettingRow label={t.bedTemperature} value={`${results.bedTemp || results.temperature?.bed || 65} °C`} lang={lang} />
+              <Row label={t.nozzleTemperature} value={`${results.nozzleTemp || results.temperature?.nozzle || 220} °C`} onCopy={() => handleCopy(t.nozzleTemperature, `${results.nozzleTemp || results.temperature?.nozzle || 220} °C`)} />
+              <Row label={t.bedTemperature} value={`${results.bedTemp || results.temperature?.bed || 65} °C`} onCopy={() => handleCopy(t.bedTemperature, `${results.bedTemp || results.temperature?.bed || 65} °C`)} />
             </div>
+          </div>
+          
+          <div className="p-4 bg-muted/30 rounded-lg border border-border/50">
+            <p className="text-[10px] font-bold text-muted-foreground text-center uppercase tracking-widest">
+              {t.howToImport}
+            </p>
           </div>
         </div>
 
-        {/* Footer */}
         <div className="p-6 border-t border-border bg-surface-raised/30 flex flex-col gap-3">
-          <button
-            onClick={() => {
-              const suggestedName = results.profile_name_suggestion || (wizard as any).fileName || 'perfil';
-              const profileName = `SlicerAI - ${suggestedName}`;
-              
-              downloadBambuProfile({
-                printer: (wizard as any).printer || "X1 Carbon",
-                nozzle: (wizard as any).nozzle || "0.4",
-                layerHeight: results.layerHeight || results.quality?.layer_height || 0.20,
-                wallLoops: results.wallLoops || results.strength?.wall_loops || 3,
-                topLayers: results.topLayers || results.strength?.top_layers || 4,
-                bottomLayers: results.bottomLayers || results.strength?.bottom_layers || 4,
-                infillDensity: results.infillPercent || results.strength?.infill_density || 15,
-                infillPattern: results.infillPattern || results.strength?.infill_pattern || "Gyroid",
-                printSpeed: results.printSpeed || results.speed?.inner_wall || 150,
-                travelSpeed: 200,
-                enableSupport: (results.supportType && results.supportType !== "none" && results.supportType !== "Sem suporte") || results.support?.needed,
-                supportType: results.supportType || results.support?.type || "normal(auto)",
-                supportThreshold: results.supportAngle || results.support?.threshold_angle || 30,
-                brimWidth: 0,
-                nozzleTemp: results.nozzleTemp || results.temperature?.nozzle || 220,
-                bedTemp: results.bedTemp || results.temperature?.bed || 65,
-                enableIroning: !!(results.ironing || results.quality?.ironing),
-                filamentType: (wizard as any).filament || "PLA",
-                profileName: profileName,
-              });
-            }}
-            className="w-full py-4 bg-[#00aeef] hover:bg-[#0099d4] text-white rounded-xl text-[11px] font-bold tracking-widest transition-all shadow-lg flex items-center justify-center gap-2"
+          <Button
+            onClick={handleDownload}
+            className="w-full py-6 bg-[#00aeef] hover:bg-[#0099d4] text-white rounded-xl text-[11px] font-bold tracking-widest transition-all shadow-lg flex items-center justify-center gap-2"
           >
             <Download className="w-4 h-4" />
             {t.download.toUpperCase()}
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="ghost"
             onClick={onClose}
-            className="w-full py-2 text-[10px] font-bold text-muted-foreground hover:text-foreground transition-all"
+            className="w-full text-[10px] font-bold text-muted-foreground hover:text-foreground transition-all"
           >
             {t.close.toUpperCase()}
-          </button>
+          </Button>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 };
