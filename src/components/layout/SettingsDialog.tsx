@@ -261,11 +261,15 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
                           openrouterKey
                         }
                         onChange={(e) => {
-                          const newKey = e.target.value;
-                          if (aiProvider === 'gemini') setApiKey(newKey);
-                          else if (aiProvider === 'groq') setGroqApiKey(newKey);
-                          else if (aiProvider === 'deepseek') setDeepseekKey(newKey);
-                          else setOpenrouterKey(newKey);
+                          const val = e.target.value;
+                          try {
+                            if (aiProvider === 'gemini') setApiKey(val);
+                            else if (aiProvider === 'groq') setGroqApiKey(val);
+                            else if (aiProvider === 'deepseek') setDeepseekKey(val);
+                            else setOpenrouterKey(val);
+                          } catch (err: any) {
+                            toast.error(err.message);
+                          }
                         }}
                         placeholder={
                           aiProvider === 'gemini' ? "AIza..." : 

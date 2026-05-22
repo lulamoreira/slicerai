@@ -225,13 +225,14 @@ Retorne este JSON exato (todos os campos obrigatórios):
   } else if (aiProvider === 'groq') {
     const groqApiKey = useSettingsStore.getState().groqApiKey;
     if (!groqApiKey) throw new Error('NO_API_KEY');
+    const cleanKey = groqApiKey.trim().replace(/[^\x20-\x7E]/g, "");
 
     response = await fetch(
       "https://api.groq.com/openai/v1/chat/completions",
       {
         method: "POST",
         headers: { 
-          "Authorization": `Bearer ${groqApiKey}`,
+          "Authorization": `Bearer ${cleanKey}`,
           "Content-Type": "application/json" 
         },
         body: JSON.stringify({
@@ -246,13 +247,14 @@ Retorne este JSON exato (todos os campos obrigatórios):
   } else if (aiProvider === 'deepseek') {
     const deepseekKey = useSettingsStore.getState().deepseekKey;
     if (!deepseekKey) throw new Error('NO_API_KEY');
+    const cleanKey = deepseekKey.trim().replace(/[^\x20-\x7E]/g, "");
 
     response = await fetch(
       "https://api.deepseek.com/v1/chat/completions",
       {
         method: "POST",
         headers: { 
-          "Authorization": `Bearer ${deepseekKey}`,
+          "Authorization": `Bearer ${cleanKey}`,
           "Content-Type": "application/json" 
         },
         body: JSON.stringify({
@@ -266,13 +268,14 @@ Retorne este JSON exato (todos os campos obrigatórios):
   } else if (aiProvider === 'openrouter') {
     const openrouterKey = useSettingsStore.getState().openrouterKey;
     if (!openrouterKey) throw new Error('NO_API_KEY');
+    const cleanKey = openrouterKey.trim().replace(/[^\x20-\x7E]/g, "");
 
     response = await fetch(
       "https://openrouter.ai/api/v1/chat/completions",
       {
         method: "POST",
         headers: { 
-          "Authorization": `Bearer ${openrouterKey}`,
+          "Authorization": `Bearer ${cleanKey}`,
           "Content-Type": "application/json",
           "HTTP-Referer": "https://slicerai.app"
         },
