@@ -116,8 +116,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onShowSettings, onShowHistory })
         <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center shadow-[var(--primary-glow)]">
           <Hexagon className="w-5 h-5 text-[#0d0d14] fill-[#0d0d14]/20" />
         </div>
-        <h1 className="font-extrabold tracking-tight text-lg md:text-xl text-foreground hidden xs:block">
-          SlicerAI <span className="text-primary font-light italic hidden sm:inline">for Bambu</span>
+        <h1 className="font-extrabold tracking-tight text-lg md:text-xl text-foreground">
+          SlicerAI <span className="text-primary font-light italic">for Bambu</span>
         </h1>
 
       </button>
