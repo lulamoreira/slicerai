@@ -57,12 +57,21 @@ function HomeComponent() {
 
   // Apply theme
   React.useEffect(() => {
+    // Remove all possible theme classes
+    document.documentElement.classList.remove('dark', 'light', 'theme-contrast', 'theme-rainbow');
+    
+    // Add active theme class
     if (theme === 'dark') {
       document.documentElement.classList.add('dark')
-    } else {
-      document.documentElement.classList.remove('dark')
+    } else if (theme === 'light') {
+      document.documentElement.classList.add('light')
+    } else if (theme === 'contrast') {
+      document.documentElement.classList.add('theme-contrast')
+    } else if (theme === 'rainbow') {
+      document.documentElement.classList.add('theme-rainbow')
     }
   }, [theme])
+
 
   // Allow children to open Settings via a custom event
   React.useEffect(() => {

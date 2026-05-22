@@ -126,12 +126,31 @@ export const Navbar: React.FC<NavbarProps> = ({ onShowSettings, onShowHistory })
           )}
         </button>
         
-        <button 
-          onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-          className="p-1.5 hover:bg-primary-subtle rounded-lg transition-all text-muted hover:text-primary"
-        >
-          {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-        </button>
+        <div className="relative">
+          <button 
+            onClick={() => setShowDropdown(!showDropdown && !showAccountModal && !showHelpModal ? true : false)}
+            className="p-1.5 hover:bg-primary-subtle rounded-lg transition-all text-muted hover:text-primary"
+            title="Mudar Tema"
+          >
+            {theme === 'dark' && <Moon className="w-5 h-5" />}
+            {theme === 'light' && <Sun className="w-5 h-5" />}
+            {theme === 'contrast' && <div className="w-5 h-5 bg-foreground border border-background" />}
+            {theme === 'rainbow' && <span className="text-lg">🌈</span>}
+          </button>
+          
+          {showDropdown && (
+            <>
+              <div className="fixed inset-0 z-40" onClick={() => setShowDropdown(false)} />
+              <div className="absolute right-0 mt-2 w-40 bg-surface border border-border rounded-xl shadow-2xl z-50 p-1 animate-in fade-in slide-in-from-top-2">
+                <ThemeOption icon={<Sun className="w-4 h-4" />} label="Claro" active={theme === 'light'} onClick={() => { setTheme('light'); setShowDropdown(false); }} />
+                <ThemeOption icon={<Moon className="w-4 h-4" />} label="Escuro" active={theme === 'dark'} onClick={() => { setTheme('dark'); setShowDropdown(false); }} />
+                <ThemeOption icon={<div className="w-4 h-4 bg-foreground border border-background" />} label="Contraste" active={theme === 'contrast'} onClick={() => { setTheme('contrast'); setShowDropdown(false); }} />
+                <ThemeOption icon={<span className="text-sm">🌈</span>} label="Multicolor" active={theme === 'rainbow'} onClick={() => { setTheme('rainbow'); setShowDropdown(false); }} />
+              </div>
+            </>
+          )}
+        </div>
+
 
         <button 
           onClick={() => setLanguage(language === 'pt-BR' ? 'en' : 'pt-BR')}
@@ -243,3 +262,17 @@ export const Navbar: React.FC<NavbarProps> = ({ onShowSettings, onShowHistory })
     </header>
   );
 };
+
+const ThemeOption = ({ icon, label, active, onClick }: { icon: any, label: string, active: boolean, onClick: () => void }) => (
+  <button 
+    onClick={onClick}
+    className={cn(
+      "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-xs font-bold transition-all",
+      active ? "bg-primary text-[#0d0d14]" : "text-foreground-soft hover:bg-primary-subtle hover:text-primary"
+    )}
+  >
+    {icon}
+    {label}
+  </button>
+);
+

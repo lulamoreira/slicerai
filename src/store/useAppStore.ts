@@ -35,7 +35,7 @@ interface SettingsStore {
   setCostPerKg: (cost: number) => void;
   setDefaultPrinter: (printer: string) => void;
   setLanguage: (lang: 'pt-BR' | 'en') => void;
-  setTheme: (theme: 'dark' | 'light') => void;
+  setTheme: (theme: 'dark' | 'light' | 'contrast' | 'rainbow') => void;
   addToHistory: (entry: HistoryEntry) => void;
 }
 

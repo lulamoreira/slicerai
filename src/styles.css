@@ -68,7 +68,6 @@
   --radius:            1rem;
 }
 
-
 .light {
   --background:        #f0f2f5;
   --surface:           #ffffff;
@@ -89,6 +88,73 @@
   --muted:             #4a5568;
   --muted-subtle:      rgba(74,85,104,0.12);
 }
+
+.theme-contrast {
+  --background:        #000000;
+  --surface:           #000000;
+  --surface-raised:    #000000;
+  --surface-hover:     #000000;
+  --border:            #ffffff;
+  --border-strong:     #ffffff;
+  --primary:           #ffffff;
+  --primary-hover:     #ffffff;
+  --primary-glow:      none;
+  --primary-subtle:    transparent;
+  --accent:            #ffffff;
+  --destructive:       #ffffff;
+  --success:           #ffffff;
+  --warning:           #ffffff;
+  --foreground:        #ffffff;
+  --foreground-soft:   #ffffff;
+  --muted:             #ffffff;
+  --muted-subtle:      transparent;
+}
+
+.theme-rainbow {
+  --background:        #0f172a;
+  --surface:           #1e1b4b;
+  --surface-raised:    #1e1b4b;
+  --surface-hover:     #0f172a;
+  --border:            rgba(255,255,255,0.1);
+  --border-strong:     rgba(255,255,255,0.2);
+  --primary:           #ec4899; /* Pink */
+  --primary-hover:     #db2777;
+  --primary-glow:      0 0 20px rgba(236,72,153,0.3);
+  --primary-subtle:    rgba(236,72,153,0.1);
+  --accent:            #f59e0b; /* Amber */
+  --destructive:       #ef4444;
+  --success:           #10b981; /* Green */
+  --warning:           #f97316; /* Orange */
+  --foreground:        #f8fafc;
+  --foreground-soft:   #cbd5e1;
+  --muted:             #64748b;
+  --muted-subtle:      rgba(100,116,139,0.1);
+}
+
+.theme-rainbow header {
+  background-color: #6366f1 !important; /* Indigo header */
+}
+
+.theme-rainbow h1, .theme-rainbow h2, .theme-rainbow h3 {
+  color: #8b5cf6 !important; /* Purple titles */
+}
+
+.theme-rainbow svg {
+  color: #f97316 !important; /* Orange icons */
+}
+
+.theme-rainbow .bg-primary {
+  background-color: #ec4899 !important; /* Pink buttons */
+}
+
+.theme-rainbow a {
+  color: #06b6d4 !important; /* Cyan links */
+}
+
+.theme-rainbow .border-primary, .theme-rainbow .border-green-400 {
+  border-color: #10b981 !important; /* Green active tabs/borders */
+}
+
 
 @layer base {
   * {
