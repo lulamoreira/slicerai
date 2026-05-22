@@ -109,6 +109,21 @@ export const ReviewStep: React.FC = () => {
 
       // Handle specific structured errors from ai.ts
       if (error?.code === "QUOTA_EXCEEDED" || error?.code === "NO_BALANCE" || error?.code === "INVALID_KEY" || error?.code === "OPENROUTER_NO_MODELS") {
+        const hasGroq = !!groqApiKey || profile?.api_key_mode === 'centralized';
+        const isQuotaOrBalanceOrNotFound = error?.code === "QUOTA_EXCEEDED" || error?.code === "NO_BALANCE" || error?.code === "OPENROUTER_NO_MODELS";
+
+        if (isQuotaOrBalanceOrNotFound && hasGroq && selectedProvider !== 'groq') {
+          // Automatic fallback to Groq
+          setAiProvider('groq');
+          setLastError({
+            provider: error.provider || selectedProvider,
+            message: `${error.message.split('.')[0]} — alternando automaticamente para Groq (gratuito)`
+          });
+          setFailedProviders(prev => new Set(prev).add(selectedProvider));
+          setIsAiModalOpen(true);
+          return;
+        }
+
         setLastError({
           provider: error.provider || selectedProvider,
           message: error.message
