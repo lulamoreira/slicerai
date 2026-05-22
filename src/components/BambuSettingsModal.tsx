@@ -152,23 +152,21 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
             <Badge variant="outline" className="text-xs bg-gray-700 text-white border-gray-600 px-2 py-0.5">{settings.filamentType}</Badge>
           </div>
           <div className="flex mt-3 border-b border-gray-700 overflow-x-auto no-scrollbar">
+            {tabs.map((tab) => (
               <button key={tab} onClick={() => setActiveTab(tab)}
                 className={`px-4 py-2 text-xs font-bold uppercase tracking-wider transition-all border-b-2 -mb-px whitespace-nowrap group ${activeTab === tab ? "border-green-400 text-white" : "border-transparent"}`}>
-
                 <div className="flex items-center gap-1.5">
                   <span className={activeTab === tab ? "text-white" : "text-gray-500 group-hover:text-gray-200"}>{tabLabel[tab]}</span>
                   {tab === "Support" && (
-
                     <Badge className="bg-green-500/20 text-green-400 border-green-500/30 text-[9px] px-1 py-0 h-3.5 uppercase tracking-tighter">
                       📐 {lang === "PT" ? "Geometria" : "Geometry"}
                     </Badge>
-
                   )}
                 </div>
               </button>
             ))}
-
           </div>
+
         </DialogHeader>
 
         <div className="flex-1 overflow-y-auto px-4 py-2 min-h-0">
