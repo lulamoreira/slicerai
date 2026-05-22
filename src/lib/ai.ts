@@ -490,6 +490,15 @@ Retorne este JSON exato (todos os campos obrigatórios):
     const errBody = await response.json().catch(() => ({}));
     const errorMessage = errBody?.error?.message || errBody?.error?.status || response.statusText || "Erro desconhecido";
     
+    // Model not found or decommissioned (Vision models usually)
+    if (improvementImage && (response.status === 404 || response.status === 400 || errorMessage.toLowerCase().includes("not found") || errorMessage.toLowerCase().includes("decommissioned"))) {
+      throw {
+        code: "VISION_NOT_AVAILABLE",
+        provider: aiProvider.charAt(0).toUpperCase() + aiProvider.slice(1),
+        message: "O modelo de visão atual não está disponível para este provedor."
+      };
+    }
+
     // DeepSeek/Claude/OpenAI balance error
     if (response.status === 402) {
       const providerName = aiProvider === 'claude' ? 'Claude' : aiProvider === 'openai' ? 'OpenAI' : 'DeepSeek';
