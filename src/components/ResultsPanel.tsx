@@ -131,7 +131,7 @@ export const ResultsPanel: React.FC = () => {
         settings: improvedResults,
         results: improvedResults,
         downloadedAt: new Date().toISOString(),
-        improveReason: improvedResults.quality.improveReason || improvedResults.explanation.postprocessing_tips
+        improveReason: (improvedResults as any).quality.improveReason || improvedResults.explanation.postprocessing_tips
       });
       
       setShowImproveArea(false);
