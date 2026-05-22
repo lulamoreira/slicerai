@@ -9,7 +9,10 @@ import { toast } from "sonner";
 interface Props {
   open: boolean;
   onClose: () => void;
-  settings: BambuSettings;
+  settings: BambuSettings & { 
+    decisions?: any;
+    improvements?: Record<string, string>;
+  };
 }
 
 type Tab = "Quality" | "Strength" | "Speed" | "Support" | "Analysis";
