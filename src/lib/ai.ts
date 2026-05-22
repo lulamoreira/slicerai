@@ -256,7 +256,7 @@ Retorne este JSON exato (todos os campos obrigatórios):
     messageContents.push({ text: fullPrompt });
   }
 
-  let response;
+  let response: Response;
   const generationConfig = {
     temperature: 0.2,
     maxOutputTokens: 4096,
