@@ -48,11 +48,35 @@ export const useSettingsStore = create<SettingsStore>()(
       theme: "dark",
       history: [],
 
-      setApiKey: (apiKey) => set({ apiKey }),
+      setApiKey: (apiKey) => {
+        const cleanKey = apiKey.trim().replace(/[^\x20-\x7E]/g, "");
+        if (apiKey && cleanKey.length < 10) {
+          throw new Error("Chave inválida — verifique se copiou corretamente");
+        }
+        set({ apiKey: cleanKey });
+      },
       setAiProvider: (aiProvider) => set({ aiProvider }),
-      setGroqApiKey: (groqApiKey) => set({ groqApiKey }),
-      setDeepseekKey: (deepseekKey) => set({ deepseekKey }),
-      setOpenrouterKey: (openrouterKey) => set({ openrouterKey }),
+      setGroqApiKey: (groqApiKey) => {
+        const cleanKey = groqApiKey.trim().replace(/[^\x20-\x7E]/g, "");
+        if (groqApiKey && cleanKey.length < 10) {
+          throw new Error("Chave inválida — verifique se copiou corretamente");
+        }
+        set({ groqApiKey: cleanKey });
+      },
+      setDeepseekKey: (deepseekKey) => {
+        const cleanKey = deepseekKey.trim().replace(/[^\x20-\x7E]/g, "");
+        if (deepseekKey && cleanKey.length < 10) {
+          throw new Error("Chave inválida — verifique se copiou corretamente");
+        }
+        set({ deepseekKey: cleanKey });
+      },
+      setOpenrouterKey: (openrouterKey) => {
+        const cleanKey = openrouterKey.trim().replace(/[^\x20-\x7E]/g, "");
+        if (openrouterKey && cleanKey.length < 10) {
+          throw new Error("Chave inválida — verifique se copiou corretamente");
+        }
+        set({ openrouterKey: cleanKey });
+      },
       setCostPerKg: (costPerKg) => set({ costPerKg }),
       setDefaultPrinter: (defaultPrinter) => set({ defaultPrinter }),
       setLanguage: (language) => set({ language }),
