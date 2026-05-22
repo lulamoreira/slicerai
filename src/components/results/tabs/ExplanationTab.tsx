@@ -1,5 +1,6 @@
 import React from "react";
 import { AIResponse } from "../../../lib/types";
+import { cn } from "../../../lib/utils";
 import { 
   Layers, 
   Shield, 
