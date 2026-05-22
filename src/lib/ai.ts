@@ -473,6 +473,19 @@ Retorne este JSON exato (todos os campos obrigatórios):
     if (!openaiKey) throw new Error('NO_API_KEY');
     const cleanKey = openaiKey.trim().replace(/[^\x20-\x7E]/g, "");
 
+    const openaiMessages = [];
+    if (improvementImage) {
+      openaiMessages.push({
+        role: "user",
+        content: [
+          { type: "text", text: fullPrompt },
+          { type: "image_url", image_url: { url: improvementImage } }
+        ]
+      });
+    } else {
+      openaiMessages.push({ role: "user", content: fullPrompt });
+    }
+
     response = await fetch(
       "https://api.openai.com/v1/chat/completions",
       {
@@ -483,7 +496,7 @@ Retorne este JSON exato (todos os campos obrigatórios):
         },
         body: JSON.stringify({
           model: "gpt-4o-mini",
-          messages: [{ role: "user", content: fullPrompt }],
+          messages: openaiMessages,
           temperature: 0.2,
           max_tokens: 2048,
         }),
