@@ -79,13 +79,12 @@ export interface AIResponse {
     needed: boolean;
     type: string;
     style: string;
-    interface_pattern: string;
     threshold_angle: number;
     top_z_distance: number;
     bottom_z_distance: number;
     xy_distance: number;
     interface_layers: number;
-    interface_pattern_actual: string;
+    interface_pattern: string;
     tree_support_angle: number;
     on_build_plate_only: boolean;
     supportReason?: string;
