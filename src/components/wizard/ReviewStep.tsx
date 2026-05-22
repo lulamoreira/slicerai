@@ -108,7 +108,7 @@ export const ReviewStep: React.FC = () => {
       useAppStore.setState({ status: 'ready' });
 
       // Handle specific structured errors from ai.ts
-      if (error?.code === "QUOTA_EXCEEDED" || error?.code === "NO_BALANCE" || error?.code === "INVALID_KEY") {
+      if (error?.code === "QUOTA_EXCEEDED" || error?.code === "NO_BALANCE" || error?.code === "INVALID_KEY" || error?.code === "OPENROUTER_NO_MODELS") {
         setLastError({
           provider: error.provider || selectedProvider,
           message: error.message
@@ -286,6 +286,7 @@ export const ReviewStep: React.FC = () => {
             <ProviderButton 
               id="openrouter" 
               name="OpenRouter" 
+              description="Meta Llama 3.3 70B — gratuito"
               hasKey={!!openrouterKey || profile?.api_key_mode === 'centralized'} 
               isSelected={selectedProvider === 'openrouter'} 
               isFailed={failedProviders.has('openrouter')}
