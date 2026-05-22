@@ -43,14 +43,15 @@ export const Wizard: React.FC = () => {
   return (
     <div className="flex flex-col h-full animate-in fade-in duration-500">
       {/* Progress */}
-      <div className="mb-4 px-6 md:px-10 pt-6 md:pt-10">
-        <div className="flex justify-between items-end mb-4">
+      <div className="mb-8 px-6 md:px-12 pt-8 md:pt-12">
+        <div className="flex justify-between items-end mb-6">
           <div className="space-y-1">
-            <span className="text-[10px] font-bold uppercase tracking-[0.3em] text-primary">Passo 0{step}</span>
-            <h2 className="text-2xl font-bold text-foreground uppercase">{steps[step - 1]}</h2>
+            <span className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Passo 0{step}</span>
+            <h2 className="text-3xl font-black text-foreground tracking-tight uppercase">{steps[step - 1]}</h2>
           </div>
-          <span className="text-[10px] font-bold text-muted uppercase tracking-widest mb-1">{step} / 5</span>
+          <span className="text-[11px] font-bold text-muted uppercase tracking-widest mb-1">{step} / 5</span>
         </div>
+
         <div className="flex gap-1.5">
           {steps.map((_, i) => (
             <div
@@ -65,9 +66,10 @@ export const Wizard: React.FC = () => {
       </div>
 
       {/* Step Content */}
-      <div className="flex-1 overflow-y-auto min-h-0 pl-6 md:pl-10 pr-6 md:pr-10 pb-24 custom-scrollbar">
+      <div className="flex-1 overflow-y-auto min-h-0 pl-6 md:pl-12 pr-6 md:pr-12 pb-32 custom-scrollbar">
         {renderStep()}
       </div>
+
 
       {/* Footer */}
       <div className="fixed bottom-0 right-0 w-[60%] px-6 md:px-10 py-4 bg-surface border-t border-border flex gap-4 z-30 shadow-lg">
@@ -86,12 +88,13 @@ export const Wizard: React.FC = () => {
           <button
             onClick={nextStep}
             disabled={!wizard.fileName}
-            className="flex-1 flex items-center justify-center gap-3 px-8 py-3.5 rounded-xl bg-primary text-[#0d0d14] text-[10px] font-bold tracking-widest hover:bg-primary-hover hover:shadow-[var(--primary-glow)] transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-lg"
+            className="flex-1 flex items-center justify-center gap-3 px-8 py-4 rounded-xl bg-primary text-[#0d0d14] text-[11px] font-black tracking-widest hover:bg-primary-hover hover:scale-[1.01] active:scale-[0.99] hover:shadow-[var(--primary-glow)] transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-xl"
           >
             PRÓXIMO PASSO
-            <ChevronRight className="w-4 h-4" />
+            <ChevronRight className="w-5 h-5" />
           </button>
         ) : (
+
           <div className="flex-1" />
         )}
       </div>
