@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { AIResponse } from "../../../lib/types";
 import { cn } from "../../../lib/utils";
+import { useSettingsStore } from "../../../store/useAppStore";
 import { 
   Shield, 
   Thermometer, 
@@ -9,10 +10,46 @@ import {
   Clock, 
   Palette,
   Wind,
-  Box
+  Box,
+  DollarSign
 } from "lucide-react";
 
+
 export const SummaryTab = ({ results }: { results: AIResponse }) => {
+  const { costPerKg } = useSettingsStore();
+  const [pricePerKg, setPricePerKg] = useState(String(costPerKg.toFixed(2)));
+  const [estimatedCost, setEstimatedCost] = useState(results.estimates.estimated_cost_brl);
+
+  useEffect(() => {
+    // If the global costPerKg changes, reset local state
+    setPricePerKg(String(costPerKg.toFixed(2)));
+  }, [costPerKg]);
+
+  useEffect(() => {
+    // Recalculate cost when results change or price changes
+    const grams = results.estimates.filament_grams;
+    const price = parseFloat(pricePerKg.replace(',', '.')) || 0;
+    const newCost = (grams / 1000) * price;
+    setEstimatedCost(newCost);
+  }, [pricePerKg, results.estimates.filament_grams]);
+
+  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value;
+    // Allow only numbers, comma and dot
+    const cleanVal = val.replace(/[^0-9.,]/g, '');
+    setPricePerKg(cleanVal);
+  };
+
+  const handleBlur = () => {
+    const numericVal = parseFloat(pricePerKg.replace(',', '.')) || 0;
+    if (pricePerKg === '') {
+      setPricePerKg(String(costPerKg.toFixed(2)));
+    } else {
+      setPricePerKg(numericVal.toFixed(2));
+    }
+  };
+
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <SectionCard 
@@ -96,15 +133,37 @@ export const SummaryTab = ({ results }: { results: AIResponse }) => {
             <div className="space-y-1">
                 <p className="text-[0.65rem] font-bold uppercase text-muted tracking-widest leading-none">Material Total</p>
                 <p className="text-xl font-bold text-foreground leading-none">
-                    {results.estimates.filament_grams}g <span className="text-muted/30 text-sm">/</span> {results.estimates.filament_meters}m
+                    {results.estimates.filament_grams}g <span className="text-muted-foreground/30 text-sm">/</span> {results.estimates.filament_meters}m
                 </p>
             </div>
-            <div className="space-y-1">
-                <p className="text-[0.65rem] font-bold uppercase text-muted tracking-widest leading-none">Custo Estimado</p>
-                <p className="text-xl font-bold text-success leading-none">
-                    R$ {results.estimates.estimated_cost_brl.toFixed(2)}
+            <div className="space-y-3">
+                <p className="text-[0.65rem] font-bold uppercase text-muted-foreground tracking-widest leading-none">Custo Estimado</p>
+                <p className="text-xl font-bold text-[#00e5ce] leading-none">
+                    R$ {estimatedCost.toFixed(2)}
                 </p>
+                
+                <div className="space-y-1.5">
+                  <div className="flex items-center gap-2">
+                    <div className="relative max-w-[100px]">
+                      <input
+                        type="text"
+                        inputMode="decimal"
+                        pattern="[0-9]*[.,][0-9]{0,2}"
+                        value={pricePerKg}
+                        onChange={handlePriceChange}
+                        onBlur={handleBlur}
+                        placeholder={String(costPerKg.toFixed(2))}
+                        className="w-full bg-surface-raised/50 border border-border/50 rounded px-2 py-1 text-sm text-center text-white font-mono focus:border-primary/50 outline-none transition-colors"
+                      />
+                    </div>
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase">R$/kg</span>
+                  </div>
+                  <p className="text-[10px] text-gray-400 italic">
+                    Usando: R$ {costPerKg.toFixed(2)}/kg (global)
+                  </p>
+                </div>
             </div>
+
         </div>
 
         {results.estimates.filament_per_color.length > 0 && (
