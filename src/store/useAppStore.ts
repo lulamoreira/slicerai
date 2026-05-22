@@ -22,7 +22,7 @@ interface SettingsStore {
   costPerKg: number;
   defaultPrinter: string;
   language: 'pt-BR' | 'en';
-  theme: 'dark' | 'light';
+  theme: 'dark' | 'light' | 'contrast' | 'rainbow';
   history: HistoryEntry[];
   
   setApiKey: (apiKey: string) => void;
@@ -35,7 +35,8 @@ interface SettingsStore {
   setCostPerKg: (cost: number) => void;
   setDefaultPrinter: (printer: string) => void;
   setLanguage: (lang: 'pt-BR' | 'en') => void;
-  setTheme: (theme: 'dark' | 'light') => void;
+  setTheme: (theme: 'dark' | 'light' | 'contrast' | 'rainbow') => void;
+
   addToHistory: (entry: HistoryEntry) => void;
 }
 
@@ -101,7 +102,7 @@ export const useSettingsStore = create<SettingsStore>()(
       setCostPerKg: (costPerKg) => set({ costPerKg }),
       setDefaultPrinter: (defaultPrinter) => set({ defaultPrinter }),
       setLanguage: (language) => set({ language }),
-      setTheme: (theme) => set({ theme }),
+      setTheme: (theme) => set({ theme: theme as any }),
       addToHistory: (entry) => set((state) => ({
         history: [entry, ...state.history].slice(0, 5)
       })),
