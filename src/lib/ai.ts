@@ -306,11 +306,21 @@ Retorne este JSON exato (todos os campos obrigatórios):
 
   if (!response.ok) {
     const errBody = await response.json().catch(() => ({}));
+    const errorMessage = errBody?.error?.message || errBody?.error?.status || response.statusText || "Erro desconhecido";
+    
+    if (response.status === 429 && (errorMessage.toLowerCase().includes("quota") || errorMessage.toLowerCase().includes("limit exceeded"))) {
+      const error = new Error("Sua cota gratuita do Gemini foi atingida. Você pode trocar de provedor nas configurações ou aguardar o reset da cota.");
+      (error as any).code = "QUOTA_EXCEEDED";
+      (error as any).provider = aiProvider;
+      throw error;
+    }
+    
     const providerName = aiProvider.charAt(0).toUpperCase() + aiProvider.slice(1);
     throw new Error(
-      `${providerName} [${response.status}]: ${errBody?.error?.message || errBody?.error?.status || response.statusText || "Erro desconhecido"}`
+      `${providerName} [${response.status}]: ${errorMessage}`
     );
   }
+
 
   const data = await response.json();
   const content = (aiProvider === 'groq' || aiProvider === 'deepseek' || aiProvider === 'openrouter')

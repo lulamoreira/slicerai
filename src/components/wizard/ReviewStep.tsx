@@ -21,7 +21,9 @@ export const ReviewStep: React.FC = () => {
   } = useSettingsStore();
 
   const [isAiModalOpen, setIsAiModalOpen] = React.useState(false);
+  const [isQuotaModalOpen, setIsQuotaModalOpen] = React.useState(false);
   const [selectedProvider, setSelectedProvider] = React.useState(aiProvider);
+
 
 
   // Reactive weight: prefer live geometry from store; fallback to PLA density placeholder.
@@ -90,10 +92,18 @@ export const ReviewStep: React.FC = () => {
       addToHistory(newEntry as any);
     } catch (error: any) {
       console.error('Generation error:', error);
+      
+      if (error?.code === "QUOTA_EXCEEDED") {
+        setIsQuotaModalOpen(true);
+        useAppStore.setState({ status: 'ready' });
+        return;
+      }
+
       const msg = error?.message || String(error);
       alert("Erro ao gerar configurações:\n\n" + msg);
       useAppStore.setState({ status: 'ready' });
     }
+
   };
 
 
@@ -264,7 +274,81 @@ export const ReviewStep: React.FC = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={isQuotaModalOpen} onOpenChange={setIsQuotaModalOpen}>
+        <DialogContent className="max-w-md bg-[#1e2127] text-white border-border/50 p-6">
+          <DialogHeader className="space-y-3">
+            <DialogTitle className="text-xl font-bold flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 text-warning" />
+              Cota do Gemini esgotada
+            </DialogTitle>
+            <p className="text-sm text-muted-foreground">
+              Seu limite gratuito do Gemini foi atingido. Deseja gerar agora usando o DeepSeek ou Groq?
+            </p>
+          </DialogHeader>
+
+          <div className="grid grid-cols-1 gap-3 my-6">
+            <button
+              disabled={!deepseekKey && profile?.api_key_mode !== 'centralized'}
+              onClick={() => {
+                setAiProvider('deepseek');
+                setIsQuotaModalOpen(false);
+                setTimeout(() => handleConfirmGeneration(), 100);
+              }}
+              className={cn(
+                "flex flex-col items-start p-4 rounded-xl border transition-all text-left relative overflow-hidden group",
+                (!deepseekKey && profile?.api_key_mode !== 'centralized')
+                  ? "bg-black/20 border-border/20 opacity-50 cursor-not-allowed"
+                  : "bg-surface-raised border-border/30 hover:border-primary/50 hover:bg-surface-raised/80"
+              )}
+            >
+              <span className="font-bold text-sm text-white">Usar DeepSeek V3</span>
+              {(!deepseekKey && profile?.api_key_mode !== 'centralized') && (
+                <span className="text-[10px] text-warning flex items-center gap-1 mt-1 font-medium">
+                  <AlertCircle className="w-3 h-3" />
+                  Sem chave cadastrada
+                </span>
+              )}
+            </button>
+
+            <button
+              disabled={!groqApiKey && profile?.api_key_mode !== 'centralized'}
+              onClick={() => {
+                setAiProvider('groq');
+                setIsQuotaModalOpen(false);
+                setTimeout(() => handleConfirmGeneration(), 100);
+              }}
+              className={cn(
+                "flex flex-col items-start p-4 rounded-xl border transition-all text-left relative overflow-hidden group",
+                (!groqApiKey && profile?.api_key_mode !== 'centralized')
+                  ? "bg-black/20 border-border/20 opacity-50 cursor-not-allowed"
+                  : "bg-surface-raised border-border/30 hover:border-primary/50 hover:bg-surface-raised/80"
+              )}
+            >
+              <span className="font-bold text-sm text-white">Usar Groq Llama 3.3</span>
+              {(!groqApiKey && profile?.api_key_mode !== 'centralized') && (
+                <span className="text-[10px] text-warning flex items-center gap-1 mt-1 font-medium">
+                  <AlertCircle className="w-3 h-3" />
+                  Sem chave cadastrada
+                </span>
+              )}
+            </button>
+          </div>
+
+          <DialogFooter className="flex gap-3 mt-2 sm:justify-end">
+            <Button 
+              variant="outline" 
+              onClick={() => setIsQuotaModalOpen(false)}
+              className="bg-transparent border-border/50 text-white hover:bg-white/5"
+            >
+              Agora não
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
     </div>
+
   );
 };
 
