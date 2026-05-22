@@ -249,7 +249,7 @@ export const ReviewStep: React.FC = () => {
       </div>
 
       <Dialog open={isAiModalOpen} onOpenChange={setIsAiModalOpen}>
-        <DialogContent className="max-w-md bg-[#1e2127] text-white border-border/50 p-6">
+        <DialogContent className="max-w-md bg-surface text-foreground border-border-strong p-6">
           <DialogHeader className="space-y-3">
             <DialogTitle className="text-xl font-bold flex items-center gap-2">
               <Cpu className="w-5 h-5 text-primary" />
