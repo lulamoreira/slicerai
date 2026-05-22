@@ -161,38 +161,43 @@ export const ResultsPanel: React.FC = () => {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex items-center justify-between mb-8">
-        <h2 className="text-2xl font-bold text-foreground uppercase">
-          Resultados <span className="text-primary">SlicerAI</span> 
-          <span className="ml-2 text-sm text-muted-foreground font-mono">v{profileVersion}</span>
-        </h2>
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
+        <div className="space-y-1">
+          <span className="text-[10px] font-black uppercase tracking-[0.4em] text-primary">Inteligência Artificial</span>
+          <h2 className="text-4xl font-black text-foreground tracking-tight uppercase">
+            Resultados <span className="text-primary font-light italic">SlicerAI</span> 
+            <span className="ml-3 px-2 py-0.5 bg-surface-raised border border-border rounded text-xs text-muted-foreground font-mono align-middle">v{profileVersion}</span>
+          </h2>
+        </div>
         <button 
           onClick={() => handleCopyAll()}
-          className="flex items-center gap-2 px-4 py-2 bg-primary-subtle border border-primary/20 rounded-lg text-[10px] font-bold tracking-widest text-primary hover:bg-primary/20 transition-all"
+          className="flex items-center justify-center gap-2 px-6 py-3.5 bg-primary/10 border border-primary/30 rounded-xl text-[11px] font-black tracking-[0.15em] text-primary hover:bg-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-primary/5"
         >
-          {copiedAll ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+          {copiedAll ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
           COPIAR TUDO
         </button>
       </div>
 
+
       {/* Tabs */}
-      <div className="flex gap-1 bg-surface-raised p-1.5 rounded-xl mb-8 border border-border overflow-x-auto no-scrollbar shadow-inner">
+      <div className="flex gap-1.5 bg-surface-raised/50 p-1.5 rounded-2xl mb-10 border border-border/50 overflow-x-auto no-scrollbar shadow-inner backdrop-blur-sm">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
             className={cn(
-              "flex items-center gap-2 px-5 py-3 rounded-lg text-[10px] font-bold tracking-widest transition-all whitespace-nowrap",
+              "flex-1 flex items-center justify-center gap-2.5 px-6 py-4 rounded-xl text-[10px] font-black tracking-[0.15em] transition-all whitespace-nowrap",
               activeTab === tab.id 
-                ? "bg-primary text-[#0d0d14] shadow-lg shadow-primary/20" 
-                : "text-muted hover:text-primary hover:bg-primary-subtle"
+                ? "bg-primary text-[#0d0d14] shadow-xl shadow-primary/20 scale-[1.02]" 
+                : "text-muted-foreground hover:text-primary hover:bg-primary/5"
             )}
           >
-            <tab.icon className="w-3.5 h-3.5" />
+            <tab.icon className="w-4 h-4" />
             {tab.label.toUpperCase()}
           </button>
         ))}
       </div>
+
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar min-h-0">

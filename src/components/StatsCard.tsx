@@ -14,14 +14,17 @@ export const StatsCard: React.FC = () => {
   const cost = ((parseFloat(weight) / 1000) * costPerKg).toFixed(2);
 
   return (
-    <div className="bg-surface border border-border rounded-xl p-5 space-y-4 shadow-sm hover:bg-surface-hover hover:border-border-strong transition-all">
-      <div className="flex items-center justify-between border-b border-border pb-3">
-        <h3 className="card-section-title flex items-center gap-2">
-          <Info className="w-3.5 h-3.5 text-primary" />
+    <div className="bg-surface/50 backdrop-blur-md border border-border/50 rounded-2xl p-6 space-y-6 shadow-xl hover:bg-surface/80 hover:border-primary/20 transition-all group">
+      <div className="flex items-center justify-between border-b border-border/50 pb-4">
+        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground flex items-center gap-2.5">
+          <div className="p-1.5 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
+            <Info className="w-3.5 h-3.5 text-primary" />
+          </div>
           Análise de Geometria
         </h3>
-        <span className="text-[10px] font-mono text-muted/50">{wizard.fileName}</span>
+        <span className="text-[10px] font-mono text-muted/40 tracking-tighter max-w-[120px] truncate">{wizard.fileName}</span>
       </div>
+
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8 font-mono">
         <StatItem 
