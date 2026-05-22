@@ -28,6 +28,8 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
     apiKey, setApiKey,
     aiProvider, setAiProvider,
     groqApiKey, setGroqApiKey,
+    deepseekKey, setDeepseekKey,
+    openrouterKey, setOpenrouterKey,
     costPerKg, setCostPerKg, 
     language, setLanguage,
     theme, setTheme,
@@ -78,7 +80,11 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
   }
 
   const handleTest = async () => {
-    const currentKey = aiProvider === 'gemini' ? apiKey : groqApiKey;
+    const currentKey = 
+      aiProvider === 'gemini' ? apiKey : 
+      aiProvider === 'groq' ? groqApiKey : 
+      aiProvider === 'deepseek' ? deepseekKey : 
+      openrouterKey;
     if (!currentKey) {
       toast.error("Insira uma chave API primeiro");
       return;
@@ -91,21 +97,31 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
       result = await testGeminiConnection(currentKey);
     } else {
       try {
-        const response = await fetch(
-          "https://api.groq.com/openai/v1/models",
-          {
-            method: "GET",
-            headers: { 
-              "Authorization": `Bearer ${currentKey}`,
-              "Content-Type": "application/json" 
-            }
-          }
-        );
+        let url = "";
+        let headers: any = {
+          "Authorization": `Bearer ${currentKey}`,
+          "Content-Type": "application/json"
+        };
+        let method = "GET";
+
+        if (aiProvider === 'groq') {
+          url = "https://api.groq.com/openai/v1/models";
+        } else if (aiProvider === 'deepseek') {
+          url = "https://api.deepseek.com/v1/models";
+        } else if (aiProvider === 'openrouter') {
+          url = "https://openrouter.ai/api/v1/models";
+        }
+
+        const response = await fetch(url, {
+          method,
+          headers
+        });
+
         if (response.ok) {
-          result = { ok: true, message: '✅ Groq conectado com sucesso!' };
+          result = { ok: true, message: `✅ ${aiProvider.charAt(0).toUpperCase() + aiProvider.slice(1)} conectado com sucesso!` };
         } else {
           const err = await response.json().catch(() => ({}));
-          result = { ok: false, message: `Erro Groq: ${err?.error?.message || response.statusText}` };
+          result = { ok: false, message: `Erro ${aiProvider}: ${err?.error?.message || err?.error?.status || response.statusText}` };
         }
       } catch (e: any) {
         result = { ok: false, message: `Erro de rede: ${e.message}` };
@@ -134,8 +150,8 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/80 backdrop-blur-md animate-in fade-in duration-300">
-      <div className="w-full max-w-lg bg-surface border border-border rounded-[1.5rem] p-8 shadow-2xl relative overflow-hidden">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-background/80 backdrop-blur-md animate-in fade-in duration-300" onClick={onClose}>
+      <div className="w-full max-w-lg bg-surface border border-border rounded-[1.5rem] p-8 shadow-2xl relative overflow-hidden" onClick={e => e.stopPropagation()}>
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary via-accent to-destructive opacity-50" />
         
         <button onClick={onClose} className="absolute top-6 right-6 p-1.5 text-muted hover:text-primary transition-all hover:bg-primary-subtle rounded-lg">
@@ -155,14 +171,14 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
             <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-muted px-1">
               PROVEDOR DE IA
             </label>
-            <div className="flex p-1 bg-surface-raised rounded-xl border border-border-strong gap-1 shadow-inner max-w-sm">
+            <div className="grid grid-cols-2 gap-1.5 p-1 bg-surface-raised rounded-xl border border-border-strong shadow-inner">
               <button 
                 onClick={() => {
                   setAiProvider('gemini');
                   setTestResult('idle');
                 }}
                 className={cn(
-                  "flex-1 py-2.5 rounded-lg text-[10px] font-bold tracking-[0.2em] transition-all",
+                  "py-2.5 rounded-lg text-[10px] font-bold tracking-[0.2em] transition-all",
                   aiProvider === 'gemini' ? "bg-primary text-[#0d0d14] shadow-md" : "text-muted hover:text-primary hover:bg-primary-subtle"
                 )}
               >
@@ -174,11 +190,35 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
                   setTestResult('idle');
                 }}
                 className={cn(
-                  "flex-1 py-2.5 rounded-lg text-[10px] font-bold tracking-[0.2em] transition-all",
+                  "py-2.5 rounded-lg text-[10px] font-bold tracking-[0.2em] transition-all",
                   aiProvider === 'groq' ? "bg-primary text-[#0d0d14] shadow-md" : "text-muted hover:text-primary hover:bg-primary-subtle"
                 )}
               >
                 GROQ
+              </button>
+              <button 
+                onClick={() => {
+                  setAiProvider('deepseek');
+                  setTestResult('idle');
+                }}
+                className={cn(
+                  "py-2.5 rounded-lg text-[10px] font-bold tracking-[0.2em] transition-all",
+                  aiProvider === 'deepseek' ? "bg-primary text-[#0d0d14] shadow-md" : "text-muted hover:text-primary hover:bg-primary-subtle"
+                )}
+              >
+                DEEPSEEK
+              </button>
+              <button 
+                onClick={() => {
+                  setAiProvider('openrouter');
+                  setTestResult('idle');
+                }}
+                className={cn(
+                  "py-2.5 rounded-lg text-[10px] font-bold tracking-[0.2em] transition-all",
+                  aiProvider === 'openrouter' ? "bg-primary text-[#0d0d14] shadow-md" : "text-muted hover:text-primary hover:bg-primary-subtle"
+                )}
+              >
+                OPENROUTER
               </button>
             </div>
           </div>
@@ -187,7 +227,10 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
           <div className="space-y-4">
             <div className="flex justify-between items-center px-1">
                 <label className="text-[10px] font-bold uppercase tracking-[0.3em] text-primary">
-                  {aiProvider === 'gemini' ? 'Google Gemini 2.0 Flash API Key' : 'GROQ API KEY'}
+                  {aiProvider === 'gemini' ? 'Google Gemini 2.0 Flash API Key' : 
+                   aiProvider === 'groq' ? 'GROQ API KEY' : 
+                   aiProvider === 'deepseek' ? 'DeepSeek API KEY' : 
+                   'OpenRouter API KEY'}
                 </label>
                 <div className="flex items-center gap-1 opacity-50">
                     <Wifi className="w-2.5 h-2.5" />
@@ -211,13 +254,25 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
                     <div className="relative flex-1">
                         <input 
                         type={showKey ? "text" : "password"}
-                        value={aiProvider === 'gemini' ? apiKey : groqApiKey}
+                        value={
+                          aiProvider === 'gemini' ? apiKey : 
+                          aiProvider === 'groq' ? groqApiKey : 
+                          aiProvider === 'deepseek' ? deepseekKey : 
+                          openrouterKey
+                        }
                         onChange={(e) => {
                           const newKey = e.target.value;
                           if (aiProvider === 'gemini') setApiKey(newKey);
-                          else setGroqApiKey(newKey);
+                          else if (aiProvider === 'groq') setGroqApiKey(newKey);
+                          else if (aiProvider === 'deepseek') setDeepseekKey(newKey);
+                          else setOpenrouterKey(newKey);
                         }}
-                        placeholder={aiProvider === 'gemini' ? "AIza..." : "gsk_..."}
+                        placeholder={
+                          aiProvider === 'gemini' ? "AIza..." : 
+                          aiProvider === 'groq' ? "gsk_..." : 
+                          aiProvider === 'deepseek' ? "sk-..." : 
+                          "sk-or-..."
+                        }
                         className="w-full bg-surface-raised border border-border-strong rounded-xl p-3.5 text-xs font-mono font-bold outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all text-foreground pr-12"
                         />
                         <button 
@@ -249,23 +304,42 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
                     </button>
                 </div>
                 <a
-                  href={aiProvider === 'gemini' ? "https://aistudio.google.com/apikey" : "https://console.groq.com"}
+                  href={
+                    aiProvider === 'gemini' ? "https://aistudio.google.com/apikey" : 
+                    aiProvider === 'groq' ? "https://console.groq.com" : 
+                    aiProvider === 'deepseek' ? "https://platform.deepseek.com" : 
+                    "https://openrouter.ai"
+                  }
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 text-[10px] font-bold tracking-widest text-primary hover:underline px-1"
                 >
                   {language === 'pt-BR' 
-                    ? (aiProvider === 'gemini' ? 'OBTER CHAVE GRÁTIS' : 'Obter chave grátis em console.groq.com') 
-                    : (aiProvider === 'gemini' ? 'GET FREE KEY' : 'Get free key at console.groq.com')} <ExternalLink className="w-3 h-3" />
+                    ? (aiProvider === 'gemini' ? 'OBTER CHAVE GRÁTIS' : 
+                       aiProvider === 'groq' ? 'Obter chave grátis em console.groq.com' : 
+                       aiProvider === 'deepseek' ? 'Obter chave grátis em platform.deepseek.com' : 
+                       'Obter chave grátis em openrouter.ai') 
+                    : (aiProvider === 'gemini' ? 'GET FREE KEY' : 
+                       aiProvider === 'groq' ? 'Get free key at console.groq.com' : 
+                       aiProvider === 'deepseek' ? 'Get free key at platform.deepseek.com' : 
+                       'Get free key at openrouter.ai')} <ExternalLink className="w-3 h-3" />
                 </a>
                 <p className="text-[9px] text-muted font-bold uppercase tracking-widest px-2 leading-relaxed italic opacity-50">
                     {language === 'pt-BR' 
                         ? (aiProvider === 'gemini' 
                             ? "Obtenha sua chave gratuita em aistudio.google.com/apikey. Não é necessário cartão de crédito." 
-                            : "Obtenha sua chave gratuita em console.groq.com. Sua chave é salva localmente.")
+                            : aiProvider === 'groq' 
+                            ? "Obtenha sua chave gratuita em console.groq.com. Sua chave é salva localmente."
+                            : aiProvider === 'deepseek'
+                            ? "Obtenha sua chave em platform.deepseek.com. Sua chave é salva localmente."
+                            : "Obtenha sua chave em openrouter.ai. Sua chave é salva localmente.")
                         : (aiProvider === 'gemini'
                             ? "Get your free key at aistudio.google.com/apikey. No credit card required."
-                            : "Get your free key at console.groq.com. Your key is saved locally.")}
+                            : aiProvider === 'groq'
+                            ? "Get your free key at console.groq.com. Your key is saved locally."
+                            : aiProvider === 'deepseek'
+                            ? "Get your key at platform.deepseek.com. Your key is saved locally."
+                            : "Get your key at openrouter.ai. Your key is saved locally.")}
                 </p>
               </>
             )}

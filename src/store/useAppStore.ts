@@ -12,8 +12,10 @@ import {
 
 interface SettingsStore {
   apiKey: string;
-  aiProvider: 'gemini' | 'groq';
+  aiProvider: 'gemini' | 'groq' | 'deepseek' | 'openrouter';
   groqApiKey: string;
+  deepseekKey: string;
+  openrouterKey: string;
   costPerKg: number;
   defaultPrinter: string;
   language: 'pt-BR' | 'en';
@@ -21,8 +23,10 @@ interface SettingsStore {
   history: HistoryEntry[];
   
   setApiKey: (apiKey: string) => void;
-  setAiProvider: (provider: 'gemini' | 'groq') => void;
+  setAiProvider: (provider: 'gemini' | 'groq' | 'deepseek' | 'openrouter') => void;
   setGroqApiKey: (apiKey: string) => void;
+  setDeepseekKey: (apiKey: string) => void;
+  setOpenrouterKey: (apiKey: string) => void;
   setCostPerKg: (cost: number) => void;
   setDefaultPrinter: (printer: string) => void;
   setLanguage: (lang: 'pt-BR' | 'en') => void;
@@ -36,6 +40,8 @@ export const useSettingsStore = create<SettingsStore>()(
       apiKey: "",
       aiProvider: "gemini",
       groqApiKey: "",
+      deepseekKey: "",
+      openrouterKey: "",
       costPerKg: 120,
       defaultPrinter: "X1C",
       language: "pt-BR",
@@ -45,6 +51,8 @@ export const useSettingsStore = create<SettingsStore>()(
       setApiKey: (apiKey) => set({ apiKey }),
       setAiProvider: (aiProvider) => set({ aiProvider }),
       setGroqApiKey: (groqApiKey) => set({ groqApiKey }),
+      setDeepseekKey: (deepseekKey) => set({ deepseekKey }),
+      setOpenrouterKey: (openrouterKey) => set({ openrouterKey }),
       setCostPerKg: (costPerKg) => set({ costPerKg }),
       setDefaultPrinter: (defaultPrinter) => set({ defaultPrinter }),
       setLanguage: (language) => set({ language }),

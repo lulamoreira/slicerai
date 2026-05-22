@@ -229,6 +229,47 @@ Retorne este JSON exato (todos os campos obrigatórios):
         }),
       }
     );
+  } else if (aiProvider === 'deepseek') {
+    const deepseekKey = useSettingsStore.getState().deepseekKey;
+    if (!deepseekKey) throw new Error('NO_API_KEY');
+
+    response = await fetch(
+      "https://api.deepseek.com/v1/chat/completions",
+      {
+        method: "POST",
+        headers: { 
+          "Authorization": `Bearer ${deepseekKey}`,
+          "Content-Type": "application/json" 
+        },
+        body: JSON.stringify({
+          model: "deepseek-chat",
+          messages: [{ role: "user", content: fullPrompt }],
+          temperature: 0.2,
+          max_tokens: 4096,
+        }),
+      }
+    );
+  } else if (aiProvider === 'openrouter') {
+    const openrouterKey = useSettingsStore.getState().openrouterKey;
+    if (!openrouterKey) throw new Error('NO_API_KEY');
+
+    response = await fetch(
+      "https://openrouter.ai/api/v1/chat/completions",
+      {
+        method: "POST",
+        headers: { 
+          "Authorization": `Bearer ${openrouterKey}`,
+          "Content-Type": "application/json",
+          "HTTP-Referer": "https://slicerai.app"
+        },
+        body: JSON.stringify({
+          model: "deepseek/deepseek-r1:free",
+          messages: [{ role: "user", content: fullPrompt }],
+          temperature: 0.2,
+          max_tokens: 4096,
+        }),
+      }
+    );
   } else {
     const apiKey = useSettingsStore.getState().apiKey;
     if (!apiKey) throw new Error('NO_API_KEY');
@@ -248,17 +289,17 @@ Retorne este JSON exato (todos os campos obrigatórios):
 
   if (!response.ok) {
     const errBody = await response.json().catch(() => ({}));
-    const providerName = aiProvider === 'groq' ? 'Groq' : 'Gemini';
+    const providerName = aiProvider.charAt(0).toUpperCase() + aiProvider.slice(1);
     throw new Error(
       `${providerName} [${response.status}]: ${errBody?.error?.message || errBody?.error?.status || response.statusText || "Erro desconhecido"}`
     );
   }
 
   const data = await response.json();
-  const content = aiProvider === 'groq' 
+  const content = (aiProvider === 'groq' || aiProvider === 'deepseek' || aiProvider === 'openrouter')
     ? data?.choices?.[0]?.message?.content 
     : data?.candidates?.[0]?.content?.parts?.[0]?.text;
-  if (!content) throw new Error("Empty response from Gemini");
+  if (!content) throw new Error(`Empty response from ${aiProvider}`);
   const repaired = repairJSON(content);
   return aiResponseSchema.parse(JSON.parse(repaired));
 };
