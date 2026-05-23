@@ -126,6 +126,19 @@ const aiResponseSchema = z.object({
   })
 });
 
+export const parseAIResponse = (text: string): any => {
+  let cleaned = text.trim();
+  // Remove markdown code blocks que Claude e outros modelos adicionam
+  cleaned = cleaned.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/```\s*$/i, "").trim();
+  // Remove qualquer texto antes do primeiro {
+  const jsonStart = cleaned.indexOf("{");
+  const jsonEnd = cleaned.lastIndexOf("}");
+  if (jsonStart !== -1 && jsonEnd !== -1) {
+    cleaned = cleaned.substring(jsonStart, jsonEnd + 1);
+  }
+  return JSON.parse(cleaned);
+};
+
 export const repairJSON = (json: string): string => {
   let balanced = json.trim();
   const stack: string[] = [];
