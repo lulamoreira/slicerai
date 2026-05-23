@@ -196,7 +196,6 @@ export const useAppStore = create<AppStore>((set) => ({
   meshData: null,
   wizard: initialWizard,
   results: null,
-  orientationAdvice: { suggested: false, dismissed: false },
   isWireframe: false,
   profileVersion: 1,
   profileHistory: [],
