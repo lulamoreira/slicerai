@@ -192,22 +192,21 @@ export const generateSettings = async (
   // Bloco de contexto geométrico só é montado se os dados existirem
   let geometryContext = "DADOS GEOMÉTRICOS DA PEÇA (NUNCA UNDEFINED):\n";
   if (geometry) {
-    geometryContext += `- Dimensões: ${geometry.dimensions?.x ?? geometry.boundingBox?.x ?? "?"}×${geometry.dimensions?.y ?? geometry.boundingBox?.y ?? "?"}×${geometry.dimensions?.z ?? geometry.boundingBox?.z ?? "?"} mm\n`;
+    geometryContext += `- Dimensões: ${geometry.boundingBox?.x ?? "?"}×${geometry.boundingBox?.y ?? "?"}×${geometry.boundingBox?.z ?? "?"} mm\n`;
     geometryContext += `- Volume: ${geometry.volume ?? "?"} cm³\n`;
     geometryContext += `- Área: ${geometry.surfaceArea ?? "?"} cm²\n`;
-    geometryContext += `- Peso estimado: ${geometry.weight ?? "?"} g\n`;
+    geometryContext += `- Peso estimado: ${((geometry.volume || 0) * 1.24).toFixed(1)} g\n`;
     geometryContext += `- Triângulos: ${geometry.triangleCount ?? (meshData?.triangles || []).length ?? "?"}\n`;
     
-    const dims = geometry.dimensions || geometry.boundingBox;
-    if (dims) {
-      const ratio = dims.z / Math.max(dims.x, dims.y, 1);
+    if (geometry.boundingBox) {
+      const ratio = geometry.boundingBox.z / Math.max(geometry.boundingBox.x, geometry.boundingBox.y, 1);
       geometryContext += `- Razão altura/base: ${ratio.toFixed(2)}\n`;
     }
     
     geometryContext += `- Tipo detectado: ${detectModelType({
-      width: dims?.x ?? 0,
-      depth: dims?.y ?? 0,
-      height: dims?.z ?? 0,
+      width: geometry.boundingBox?.x ?? 0,
+      depth: geometry.boundingBox?.y ?? 0,
+      height: geometry.boundingBox?.z ?? 0,
       volume: geometry.volume ?? 0,
       triangleCount: geometry.triangleCount ?? (meshData?.triangles || []).length ?? 0
     }) === "organic" ? "Orgânico" : "Técnico"}\n`;

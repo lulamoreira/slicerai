@@ -5,7 +5,7 @@ import { cn } from "../lib/utils";
 import { MATERIAL_DENSITIES } from "../lib/geometry";
 
 export const StatsCard: React.FC = () => {
-  const { geometry, wizard } = useAppStore();
+  const { geometry, wizard, meshData } = useAppStore();
   const { costPerKg } = useSettingsStore();
 
   if (!geometry) return null;
