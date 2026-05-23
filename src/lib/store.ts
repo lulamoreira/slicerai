@@ -18,6 +18,8 @@ interface SlicerStore {
   history: HistoryEntry[];
   currentResults?: AIResponse;
   isGenerating: boolean;
+  meshData?: { vertices: [number, number, number][]; triangles: [number, number, number][] };
+
 
   setStep: (step: number) => void;
   updateWizard: (updates: Partial<WizardState>) => void;

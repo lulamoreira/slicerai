@@ -14,7 +14,9 @@ interface Viewer3DProps {
 const Model = ({ file }: { file: File }) => {
   const [geometry, setGeometry] = useState<THREE.BufferGeometry | null>(null);
   const updateWizard = useStore((state) => state.updateWizard);
+  const setMeshData = (data: { vertices: [number, number, number][]; triangles: [number, number, number][] }) => useStore.setState({ meshData: data });
   const meshRef = useRef<THREE.Mesh>(null);
+
 
   useEffect(() => {
     if (!file) return;
@@ -30,9 +32,31 @@ const Model = ({ file }: { file: File }) => {
         geom.center(); 
         setGeometry(geom);
 
+        // Extract mesh data for 3MF export
+        const positions = geom.getAttribute('position').array;
+        const vertices: [number, number, number][] = [];
+        for (let i = 0; i < positions.length; i += 3) {
+          vertices.push([positions[i], positions[i+1], positions[i+2]]);
+        }
+        
+        // STLLoader usually returns non-indexed geometry, but let's be safe
+        const triangles: [number, number, number][] = [];
+        if (geom.index) {
+          const indices = geom.index.array;
+          for (let i = 0; i < indices.length; i += 3) {
+            triangles.push([indices[i], indices[i+1], indices[i+2]]);
+          }
+        } else {
+          for (let i = 0; i < vertices.length; i += 3) {
+            triangles.push([i, i+1, i+2]);
+          }
+        }
+        setMeshData({ vertices, triangles });
+
         const tempMesh = new THREE.Mesh(geom);
         const stats = analyzeGeometry(tempMesh);
         updateWizard({ geometryStats: stats });
+
       }
     };
 
