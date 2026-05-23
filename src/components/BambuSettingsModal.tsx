@@ -338,7 +338,7 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
             
             <Button size="sm" 
               disabled={!meshData}
-              onClick={() => meshData && downloadThreeMfProject(meshData, settings, settings.profileName || "SlicerAI_Project")}
+              onClick={() => meshData && downloadThreeMfProject(meshData, settings, settings.profileName || "SlicerAI_Project", settings.orientation)}
               className="w-full text-xs gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold h-10">
               <FileArchive className="w-4 h-4" /> 
               {lang === "PT" ? "BAIXAR PROJETO .3MF COMPLETO" : "DOWNLOAD FULL .3MF PROJECT"}
