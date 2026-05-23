@@ -147,7 +147,7 @@ export const ResultsPanel: React.FC = () => {
 
   const renderTabContent = () => {
     const displayResults = selectedHistoryVersion 
-      ? profileHistory.find(h => h.version === selectedHistoryVersion)?.results || results
+      ? (profileHistory || []).find(h => h.version === selectedHistoryVersion)?.results || results
       : results;
 
     switch (activeTab) {

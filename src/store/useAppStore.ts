@@ -105,7 +105,7 @@ export const useSettingsStore = create<SettingsStore>()(
       setDefaultPrinter: (defaultPrinter) => set({ defaultPrinter }),
       setLanguage: (language) => set({ language }),
       setTheme: (theme) => set({ theme: theme as any }),
-      addToHistory: (entry) => set((state) => ({
+      addToHistory: (entry) => set((state: SettingsStore) => ({
         history: [entry, ...state.history].slice(0, 5)
       })),
     }),
