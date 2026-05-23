@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Copy, Download, FileArchive } from "lucide-react";
+import { Copy, Download, FileArchive, Loader2 } from "lucide-react";
 import { downloadBambuProfile, BambuSettings } from "@/lib/bambuExport";
 import { downloadThreeMfProject, MeshData } from "@/lib/threeMfExport";
 import { detectModelType } from "@/lib/supportProfiles";
