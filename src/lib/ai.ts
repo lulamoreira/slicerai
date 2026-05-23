@@ -320,7 +320,7 @@ Retorne este JSON exato (todos os campos obrigatórios):
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
-          "Authorization": \`Bearer \${session?.access_token}\`
+          "Authorization": `Bearer ${session?.access_token}`
         },
         body: JSON.stringify({
           contents: [{ parts: messageContents }],
