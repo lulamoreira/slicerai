@@ -315,7 +315,7 @@ Retorne este JSON exato (todos os campos obrigatórios):
   if (userProfile?.api_key_mode === 'centralized' && aiProvider === 'gemini') {
     const { data: { session } } = await supabase.auth.getSession();
     response = await fetch(
-      \`\${import.meta.env.VITE_SUPABASE_URL}/functions/v1/gemini-proxy\`,
+      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/gemini-proxy`,
       {
         method: "POST",
         headers: { 
