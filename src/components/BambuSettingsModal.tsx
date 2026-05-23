@@ -102,7 +102,9 @@ function Row({ label, value, onCopy, decision }: { label: string; value: string;
 export function BambuSettingsModal({ open, onClose, settings }: Props) {
   const [activeTab, setActiveTab] = useState<Tab>("Quality");
   const [lang, setLang] = useState<Lang>("PT");
+  const meshData = useStore((state) => state.meshData);
   const t = LABELS[lang];
+
 
   const copy = (val: string) => {
     navigator.clipboard.writeText(val);
