@@ -96,6 +96,7 @@ export const analyzeGeometry = (mesh: THREE.Mesh): GeometryStats => {
   };
 };
 
+// Decisão de orientação agora é feita pela IA
 export const checkRotationBenefit = (stats: GeometryStats): boolean => {
-  return stats.overhangsDetected && stats.boundingBox.x < stats.boundingBox.z;
+  return false;
 };

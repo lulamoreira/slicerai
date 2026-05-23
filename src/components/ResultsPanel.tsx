@@ -422,7 +422,8 @@ export const ResultsPanel: React.FC = () => {
               profileName: `SlicerAI_${(wizard as any).fileName?.split('.')[0] || 'perfil'}`,
               version: profileVersion,
               decisions: results.decisions,
-              improvements: results.improvements
+              improvements: results.improvements,
+              orientation: results.orientation
             }}
           />
         )}
