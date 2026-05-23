@@ -328,7 +328,17 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
           <p className="text-[10px] text-gray-400 text-center font-medium italic mb-1">{t.howToImport}</p>
           <div className="flex flex-col gap-2">
             <Button size="lg" disabled={!meshData}
-              onClick={() => meshData && downloadThreeMfProject(meshData, settings, settings.profileName || "SlicerAI_Project", results?.orientation)}
+              onClick={() => {
+                if (!meshData) return;
+                const modelType = settings.geometryStats ? detectModelType({
+                  width: settings.geometryStats.boundingBox.x,
+                  depth: settings.geometryStats.boundingBox.y,
+                  height: settings.geometryStats.boundingBox.z,
+                  volume: settings.geometryStats.volume,
+                  triangleCount: settings.geometryStats.triangleCount
+                }) : "organic";
+                downloadThreeMfProject(meshData, settings, settings.profileName || "SlicerAI_Project", results?.orientation, modelType);
+              }}
               className="w-full gap-2 bg-green-600 hover:bg-green-700 text-white font-bold h-12 text-sm">
               <FileArchive className="w-5 h-5" />
               {lang === "PT" ? "📦 BAIXAR PROJETO .3MF (PRONTO PARA IMPRIMIR)" : "📦 DOWNLOAD .3MF PROJECT (READY TO PRINT)"}
