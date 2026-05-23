@@ -5,126 +5,127 @@ import { useSettingsStore } from "../store/useAppStore";
 import { detectModelType, getSupportProfile } from "./supportProfiles";
 
 
-const aiResponseSchema = z.object({
+const SafeNumber = z.number().or(z.string().transform(v => parseFloat(v) || 0)).catch(0);
+const SafeString = z.string().catch("");
+const SafeBool = z.boolean().or(z.string().transform(v => v === "true" || v === "1")).catch(false);
+
+const EstimatesSchema = z.object({
+  print_time_minutes: SafeNumber.optional().default(60),
+  filament_grams: SafeNumber.optional().default(20),
+  filament_meters: SafeNumber.optional().default(6),
+  estimated_cost_brl: SafeNumber.optional().default(0),
+  filament_per_color: z.any().optional().default([]),
+}).partial().passthrough();
+
+const SupportSchema = z.object({
+  needed: SafeBool.optional().default(false),
+  type: SafeString.optional().default("tree(auto)"),
+  style: SafeString.optional().default("tree_organic"),
+  threshold_angle: SafeNumber.optional().default(45),
+  supportReason: SafeString.optional().default(""),
+}).partial().passthrough();
+
+const OrientationSchema = z.object({
+  rotation: SafeString.optional().default("Sem rotação"),
+  reason: SafeString.optional().default(""),
+  supportReduction: SafeString.optional().default("0%"),
+}).partial().passthrough();
+
+const DecisionsSchema = z.object({
+  layerHeight: SafeString.optional().default(""),
+  wallLoops: SafeString.optional().default(""),
+  infillDensity: SafeString.optional().default(""),
+  infillPattern: SafeString.optional().default(""),
+  printSpeed: SafeString.optional().default(""),
+  support: SafeString.optional().default(""),
+  seam: SafeString.optional().default(""),
+  ironing: SafeString.optional().default(""),
+  temperatures: SafeString.optional().default(""),
+  overall: SafeString.optional().default(""),
+}).partial().passthrough();
+
+export const AIResponseSchema = z.object({
   quality: z.object({
-    layer_height: z.number(),
-    first_layer_height: z.number(),
-    seam_position: z.string(),
-    seamReason: z.string().optional(),
-    improveReason: z.string().optional(),
-    ironing: z.boolean(),
-    ironing_flow: z.number(),
-    ironing_speed: z.number()
-  }),
+    layer_height: SafeNumber.optional().default(0.2),
+    first_layer_height: SafeNumber.optional().default(0.2),
+    seam_position: SafeString.optional().default("back"),
+    seamReason: SafeString.optional().default(""),
+    ironing: SafeBool.optional().default(false),
+    ironing_flow: SafeNumber.optional().default(10),
+    ironing_speed: SafeNumber.optional().default(30),
+  }).partial().passthrough().default({}),
   strength: z.object({
-    infill_density: z.number(),
-    infill_pattern: z.string(),
-    wall_loops: z.number(),
-    top_layers: z.number(),
-    bottom_layers: z.number(),
-    top_surface_pattern: z.string(),
-    bottom_surface_pattern: z.string()
-  }),
-  support: z.object({
-    needed: z.boolean().optional().default(false),
-    type: z.string().optional().default("tree(auto)"),
-    style: z.string().optional().default("tree_organic"),
-    threshold_angle: z.number().optional().default(45),
-    top_z_distance: z.number().optional().default(0.2),
-    bottom_z_distance: z.number().optional().default(0.2),
-    xy_distance: z.number().optional().default(0.35),
-    interface_layers: z.number().optional().default(2),
-    interface_pattern: z.string().optional().default("concentric"),
-    tree_support_angle: z.number().optional().default(45),
-    on_build_plate_only: z.boolean().optional().default(true),
-    supportReason: z.string().optional().default("Calculado com base na geometria")
-  }),
-
-
+    infill_density: SafeNumber.optional().default(15),
+    infill_pattern: SafeString.optional().default("grid"),
+    wall_loops: SafeNumber.optional().default(3),
+    top_layers: SafeNumber.optional().default(4),
+    bottom_layers: SafeNumber.optional().default(3),
+    top_surface_pattern: SafeString.optional().default("monotonic"),
+    bottom_surface_pattern: SafeString.optional().default("monotonic"),
+  }).partial().passthrough().default({}),
+  support: SupportSchema.default({}),
   temperature: z.object({
-    nozzle: z.number(),
-    nozzle_first_layer: z.number(),
-    bed: z.number(),
-    bed_first_layer: z.number(),
-    chamber: z.number(),
-    chamber_required: z.boolean(),
-    part_cooling_fan: z.number(),
-    part_cooling_first_layer: z.number()
-  }),
+    nozzle: SafeNumber.optional().default(220),
+    nozzle_first_layer: SafeNumber.optional().default(225),
+    bed: SafeNumber.optional().default(60),
+    bed_first_layer: SafeNumber.optional().default(65),
+    chamber: SafeNumber.optional().default(0),
+    chamber_required: SafeBool.optional().default(false),
+    part_cooling_fan: SafeNumber.optional().default(100),
+    part_cooling_first_layer: SafeNumber.optional().default(0),
+  }).partial().passthrough().default({}),
   speed: z.object({
-    mode: z.string(),
-    outer_wall: z.number(),
-    inner_wall: z.number(),
-    top_surface: z.number(),
-    bottom_surface: z.number(),
-    infill: z.number(),
-    travel: z.number(),
-    first_layer: z.number(),
-    bridge: z.number(),
-    overhang_slow: z.number()
-  }),
+    mode: SafeString.optional().default("normal"),
+    outer_wall: SafeNumber.optional().default(150),
+    inner_wall: SafeNumber.optional().default(200),
+    top_surface: SafeNumber.optional().default(100),
+    bottom_surface: SafeNumber.optional().default(100),
+    infill: SafeNumber.optional().default(200),
+    travel: SafeNumber.optional().default(300),
+    first_layer: SafeNumber.optional().default(30),
+    bridge: SafeNumber.optional().default(50),
+    overhang_slow: SafeNumber.optional().default(10),
+  }).partial().passthrough().default({}),
   ams: z.object({
-    wipe_tower_enabled: z.boolean(),
-    wipe_tower_width: z.number(),
-    flush_multiplier: z.number(),
-    flush_into_infill: z.boolean(),
-    flush_into_objects: z.boolean(),
-    prime_all_extruders: z.boolean()
-  }),
+    wipe_tower_enabled: SafeBool.optional().default(true),
+    wipe_tower_width: SafeNumber.optional().default(60),
+    flush_multiplier: SafeNumber.optional().default(1.0),
+    flush_into_infill: SafeBool.optional().default(true),
+    flush_into_objects: SafeBool.optional().default(false),
+    prime_all_extruders: SafeBool.optional().default(false),
+  }).partial().passthrough().default({}),
   adhesion: z.object({
-    brim_type: z.string(),
-    brim_width: z.number(),
-    skirt_loops: z.number()
-  }),
+    brim_type: SafeString.optional().default("auto"),
+    brim_width: SafeNumber.optional().default(5),
+    skirt_loops: SafeNumber.optional().default(0),
+  }).partial().passthrough().default({}),
   advanced: z.object({
-    elephant_foot_compensation: z.number(),
-    enable_overhang_speed: z.boolean(),
-    bridge_flow: z.number(),
-    precise_outer_wall: z.boolean(),
-    thick_bridges: z.boolean(),
-    small_perimeter_speed: z.number()
-  }),
-  estimates: z.object({
-    print_time_minutes: z.number(),
-    filament_grams: z.number(),
-    filament_meters: z.number(),
-    filament_per_color: z.array(z.object({
-      slot: z.number(),
-      color: z.string(),
-      grams: z.number(),
-      meters: z.number()
-    })),
-    estimated_cost_brl: z.number()
-  }),
+    elephant_foot_compensation: SafeNumber.optional().default(0.15),
+    enable_overhang_speed: SafeBool.optional().default(true),
+    bridge_flow: SafeNumber.optional().default(1.0),
+    precise_outer_wall: SafeBool.optional().default(false),
+    thick_bridges: SafeBool.optional().default(false),
+    small_perimeter_speed: SafeNumber.optional().default(30),
+  }).partial().passthrough().default({}),
+  estimates: EstimatesSchema.default({}),
   explanation: z.object({
-    layer_height_reason: z.string(),
-    infill_reason: z.string(),
-    support_reason: z.string(),
-    material_plate_tips: z.string(),
-    postprocessing_tips: z.string(),
-    warnings: z.array(z.string()),
-    pre_print_checklist_extra: z.array(z.string())
-  }),
-  profile_name_suggestion: z.string(),
-  decisions: z.object({
-    layerHeight: z.string(),
-    wallLoops: z.string(),
-    infillDensity: z.string(),
-    infillPattern: z.string(),
-    printSpeed: z.string(),
-    support: z.string(),
-    seam: z.string(),
-    ironing: z.string(),
-    temperatures: z.string(),
-    overall: z.string()
-  }),
-  improvements: z.record(z.string()).optional(),
-  orientation: z.object({
-    rotation: z.string(),
-    reason: z.string(),
-    supportReduction: z.string()
-  })
-});
+    layer_height_reason: SafeString.optional().default(""),
+    infill_reason: SafeString.optional().default(""),
+    support_reason: SafeString.optional().default(""),
+    material_plate_tips: SafeString.optional().default(""),
+    postprocessing_tips: SafeString.optional().default(""),
+    warnings: z.array(z.string()).optional().default([]),
+    pre_print_checklist_extra: z.array(z.string()).optional().default([]),
+  }).partial().passthrough().default({}),
+  profile_name_suggestion: SafeString.optional().default("SlicerAI_Profile"),
+  decisions: DecisionsSchema.default({}),
+  improvements: z.record(z.string()).optional().default({}),
+  orientation: OrientationSchema.default({}),
+}).partial().passthrough();
+
+const aiResponseSchema = AIResponseSchema;
+
+
 
 export const parseAIResponse = (text: string): any => {
   let cleaned = text.trim();
@@ -622,37 +623,25 @@ Retorne este JSON exato (todos os campos obrigatórios):
   if (!content) throw new Error(`Empty response from ${aiProvider}`);
   const parsed = parseAIResponse(content);
 
-  // Fallback for support fields from geometric profiles if AI didn't provide them
-  if (parsed.support && wizard.geometryStats) {
-    const modelType = detectModelType({
-      width: wizard.geometryStats.boundingBox.x,
-      depth: wizard.geometryStats.boundingBox.y,
-      height: wizard.geometryStats.boundingBox.z,
-      volume: wizard.geometryStats.volume,
-      triangleCount: wizard.geometryStats.triangleCount || 10000 // Default if missing
-    });
-    
-    const geometricSupport = getSupportProfile(modelType);
-    
-    // Fill in missing fields from geometric profile
-    parsed.support.type = parsed.support.type || geometricSupport.support_type;
-    parsed.support.style = parsed.support.style || geometricSupport.support_style;
-    parsed.support.threshold_angle = parsed.support.threshold_angle || Number(geometricSupport.support_threshold_angle);
-    parsed.support.top_z_distance = parsed.support.top_z_distance || Number(geometricSupport.support_top_z_distance);
-    parsed.support.bottom_z_distance = parsed.support.bottom_z_distance || Number(geometricSupport.support_bottom_z_distance);
-    parsed.support.xy_distance = parsed.support.xy_distance || Number(geometricSupport.support_object_xy_distance);
-    parsed.support.interface_layers = parsed.support.interface_layers || Number(geometricSupport.support_interface_top_layers);
-    parsed.support.interface_pattern = parsed.support.interface_pattern || geometricSupport.support_interface_pattern;
-    parsed.support.tree_support_angle = parsed.support.tree_support_angle || Number(geometricSupport.tree_support_branch_angle);
-    
-    // Explicitly set needed based on geometry if not specified
-    if (parsed.support.needed === undefined) {
-      parsed.support.needed = wizard.geometryStats.overhangsDetected;
+  const result = AIResponseSchema.safeParse(parsed);
+  if (!result.success) {
+    console.warn("AI Response partial failure/missing fields:", result.error.format());
+    const defaults = AIResponseSchema.parse({});
+    // Profundidade 1 de merge manual para os objetos principais
+    const merged = { ...defaults, ...parsed };
+    // Garante que sub-objetos não sejam sobrescritos por undefined se o spread do parsed tiver a chave mas o conteúdo for parcial
+    for (const key of Object.keys(defaults)) {
+      if (typeof (defaults as any)[key] === 'object' && (parsed as any)[key]) {
+        (merged as any)[key] = { ...(defaults as any)[key], ...(parsed as any)[key] };
+      }
     }
+    return merged as any;
   }
 
-  return aiResponseSchema.parse(parsed);
+  return result.data as any;
 };
+
+
 
 
 export type ConnectionResult = "ok" | "invalid" | "rate_limited" | "error";
