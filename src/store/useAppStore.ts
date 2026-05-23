@@ -229,6 +229,7 @@ export const useAppStore = create<AppStore>((set) => ({
     status: 'idle',
     file: null,
     geometry: null,
+    meshData: null,
     wizard: {
       ...initialWizard,
       printer: (useSettingsStore.getState().defaultPrinter as any) || "X1C"
