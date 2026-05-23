@@ -428,16 +428,40 @@ Retorne este JSON exato (todos os campos obrigatórios):
     if (!claudeKey) throw new Error('NO_API_KEY');
     const cleanKey = claudeKey.trim().replace(/[^\x20-\x7E]/g, "");
 
+    const claudeMessages = [];
+    if (improvementImage) {
+      claudeMessages.push({
+        role: "user",
+        content: [
+          { type: "text", text: fullPrompt },
+          { 
+            type: "image", 
+            source: { 
+              type: "base64", 
+              media_type: "image/jpeg", 
+              data: improvementImage.split(',')[1] 
+            } 
+          }
+        ]
+      });
+    } else {
+      claudeMessages.push({ role: "user", content: fullPrompt });
+    }
+
     response = await fetch(
-      "https://lgjbjvauavgtbtfejcwc.supabase.co/functions/v1/ai-proxy",
+      "https://api.anthropic.com/v1/messages",
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "x-api-key": cleanKey,
+          "anthropic-version": "2023-06-01",
+          "anthropic-dangerous-direct-browser-access": "true"
+        },
         body: JSON.stringify({
-          provider: "claude",
-          apiKey: cleanKey,
-          prompt: fullPrompt,
-          imageBase64: improvementImage ? improvementImage.split(',')[1] : undefined
+          model: "claude-3-5-haiku-20241022",
+          max_tokens: 2048,
+          messages: claudeMessages,
         }),
       }
     );
