@@ -53,7 +53,7 @@ export const Wizard: React.FC = () => {
         </div>
 
         <div className="flex gap-1.5">
-          {steps.map((_, i) => (
+          {(steps || []).map((_, i) => (
             <div
               key={i}
               className={cn(

@@ -1,4 +1,20 @@
+try {
+  const stored = localStorage.getItem("slicerai-settings");
+  if (stored) {
+    const parsed = JSON.parse(stored);
+    if (!parsed.version || parsed.version < 2) {
+      localStorage.removeItem("slicerai-settings");
+      localStorage.removeItem("slicerai-app");
+      console.log("Storage antigo limpo automaticamente");
+    }
+  }
+} catch {
+  localStorage.removeItem("slicerai-settings");
+  localStorage.removeItem("slicerai-app");
+}
+
 import { createStart, createMiddleware } from "@tanstack/react-start";
+
 
 import { renderErrorPage } from "./lib/error-page";
 
