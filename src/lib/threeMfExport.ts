@@ -192,7 +192,6 @@ ${tXml}
     wall_loops: String(settings.wallLoops),
     sparse_infill_density: settings.infillDensity + "%",
     sparse_infill_pattern: settings.infillPattern || "grid",
-    enable_support: settings.enableSupport ? "1" : "0",
     ...supportConfig,  // valores otimizados de suporte (tree_organic etc)
     ...seamConfig,     // posição da costura
     nozzle_temperature: [String(settings.nozzleTemp)],
@@ -218,7 +217,6 @@ ${tXml}
     wall_loops: String(settings.wallLoops),
     sparse_infill_density: settings.infillDensity + "%",
     sparse_infill_pattern: settings.infillPattern || "grid",
-    enable_support: settings.enableSupport ? "1" : "0",
     ...supportConfig,
     ...seamConfig,
     inner_wall_speed: String(settings.printSpeed),
