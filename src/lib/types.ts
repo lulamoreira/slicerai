@@ -26,7 +26,9 @@ export interface GeometryStats {
   isTall: boolean;
   parts: number;
   colors: number;
+  triangleCount?: number;
 }
+
 
 export interface WizardState {
   step: number;
