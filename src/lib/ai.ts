@@ -502,7 +502,7 @@ Retorne este JSON exato (todos os campos obrigatórios):
         },
         body: JSON.stringify({
           model: "claude-haiku-4-5",
-          max_tokens: 2048,
+          max_tokens: 4096,
           messages: claudeMessages,
         }),
       }
