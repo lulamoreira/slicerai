@@ -121,6 +121,54 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
     toast.success(t.copied);
   };
 
+  const handleDownload3mf = async () => {
+    if (!meshData) return;
+    setIsGenerating(true);
+    try {
+      setGenerationStep(lang === "PT" ? "Preparando geometria..." : "Preparing geometry...");
+      await new Promise(r => setTimeout(r, 100));
+      setGenerationStep(lang === "PT" ? "Aplicando configurações da IA..." : "Applying AI settings...");
+      await new Promise(r => setTimeout(r, 100));
+      setGenerationStep(lang === "PT" ? "Embutindo perfis de processo e filamento..." : "Embedding profiles...");
+      await new Promise(r => setTimeout(r, 100));
+      setGenerationStep(lang === "PT" ? "Compactando arquivo .3mf..." : "Compressing .3mf file...");
+      
+      const modelType = settings.geometryStats ? detectModelType({
+        width: settings.geometryStats.boundingBox.x,
+        depth: settings.geometryStats.boundingBox.y,
+        height: settings.geometryStats.boundingBox.z,
+        volume: settings.geometryStats.volume,
+        triangleCount: settings.geometryStats.triangleCount
+      }) : "organic";
+      
+      await downloadThreeMfProject(meshData, settings, settings.profileName || "SlicerAI_Project", results?.orientation, modelType);
+      
+      setGenerationStep(lang === "PT" ? "✅ Pronto! Verifique seus Downloads" : "✅ Done! Check your Downloads");
+      setTimeout(() => { setIsGenerating(false); setGenerationStep(""); }, 2500);
+    } catch (error: any) {
+      console.error("Error generating 3MF:", error);
+      setGenerationStep(`❌ ${error?.message || (lang === "PT" ? "Erro ao gerar arquivo" : "Error generating file")}`);
+      setTimeout(() => { setIsGenerating(false); setGenerationStep(""); }, 4000);
+    }
+  };
+
+  const handleDownloadCfg = async () => {
+    setIsDownloadingCfg(true);
+    setCfgStatus(lang === "PT" ? "Gerando arquivo..." : "Generating file...");
+    try {
+      await downloadBambuProfile(settings);
+      setCfgStatus(lang === "PT" ? "✅ Pronto! Verifique seus Downloads" : "✅ Done! Check your Downloads");
+      setTimeout(() => {
+        setIsDownloadingCfg(false);
+        setCfgStatus("");
+      }, 2500);
+    } catch (error) {
+      setIsDownloadingCfg(false);
+      setCfgStatus("");
+      toast.error(lang === "PT" ? "Erro ao baixar configurações" : "Error downloading settings");
+    }
+  };
+
   const copyAll = () => {
     const all = [
       `${t.printer}: ${settings.printer}`,
