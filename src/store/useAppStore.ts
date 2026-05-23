@@ -146,7 +146,6 @@ interface AppStore {
   meshData: { vertices: [number,number,number][]; triangles: [number,number,number][] } | null;
   wizard: WizardState;
   results: AIResponse | null;
-  orientationAdvice: { suggested: boolean; dismissed: boolean };
   isWireframe: boolean;
   profileVersion: number;
   profileHistory: ProfileHistoryItem[];
