@@ -235,7 +235,8 @@ INSTRUÇÃO: Com base nesse histórico, identifique preferências do usuário e 
        - Se a razão altura/base for maior que 1.5, a peça é alta e provavelmente uma figura — mantenha vertical para melhor acabamento.
        - Se for menor que 0.5, a peça é plana — mantenha horizontal para estabilidade.
        - Se houver muitos overhangs em ângulos íngremes, sugira rotação que reduza esses overhangs.
-       - NUNCA retorne 'undefined', 'não determinado' ou 'impossível recomendar' — sempre escolha uma orientação concreta entre: 'Sem rotação — orientação padrão é ideal', 'Rotacionar 90° no eixo X', 'Rotacionar 180° no eixo Z', 'Rotacionar 90° no eixo Y'.
+       - Sempre escolha uma rotação concreta entre: 'Sem rotação', 'Rotacionar 90° eixo X', 'Rotacionar 90° eixo Y', 'Rotacionar 180° eixo Z'.
+       - NUNCA retorne 'undefined', 'não determinado' ou 'impossível recomendar'.
        - Sempre preencha o campo \`reason\` explicando a escolha baseada nos dados fornecidos.
        - Sempre estime \`supportReduction\` como um valor concreto entre '0%' e '60%'.
 
