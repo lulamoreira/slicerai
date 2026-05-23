@@ -2,6 +2,8 @@ import { z } from "zod";
 import { WizardState, AIResponse } from "./types";
 import { supabase } from "../integrations/supabase/client";
 import { useSettingsStore } from "../store/useAppStore";
+import { detectModelType, getSupportProfile } from "./supportProfiles";
+
 
 const aiResponseSchema = z.object({
   quality: z.object({
@@ -24,19 +26,20 @@ const aiResponseSchema = z.object({
     bottom_surface_pattern: z.string()
   }),
   support: z.object({
-    needed: z.boolean(),
-    type: z.string(),
-    style: z.string(),
-    threshold_angle: z.number(),
-    top_z_distance: z.number(),
-    bottom_z_distance: z.number(),
-    xy_distance: z.number(),
-    interface_layers: z.number(),
-    interface_pattern: z.string(),
-    tree_support_angle: z.number(),
-    on_build_plate_only: z.boolean(),
+    needed: z.boolean().optional().default(false),
+    type: z.string().optional().default("tree(auto)"),
+    style: z.string().optional().default("tree_organic"),
+    threshold_angle: z.number().optional().default(45),
+    top_z_distance: z.number().optional().default(0.2),
+    bottom_z_distance: z.number().optional().default(0.2),
+    xy_distance: z.number().optional().default(0.35),
+    interface_layers: z.number().optional().default(2),
+    interface_pattern: z.string().optional().default("concentric"),
+    tree_support_angle: z.number().optional().default(45),
+    on_build_plate_only: z.boolean().optional().default(true),
     supportReason: z.string().optional()
   }),
+
   temperature: z.object({
     nozzle: z.number(),
     nozzle_first_layer: z.number(),
@@ -572,8 +575,40 @@ Retorne este JSON exato (todos os campos obrigatórios):
   
   if (!content) throw new Error(`Empty response from ${aiProvider}`);
   const repaired = repairJSON(content);
-  return aiResponseSchema.parse(JSON.parse(repaired));
+  const parsed = JSON.parse(repaired);
+
+  // Fallback for support fields from geometric profiles if AI didn't provide them
+  if (parsed.support && wizard.geometryStats) {
+    const modelType = detectModelType({
+      width: wizard.geometryStats.boundingBox.x,
+      depth: wizard.geometryStats.boundingBox.y,
+      height: wizard.geometryStats.boundingBox.z,
+      volume: wizard.geometryStats.volume,
+      triangleCount: wizard.geometryStats.triangleCount || 10000 // Default if missing
+    });
+    
+    const geometricSupport = getSupportProfile(modelType);
+    
+    // Fill in missing fields from geometric profile
+    parsed.support.type = parsed.support.type || geometricSupport.support_type;
+    parsed.support.style = parsed.support.style || geometricSupport.support_style;
+    parsed.support.threshold_angle = parsed.support.threshold_angle || Number(geometricSupport.support_threshold_angle);
+    parsed.support.top_z_distance = parsed.support.top_z_distance || Number(geometricSupport.support_top_z_distance);
+    parsed.support.bottom_z_distance = parsed.support.bottom_z_distance || Number(geometricSupport.support_bottom_z_distance);
+    parsed.support.xy_distance = parsed.support.xy_distance || Number(geometricSupport.support_object_xy_distance);
+    parsed.support.interface_layers = parsed.support.interface_layers || Number(geometricSupport.support_interface_top_layers);
+    parsed.support.interface_pattern = parsed.support.interface_pattern || geometricSupport.support_interface_pattern;
+    parsed.support.tree_support_angle = parsed.support.tree_support_angle || Number(geometricSupport.tree_support_branch_angle);
+    
+    // Explicitly set needed based on geometry if not specified
+    if (parsed.support.needed === undefined) {
+      parsed.support.needed = wizard.geometryStats.overhangsDetected;
+    }
+  }
+
+  return aiResponseSchema.parse(parsed);
 };
+
 
 export type ConnectionResult = "ok" | "invalid" | "rate_limited" | "error";
 
