@@ -115,12 +115,12 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
         } else if (aiProvider === 'openrouter') {
           url = "https://openrouter.ai/api/v1/models";
         } else if (aiProvider === 'claude') {
-          url = "https://api.anthropic.com/v1/messages"; // Special case below
+          url = "https://api.anthropic.com/v1/messages";
           headers = {
-            "x-api-key": currentKey,
-            "anthropic-version": "2023-06-01",
             "Content-Type": "application/json",
-            "dangerouslyAllowBrowser": "true"
+            "x-api-key": currentKey.trim().replace(/[^\x20-\x7E]/g, ""),
+            "anthropic-version": "2023-06-01",
+            "anthropic-dangerous-direct-browser-access": "true"
           };
           method = "POST";
         } else if (aiProvider === 'openai') {
