@@ -13,16 +13,16 @@ const EstimatesSchema = z.object({
   print_time_minutes: SafeNumber.optional().default(60),
   filament_grams: SafeNumber.optional().default(20),
   filament_meters: SafeNumber.optional().default(6),
-  cost_brl: SafeNumber.optional().default(0),
-  filament_per_color: z.any().optional().default([]), // Alterado para aceitar array ou outros formatos
+  estimated_cost_brl: SafeNumber.optional().default(0),
+  filament_per_color: z.any().optional().default([]),
 }).partial().passthrough();
 
 const SupportSchema = z.object({
-  enabled: SafeBool.optional().default(false),
+  needed: SafeBool.optional().default(false),
   type: SafeString.optional().default("tree(auto)"),
   style: SafeString.optional().default("tree_organic"),
-  threshold: SafeNumber.optional().default(45),
-  reason: SafeString.optional().default(""),
+  threshold_angle: SafeNumber.optional().default(45),
+  supportReason: SafeString.optional().default(""),
 }).partial().passthrough();
 
 const OrientationSchema = z.object({
@@ -45,28 +45,86 @@ const DecisionsSchema = z.object({
 }).partial().passthrough();
 
 export const AIResponseSchema = z.object({
-  layerHeight: SafeNumber.optional().default(0.2),
-  wallLoops: SafeNumber.optional().default(3),
-  topLayers: SafeNumber.optional().default(4),
-  bottomLayers: SafeNumber.optional().default(3),
-  infillDensity: SafeNumber.optional().default(15),
-  infillPattern: SafeString.optional().default("grid"),
-  printSpeed: SafeNumber.optional().default(150),
-  travelSpeed: SafeNumber.optional().default(200),
-  nozzleTemp: SafeNumber.optional().default(220),
-  bedTemp: SafeNumber.optional().default(60),
-  enableIroning: SafeBool.optional().default(false),
-  seamPosition: SafeString.optional().default("back"),
-  seamReason: SafeString.optional().default(""),
-  support: SupportSchema.optional().default({}),
-  orientation: OrientationSchema.optional().default({}),
-  estimates: EstimatesSchema.optional().default({}),
-  decisions: DecisionsSchema.optional().default({}),
+  quality: z.object({
+    layer_height: SafeNumber.optional().default(0.2),
+    first_layer_height: SafeNumber.optional().default(0.2),
+    seam_position: SafeString.optional().default("back"),
+    seamReason: SafeString.optional().default(""),
+    ironing: SafeBool.optional().default(false),
+    ironing_flow: SafeNumber.optional().default(10),
+    ironing_speed: SafeNumber.optional().default(30),
+  }).partial().passthrough().default({}),
+  strength: z.object({
+    infill_density: SafeNumber.optional().default(15),
+    infill_pattern: SafeString.optional().default("grid"),
+    wall_loops: SafeNumber.optional().default(3),
+    top_layers: SafeNumber.optional().default(4),
+    bottom_layers: SafeNumber.optional().default(3),
+    top_surface_pattern: SafeString.optional().default("monotonic"),
+    bottom_surface_pattern: SafeString.optional().default("monotonic"),
+  }).partial().passthrough().default({}),
+  support: SupportSchema.default({}),
+  temperature: z.object({
+    nozzle: SafeNumber.optional().default(220),
+    nozzle_first_layer: SafeNumber.optional().default(225),
+    bed: SafeNumber.optional().default(60),
+    bed_first_layer: SafeNumber.optional().default(65),
+    chamber: SafeNumber.optional().default(0),
+    chamber_required: SafeBool.optional().default(false),
+    part_cooling_fan: SafeNumber.optional().default(100),
+    part_cooling_first_layer: SafeNumber.optional().default(0),
+  }).partial().passthrough().default({}),
+  speed: z.object({
+    mode: SafeString.optional().default("normal"),
+    outer_wall: SafeNumber.optional().default(150),
+    inner_wall: SafeNumber.optional().default(200),
+    top_surface: SafeNumber.optional().default(100),
+    bottom_surface: SafeNumber.optional().default(100),
+    infill: SafeNumber.optional().default(200),
+    travel: SafeNumber.optional().default(300),
+    first_layer: SafeNumber.optional().default(30),
+    bridge: SafeNumber.optional().default(50),
+    overhang_slow: SafeNumber.optional().default(10),
+  }).partial().passthrough().default({}),
+  ams: z.object({
+    wipe_tower_enabled: SafeBool.optional().default(true),
+    wipe_tower_width: SafeNumber.optional().default(60),
+    flush_multiplier: SafeNumber.optional().default(1.0),
+    flush_into_infill: SafeBool.optional().default(true),
+    flush_into_objects: SafeBool.optional().default(false),
+    prime_all_extruders: SafeBool.optional().default(false),
+  }).partial().passthrough().default({}),
+  adhesion: z.object({
+    brim_type: SafeString.optional().default("auto"),
+    brim_width: SafeNumber.optional().default(5),
+    skirt_loops: SafeNumber.optional().default(0),
+  }).partial().passthrough().default({}),
+  advanced: z.object({
+    elephant_foot_compensation: SafeNumber.optional().default(0.15),
+    enable_overhang_speed: SafeBool.optional().default(true),
+    bridge_flow: SafeNumber.optional().default(1.0),
+    precise_outer_wall: SafeBool.optional().default(false),
+    thick_bridges: SafeBool.optional().default(false),
+    small_perimeter_speed: SafeNumber.optional().default(30),
+  }).partial().passthrough().default({}),
+  estimates: EstimatesSchema.default({}),
+  explanation: z.object({
+    layer_height_reason: SafeString.optional().default(""),
+    infill_reason: SafeString.optional().default(""),
+    support_reason: SafeString.optional().default(""),
+    material_plate_tips: SafeString.optional().default(""),
+    postprocessing_tips: SafeString.optional().default(""),
+    warnings: z.array(z.string()).optional().default([]),
+    pre_print_checklist_extra: z.array(z.string()).optional().default([]),
+  }).partial().passthrough().default({}),
+  profile_name_suggestion: SafeString.optional().default("SlicerAI_Profile"),
+  decisions: DecisionsSchema.default({}),
   improvements: z.record(z.string()).optional().default({}),
+  orientation: OrientationSchema.default({}),
 }).partial().passthrough();
 
-// Alias para manter compatibilidade com o resto do código se necessário
 const aiResponseSchema = AIResponseSchema;
+
 
 
 export const parseAIResponse = (text: string): any => {
