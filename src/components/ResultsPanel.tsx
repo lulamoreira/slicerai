@@ -311,7 +311,7 @@ export const ResultsPanel: React.FC = () => {
               Histórico de Versões
             </div>
             <div className="grid grid-cols-1 gap-3">
-              {profileHistory.map((item) => (
+              {(profileHistory || []).map((item) => (
                 <div 
                   key={item.version}
                   className={cn(
