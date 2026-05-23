@@ -45,8 +45,6 @@ function HomeComponent() {
     results, 
     updateWizard, 
     geometry,
-    orientationAdvice,
-    setOrientationAdvice,
   } = useAppStore()
   
   const { language, theme, apiKey } = useSettingsStore()
