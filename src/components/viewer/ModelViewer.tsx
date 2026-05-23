@@ -172,9 +172,6 @@ const Model = ({ file }: { file: File }) => {
         const { result } = e.data;
         setGeoData(result);
         setStatus('ready');
-        if (result.overhangsDetected && result.boundingBox.x < result.boundingBox.z) {
-          setOrientationAdvice({ suggested: true, dismissed: false });
-        }
         worker.terminate();
       };
     };
