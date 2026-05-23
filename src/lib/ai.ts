@@ -240,7 +240,8 @@ INSTRUÇÃO: Com base nesse histórico, identifique preferências do usuário e 
        - Sempre preencha o campo \`reason\` explicando a escolha baseada nos dados fornecidos.
        - Sempre estime \`supportReduction\` como um valor concreto entre '0%' e '60%'.
 
-    2. O campo support.type é OBRIGATÓRIO. Use 'tree(auto)' para modelos orgânicos e 'normal(auto)' para peças técnicas.
+    2. SUPORTE: Os campos técnicos de suporte são calculados automaticamente pelo sistema com base na pesquisa de melhores práticas Bambu Lab para remoção fácil. Você decide APENAS: (a) se a peça precisa de suporte ou não (needed: true/false), (b) o tipo do modelo (modelType: "organic" para figuras, personagens, animais, ou "technical" para peças mecânicas e geométricas) — o sistema aplica automaticamente o perfil completo otimizado. Inclua no JSON apenas needed e modelType dentro do objeto support, e explique no supportReason por que ativou ou não.
+
     3. Escolha o seam_position mais adequado (back, aligned, nearest, random).
     4. Adicione o campo seamReason no objeto quality.
     5. Decida AUTOMATICAMENTE se o ironing (alisamento) é benéfico.
