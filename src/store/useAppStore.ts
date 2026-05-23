@@ -144,6 +144,7 @@ interface AppStore {
   status: 'idle' | 'parsing' | 'parse_error' | 'ready' | 'generating' | 'result' | 'api_error' | 'no_api_key';
   file: File | null;
   geometry: GeometryStats | null;
+  meshData: { vertices: [number,number,number][]; triangles: [number,number,number][] } | null;
   wizard: WizardState;
   results: AIResponse | null;
   orientationAdvice: { suggested: boolean; dismissed: boolean };
@@ -155,6 +156,7 @@ interface AppStore {
   setStatus: (status: AppStore['status']) => void;
   setFile: (file: AppStore['file']) => void;
   setGeometry: (geometry: GeometryStats | null) => void;
+  setMeshData: (mesh: AppStore['meshData']) => void;
   updateWizard: (updates: Partial<WizardState>) => void;
   setResults: (results: AIResponse | null) => void;
   setOrientationAdvice: (advice: Partial<AppStore['orientationAdvice']>) => void;
