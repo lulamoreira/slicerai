@@ -220,6 +220,7 @@ export const useAppStore = create<AppStore>((set) => ({
     };
   }),
   setGeometry: (geometry) => set({ geometry }),
+  setMeshData: (meshData) => set({ meshData }),
   updateWizard: (updates) => set((state) => ({ wizard: { ...state.wizard, ...updates } })),
   setResults: (results) => set({ results, status: results ? 'result' : 'ready' }),
   setOrientationAdvice: (advice) => set((state) => ({ orientationAdvice: { ...state.orientationAdvice, ...advice } })),
