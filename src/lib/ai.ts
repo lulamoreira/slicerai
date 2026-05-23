@@ -185,36 +185,37 @@ export const generateSettings = async (
   currentVersion?: number,
   previousResults?: AIResponse
 ): Promise<AIResponse> => {
-  const stats = useAppStore.getState().geometry;
-  const dimensions = stats?.boundingBox || { x: 0, y: 0, z: 0 };
-  const volume = (stats?.volume || 0).toFixed(2);
-  const surfaceArea = (stats?.surfaceArea || 0).toFixed(2);
-  const hasOverhangs = stats?.overhangsDetected || false;
-  const maxOverhangAngle = (stats?.maxOverhangAngle || 0).toFixed(0);
-  const triangleCount = stats?.triangleCount || 0;
-  const modelType = detectModelType({
-    width: dimensions.x,
-    depth: dimensions.y,
-    height: dimensions.z,
-    volume: stats?.volume || 0,
-    triangleCount: triangleCount
-  }) === "organic" ? "Orgânico" : "Técnico";
+  const state = useAppStore.getState();
+  const geometry = state.geometry;
+  const meshData = state.meshData;
 
-  const heightBaseRatio = (dimensions.z / Math.max(dimensions.x, dimensions.y || 1)).toFixed(2);
-  const weight = ((stats?.volume || 0) * 1.24).toFixed(1); // Estimativa padrão baseada em PLA
-
-  const geometryContext = `
-DADOS GEOMÉTRICOS DA PEÇA (NUNCA UNDEFINED):
-- Dimensões: ${dimensions.x.toFixed(1)}×${dimensions.y.toFixed(1)}×${dimensions.z.toFixed(1)}mm
-- Volume: ${volume}cm³
-- Área de superfície: ${surfaceArea}cm²
-- Peso estimado: ${weight}g
-- Razão altura/base: ${heightBaseRatio}
-- Número de triângulos: ${triangleCount}
-- Tipo detectado: ${modelType}
-- Overhangs detectados: ${hasOverhangs ? "Sim" : "Não"}
-- Ângulo máximo de overhang: ${maxOverhangAngle}°
-  `.trim();
+  // Bloco de contexto geométrico só é montado se os dados existirem
+  let geometryContext = "DADOS GEOMÉTRICOS DA PEÇA (NUNCA UNDEFINED):\n";
+  if (geometry) {
+    geometryContext += `- Dimensões: ${geometry.boundingBox?.x ?? "?"}×${geometry.boundingBox?.y ?? "?"}×${geometry.boundingBox?.z ?? "?"} mm\n`;
+    geometryContext += `- Volume: ${geometry.volume ?? "?"} cm³\n`;
+    geometryContext += `- Área: ${geometry.surfaceArea ?? "?"} cm²\n`;
+    geometryContext += `- Peso estimado: ${((geometry.volume || 0) * 1.24).toFixed(1)} g\n`;
+    geometryContext += `- Triângulos: ${geometry.triangleCount ?? (meshData?.triangles || []).length ?? "?"}\n`;
+    
+    if (geometry.boundingBox) {
+      const ratio = geometry.boundingBox.z / Math.max(geometry.boundingBox.x, geometry.boundingBox.y, 1);
+      geometryContext += `- Razão altura/base: ${ratio.toFixed(2)}\n`;
+    }
+    
+    geometryContext += `- Tipo detectado: ${detectModelType({
+      width: geometry.boundingBox?.x ?? 0,
+      depth: geometry.boundingBox?.y ?? 0,
+      height: geometry.boundingBox?.z ?? 0,
+      volume: geometry.volume ?? 0,
+      triangleCount: geometry.triangleCount ?? (meshData?.triangles || []).length ?? 0
+    }) === "organic" ? "Orgânico" : "Técnico"}\n`;
+    
+    geometryContext += `- Overhangs detectados: ${geometry.overhangsDetected ? "Sim" : "Não"}\n`;
+    geometryContext += `- Ângulo máximo de overhang: ${geometry.maxOverhangAngle?.toFixed(0) ?? "?"}°\n`;
+  } else {
+    geometryContext += "(análise geométrica ainda não disponível — IA deve usar valores conservadores)\n";
+  }
 
   const historyContext = history && history.length > 0
     ? `HISTÓRICO DE IMPRESSÕES ANTERIORES DO USUÁRIO (use para calibrar sua recomendação):

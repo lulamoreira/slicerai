@@ -31,7 +31,7 @@ import { generateSettings } from "../lib/ai";
 import { useAuthStore } from "../store/useAuthStore";
 
 export const ResultsPanel: React.FC = () => {
-  const { results, setResults, resetApp, wizard, profileVersion, profileHistory, addToProfileHistory, setProfileVersion, isFinalized, setIsFinalized } = useAppStore();
+  const { results, setResults, resetApp, wizard, profileVersion, profileHistory, addToProfileHistory, setProfileVersion, isFinalized, setIsFinalized, meshData } = useAppStore();
   const { profile } = useAuthStore();
   const { history: printHistory } = useSettingsStore();
   
@@ -311,7 +311,7 @@ export const ResultsPanel: React.FC = () => {
               Histórico de Versões
             </div>
             <div className="grid grid-cols-1 gap-3">
-              {profileHistory.map((item) => (
+              {(profileHistory || []).map((item) => (
                 <div 
                   key={item.version}
                   className={cn(

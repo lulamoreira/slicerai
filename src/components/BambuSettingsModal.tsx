@@ -108,6 +108,8 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
   const results = useAppStore(s => s.results);
   const t = LABELS[lang];
 
+  if (!results) return null;
+
 
   const copy = (val: string) => {
     navigator.clipboard.writeText(val);
