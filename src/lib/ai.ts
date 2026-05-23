@@ -291,6 +291,7 @@ Retorne este JSON exato (todos os campos obrigatórios):
 
 
 
+
   const messageContents: any[] = [];
   if (improvementImage) {
     messageContents.push({
