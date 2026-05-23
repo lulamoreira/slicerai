@@ -75,7 +75,7 @@ const LABELS: Record<Lang, Record<string, string>> = {
 function DecisionNote({ text }: { text?: string }) {
   if (!text) return null;
   return (
-    <p className="text-xs text-gray-400 italic mb-2 mt-0.5 flex items-start gap-1.5 px-1 opacity-100">
+    <p className="text-xs text-gray-400 italic mb-1.5 mt-0.5 flex items-start gap-1.5 px-1 opacity-100">
       <span className="shrink-0 mt-0.5">💡</span>
       <span>{text}</span>
     </p>
@@ -85,7 +85,7 @@ function DecisionNote({ text }: { text?: string }) {
 
 function Row({ label, value, onCopy, decision }: { label: string; value: string; onCopy: () => void; decision?: string }) {
   return (
-    <div className="py-2 border-b border-gray-700">
+    <div className="py-1.5 border-b border-gray-700">
       <div className="flex items-center justify-between group">
         <span className="text-sm text-gray-200 font-medium">{label}</span>
         <div className="flex items-center gap-2">
@@ -244,7 +244,7 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
               <Row label={t.topLayers} value={String(settings.topLayers)} onCopy={() => copy(String(settings.topLayers))} />
               <Row label={t.bottomLayers} value={String(settings.bottomLayers)} onCopy={() => copy(String(settings.bottomLayers))} />
               <Row label={t.ironing} value={settings.enableIroning ? "✓ On" : "✗ Off"} onCopy={() => copy(settings.enableIroning ? "1" : "0")} decision={settings.decisions?.ironing} />
-              <div className="py-2 border-b border-gray-700">
+              <div className="py-1.5 border-b border-gray-700">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-200 font-medium">{t.seamPosition}</span>
                   <div className="flex items-center gap-2">
@@ -262,7 +262,7 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
                 <DecisionNote text={lang === "PT" ? "Posição otimizada automaticamente para esconder a costura em modelos orgânicos ou garantir precisão em técnicos." : "Automatically optimized to hide seam on organic models or ensure precision on technical ones."} />
               </div>
               {settings.seamReason && (
-                <p className="text-[11px] text-gray-400 italic mb-2 -mt-1 px-1">
+                <p className="text-[11px] text-gray-400 italic mb-1.5 -mt-1 px-1">
                   {settings.seamReason}
                 </p>
               )}
@@ -290,7 +290,7 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
           {activeTab === "Support" && (
             <div>
               {settings.geometryStats && (
-                <div className="mb-4 p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
+                <div className="mb-3 p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
                   <p className="text-[10px] font-bold text-green-400 uppercase tracking-widest mb-1">
                     {lang === "PT" ? "Análise Geométrica" : "Geometric Analysis"}
                   </p>
@@ -309,7 +309,7 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
                 )}
 
               {settings.enableSupport && (
-                <div className="mb-4 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg animate-in fade-in slide-in-from-top-2">
+                <div className="mb-3 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg animate-in fade-in slide-in-from-top-2">
                   <div className="flex items-center gap-2 mb-2">
                     <Badge className="bg-green-600 hover:bg-green-700 text-white border-none text-[10px] px-2 py-0.5">
                       ✨ {lang === "PT" ? "Perfil otimizado para remoção fácil" : "Optimized for easy removal"}
@@ -335,7 +335,7 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
               <Row label={t.enableSupport} value={settings.enableSupport ? "✓ On" : "✗ Off"} onCopy={() => copy(settings.enableSupport ? "1" : "0")} decision={settings.decisions?.support} />
 
               {settings.supportReason && (
-                <p className="text-[11px] text-gray-400 italic mb-2 -mt-1 px-1">
+                <p className="text-[11px] text-gray-400 italic mb-1.5 -mt-1 px-1">
                   {settings.supportReason}
                 </p>
               )}
@@ -384,28 +384,24 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
 
         </div>
 
-        <div className="mt-4 pt-3 border-t border-gray-700 px-4">
-          <p className="text-[10px] text-gray-300 mb-2 uppercase tracking-[0.2em] font-bold">🧵 FILAMENTO</p>
+        <div className="mt-3 pt-3 border-t border-gray-700 px-4">
+          <p className="text-[10px] text-gray-300 mb-1.5 uppercase tracking-[0.2em] font-bold">🧵 FILAMENTO</p>
           <Row label={t.filament} value={settings.filamentType} onCopy={() => copy(settings.filamentType)} />
           <Row label={t.nozzleTemp} value={`${settings.nozzleTemp}°C`} onCopy={() => copy(String(settings.nozzleTemp))} decision={settings.decisions?.temperatures} />
           <Row label={t.bedTemp} value={`${settings.bedTemp}°C`} onCopy={() => copy(String(settings.bedTemp))} />
           
-          <div className="mt-4 bg-amber-950/40 border border-amber-600/50 rounded-lg p-3 space-y-2">
-            <p className="text-[11px] leading-relaxed text-gray-200 font-medium">
-              <span className="mr-1">⚠️</span>
-              Este perfil exporta 2 arquivos no mesmo .bbscfg: o perfil de impressão e o perfil de filamento. Para aplicar no Bambu Studio:
+          <div className="bg-blue-950/40 border border-blue-500/40 rounded-lg p-3 mb-3 mt-4">
+            <p className="text-blue-200 text-sm font-semibold mb-1.5 flex items-center gap-2">
+              📦 Como usar o arquivo .3mf
             </p>
-            <ol className="text-[10px] space-y-1 text-gray-300 list-decimal list-inside">
-              <li>Clique em Arquivo → Importar → Importar Configurações e selecione o arquivo .bbscfg baixado.</li>
-              <li>No painel esquerdo, clique no dropdown de Processo e em 'Predefinições do usuário' selecione <span className="text-white font-semibold">[{settings.profileName || "SlicerAI_Profile"}]</span>.</li>
-              <li>No mesmo painel, clique no dropdown de Filamento e em 'Predefinições do usuário' selecione <span className="text-white font-semibold">[{settings.profileName || "SlicerAI_Profile"}]_filament</span>.</li>
-              <li>As temperaturas e configurações estarão aplicadas automaticamente.</li>
-            </ol>
+            <p className="text-blue-100/90 text-xs leading-relaxed">
+              Após baixar, basta dar <strong>duplo clique</strong> no arquivo .3mf. O Bambu Studio abre com o modelo posicionado e todas as configurações aplicadas automaticamente — sem nenhum passo manual.
+            </p>
           </div>
         </div>
 
-        <div className="px-4 py-3 bg-blue-950/30 border-y border-blue-500/30 my-4">
-          <p className="text-[10px] text-blue-400 mb-2 uppercase tracking-[0.2em] font-bold flex items-center justify-between">
+        <div className="px-4 py-3 bg-blue-950/30 border-y border-blue-500/30 my-3">
+          <p className="text-[10px] text-blue-400 mb-1.5 uppercase tracking-[0.2em] font-bold flex items-center justify-between">
             <span>📐 ORIENTAÇÃO RECOMENDADA</span>
             {settings.orientation?.supportReduction && (
               <Badge className="bg-green-500 text-white border-none text-[9px] px-1.5 py-0 h-4 font-black">
@@ -413,13 +409,13 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
               </Badge>
             )}
           </p>
-          <p className="text-white font-semibold text-sm">{settings.orientation?.rotation || "Orientação padrão detectada"}</p>
-          <p className="text-gray-300 text-sm mt-1 leading-relaxed">
+          <p className="text-white font-bold text-base">{settings.orientation?.rotation || "Orientação padrão detectada"}</p>
+          <p className="text-blue-100/90 text-sm mt-1 leading-relaxed">
             {settings.orientation?.reason || "A geometria base sugere que esta é a melhor posição para garantir estabilidade e acabamento."}
           </p>
         </div>
 
-        <div className="px-4 pb-4 pt-3 shrink-0 border-t border-gray-700 flex flex-col gap-2 bg-[#1c1c1e]">
+        <div className="px-4 pb-4 pt-3 shrink-0 border-t border-gray-700 flex flex-col gap-2 bg-[#1c1c1e] sticky bottom-0 z-10">
           {meshData && meshData.triangles.length > 1_000_000 && (
             <div className="bg-amber-950/50 border border-amber-500/40 rounded-lg p-3 mb-1">
               <p className="text-amber-300 text-sm font-semibold flex items-center gap-2">
