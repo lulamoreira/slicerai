@@ -237,6 +237,30 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
                   </div>
                 )}
 
+              {settings.enableSupport && (
+                <div className="mb-4 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg animate-in fade-in slide-in-from-top-2">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Badge className="bg-green-600 hover:bg-green-700 text-white border-none text-[10px] px-2 py-0.5">
+                      ✨ {lang === "PT" ? "Perfil otimizado para remoção fácil" : "Optimized for easy removal"}
+                    </Badge>
+                  </div>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                    <div className="text-[10px] text-gray-400 flex items-center gap-1" title={lang === "PT" ? "Estilo de suporte pesquisado para menor contato" : "Researched support style for minimal contact"}>
+                      • tree organic
+                    </div>
+                    <div className="text-[10px] text-gray-400 flex items-center gap-1" title={lang === "PT" ? "Interface concêntrica solta mais fácil" : "Concentric interface releases easier"}>
+                      • concentric interface
+                    </div>
+                    <div className="text-[10px] text-gray-400 flex items-center gap-1" title={lang === "PT" ? "Espaçamento zero evita cicatrizes" : "Zero spacing prevents scarring"}>
+                      • spacing 0
+                    </div>
+                    <div className="text-[10px] text-gray-400 flex items-center gap-1" title={lang === "PT" ? "Sem paredes externas no suporte para quebrar fácil" : "No support walls for easy break-away"}>
+                      • wall loops 0
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <Row label={t.enableSupport} value={settings.enableSupport ? "✓ On" : "✗ Off"} onCopy={() => copy(settings.enableSupport ? "1" : "0")} decision={settings.decisions?.support} />
 
               {settings.supportReason && (
