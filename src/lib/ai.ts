@@ -285,9 +285,9 @@ Retorne este JSON exato (todos os campos obrigatórios):
   "improvements": { "campo": "motivo" },
   "orientation": { "rotation": "string", "reason": "string", "supportReduction": "string" }
 }
-  \`;
+  `;
 
-  const fullPrompt = \`\${historyContext}\\n\\n\${improvementContext}\\n\\n\${systemPrompt}\\n\\n\${userMessage}\`;
+  const fullPrompt = `${historyContext}\n\n${improvementContext}\n\n${systemPrompt}\n\n${userMessage}`;
 
   const messageContents: any[] = [];
   if (improvementImage) {
@@ -315,12 +315,12 @@ Retorne este JSON exato (todos os campos obrigatórios):
   if (userProfile?.api_key_mode === 'centralized' && aiProvider === 'gemini') {
     const { data: { session } } = await supabase.auth.getSession();
     response = await fetch(
-      \`\${import.meta.env.VITE_SUPABASE_URL}/functions/v1/gemini-proxy\`,
+      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/gemini-proxy`,
       {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
-          "Authorization": \`Bearer \${session?.access_token}\`
+          "Authorization": `Bearer ${session?.access_token}`
         },
         body: JSON.stringify({
           contents: [{ parts: messageContents }],
