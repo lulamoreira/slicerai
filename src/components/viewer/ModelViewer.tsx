@@ -15,7 +15,7 @@ const TARGET_MODEL_SIZE = 80;
 
 const Model = ({ file }: { file: File }) => {
   const [modelObject, setModelObject] = useState<THREE.Object3D | null>(null);
-  const { setStatus, setGeometry: setGeoData, isWireframe, setOrientationAdvice } = useAppStore();
+  const { setStatus, setGeometry: setGeoData, isWireframe } = useAppStore();
   const wizard = useAppStore((s) => s.wizard);
 
   useEffect(() => {
