@@ -10,6 +10,8 @@ import {
   GeometryStats,
   ProfileHistoryItem 
 } from "../lib/types";
+import { ParsedThreeMf } from "../lib/threeMfParser";
+
 
 interface SettingsStore {
   apiKey: string;
@@ -149,6 +151,9 @@ interface AppStore {
   profileVersion: number;
   profileHistory: ProfileHistoryItem[];
   isFinalized: boolean;
+  parsedProject: ParsedThreeMf | null;
+  selectedPlateId: number;
+
 
   setStatus: (status: AppStore['status']) => void;
   setFile: (file: AppStore['file']) => void;
@@ -161,6 +166,9 @@ interface AppStore {
   setProfileVersion: (version: number) => void;
   addToProfileHistory: (item: ProfileHistoryItem) => void;
   setIsFinalized: (finalized: boolean) => void;
+  setParsedProject: (p: ParsedThreeMf | null) => void;
+  setSelectedPlateId: (id: number) => void;
+
 }
 
 const initialWizard: WizardState = {
@@ -198,6 +206,9 @@ export const useAppStore = create<AppStore>((set) => ({
   profileVersion: 1,
   profileHistory: [],
   isFinalized: false,
+  parsedProject: null,
+  selectedPlateId: 1,
+
 
   setStatus: (status) => set({ status }),
   setFile: (file) => set((state) => {
@@ -229,8 +240,13 @@ export const useAppStore = create<AppStore>((set) => ({
     results: null,
     profileVersion: 1,
     profileHistory: [],
-    isFinalized: false
+    isFinalized: false,
+    parsedProject: null,
+    selectedPlateId: 1
   }),
+  setParsedProject: (parsedProject) => set({ parsedProject }),
+  setSelectedPlateId: (selectedPlateId) => set({ selectedPlateId }),
+
   setProfileVersion: (profileVersion) => set({ profileVersion }),
   addToProfileHistory: (item) => set((state) => ({ 
     profileHistory: [...state.profileHistory, item] 
