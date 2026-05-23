@@ -5,126 +5,69 @@ import { useSettingsStore } from "../store/useAppStore";
 import { detectModelType, getSupportProfile } from "./supportProfiles";
 
 
-const aiResponseSchema = z.object({
-  quality: z.object({
-    layer_height: z.number(),
-    first_layer_height: z.number(),
-    seam_position: z.string(),
-    seamReason: z.string().optional(),
-    improveReason: z.string().optional(),
-    ironing: z.boolean(),
-    ironing_flow: z.number(),
-    ironing_speed: z.number()
-  }),
-  strength: z.object({
-    infill_density: z.number(),
-    infill_pattern: z.string(),
-    wall_loops: z.number(),
-    top_layers: z.number(),
-    bottom_layers: z.number(),
-    top_surface_pattern: z.string(),
-    bottom_surface_pattern: z.string()
-  }),
-  support: z.object({
-    needed: z.boolean().optional().default(false),
-    type: z.string().optional().default("tree(auto)"),
-    style: z.string().optional().default("tree_organic"),
-    threshold_angle: z.number().optional().default(45),
-    top_z_distance: z.number().optional().default(0.2),
-    bottom_z_distance: z.number().optional().default(0.2),
-    xy_distance: z.number().optional().default(0.35),
-    interface_layers: z.number().optional().default(2),
-    interface_pattern: z.string().optional().default("concentric"),
-    tree_support_angle: z.number().optional().default(45),
-    on_build_plate_only: z.boolean().optional().default(true),
-    supportReason: z.string().optional().default("Calculado com base na geometria")
-  }),
+const SafeNumber = z.number().or(z.string().transform(v => parseFloat(v) || 0)).catch(0);
+const SafeString = z.string().catch("");
+const SafeBool = z.boolean().or(z.string().transform(v => v === "true" || v === "1")).catch(false);
 
+const EstimatesSchema = z.object({
+  print_time_minutes: SafeNumber.optional().default(60),
+  filament_grams: SafeNumber.optional().default(20),
+  filament_meters: SafeNumber.optional().default(6),
+  cost_brl: SafeNumber.optional().default(0),
+  filament_per_color: z.any().optional().default([]), // Alterado para aceitar array ou outros formatos
+}).partial().passthrough();
 
-  temperature: z.object({
-    nozzle: z.number(),
-    nozzle_first_layer: z.number(),
-    bed: z.number(),
-    bed_first_layer: z.number(),
-    chamber: z.number(),
-    chamber_required: z.boolean(),
-    part_cooling_fan: z.number(),
-    part_cooling_first_layer: z.number()
-  }),
-  speed: z.object({
-    mode: z.string(),
-    outer_wall: z.number(),
-    inner_wall: z.number(),
-    top_surface: z.number(),
-    bottom_surface: z.number(),
-    infill: z.number(),
-    travel: z.number(),
-    first_layer: z.number(),
-    bridge: z.number(),
-    overhang_slow: z.number()
-  }),
-  ams: z.object({
-    wipe_tower_enabled: z.boolean(),
-    wipe_tower_width: z.number(),
-    flush_multiplier: z.number(),
-    flush_into_infill: z.boolean(),
-    flush_into_objects: z.boolean(),
-    prime_all_extruders: z.boolean()
-  }),
-  adhesion: z.object({
-    brim_type: z.string(),
-    brim_width: z.number(),
-    skirt_loops: z.number()
-  }),
-  advanced: z.object({
-    elephant_foot_compensation: z.number(),
-    enable_overhang_speed: z.boolean(),
-    bridge_flow: z.number(),
-    precise_outer_wall: z.boolean(),
-    thick_bridges: z.boolean(),
-    small_perimeter_speed: z.number()
-  }),
-  estimates: z.object({
-    print_time_minutes: z.number(),
-    filament_grams: z.number(),
-    filament_meters: z.number(),
-    filament_per_color: z.array(z.object({
-      slot: z.number(),
-      color: z.string(),
-      grams: z.number(),
-      meters: z.number()
-    })),
-    estimated_cost_brl: z.number()
-  }),
-  explanation: z.object({
-    layer_height_reason: z.string(),
-    infill_reason: z.string(),
-    support_reason: z.string(),
-    material_plate_tips: z.string(),
-    postprocessing_tips: z.string(),
-    warnings: z.array(z.string()),
-    pre_print_checklist_extra: z.array(z.string())
-  }),
-  profile_name_suggestion: z.string(),
-  decisions: z.object({
-    layerHeight: z.string(),
-    wallLoops: z.string(),
-    infillDensity: z.string(),
-    infillPattern: z.string(),
-    printSpeed: z.string(),
-    support: z.string(),
-    seam: z.string(),
-    ironing: z.string(),
-    temperatures: z.string(),
-    overall: z.string()
-  }),
-  improvements: z.record(z.string()).optional(),
-  orientation: z.object({
-    rotation: z.string(),
-    reason: z.string(),
-    supportReduction: z.string()
-  })
-});
+const SupportSchema = z.object({
+  enabled: SafeBool.optional().default(false),
+  type: SafeString.optional().default("tree(auto)"),
+  style: SafeString.optional().default("tree_organic"),
+  threshold: SafeNumber.optional().default(45),
+  reason: SafeString.optional().default(""),
+}).partial().passthrough();
+
+const OrientationSchema = z.object({
+  rotation: SafeString.optional().default("Sem rotação"),
+  reason: SafeString.optional().default(""),
+  supportReduction: SafeString.optional().default("0%"),
+}).partial().passthrough();
+
+const DecisionsSchema = z.object({
+  layerHeight: SafeString.optional().default(""),
+  wallLoops: SafeString.optional().default(""),
+  infillDensity: SafeString.optional().default(""),
+  infillPattern: SafeString.optional().default(""),
+  printSpeed: SafeString.optional().default(""),
+  support: SafeString.optional().default(""),
+  seam: SafeString.optional().default(""),
+  ironing: SafeString.optional().default(""),
+  temperatures: SafeString.optional().default(""),
+  overall: SafeString.optional().default(""),
+}).partial().passthrough();
+
+export const AIResponseSchema = z.object({
+  layerHeight: SafeNumber.optional().default(0.2),
+  wallLoops: SafeNumber.optional().default(3),
+  topLayers: SafeNumber.optional().default(4),
+  bottomLayers: SafeNumber.optional().default(3),
+  infillDensity: SafeNumber.optional().default(15),
+  infillPattern: SafeString.optional().default("grid"),
+  printSpeed: SafeNumber.optional().default(150),
+  travelSpeed: SafeNumber.optional().default(200),
+  nozzleTemp: SafeNumber.optional().default(220),
+  bedTemp: SafeNumber.optional().default(60),
+  enableIroning: SafeBool.optional().default(false),
+  seamPosition: SafeString.optional().default("back"),
+  seamReason: SafeString.optional().default(""),
+  support: SupportSchema.optional().default({}),
+  orientation: OrientationSchema.optional().default({}),
+  estimates: EstimatesSchema.optional().default({}),
+  decisions: DecisionsSchema.optional().default({}),
+  improvements: z.record(z.string()).optional().default({}),
+}).partial().passthrough();
+
+// Alias para manter compatibilidade com o resto do código se necessário
+const aiResponseSchema = AIResponseSchema;
+
 
 export const parseAIResponse = (text: string): any => {
   let cleaned = text.trim();
