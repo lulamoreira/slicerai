@@ -158,29 +158,103 @@ ${tXml}
  </build>
 </model>`);
 
-  zip.file("Metadata/project_settings.config", JSON.stringify({
-    from: "project", name: "project_settings", version: "02.00.00.00", is_custom_defined: "0",
-    printer_settings_id: printerInfo.settings_id, print_settings_id: printSettingsId,
-    printer_model: printerInfo.model, printer_variant: "0.4",
-    filament_settings_id: [filamentId], nozzle_diameter: ["0.4"],
-    layer_height: String(settings.layerHeight), first_layer_height: "0.2",
+  const supportConfig = getOptimalSupportConfig(modelType || "organic", settings.enableSupport);
+  const seamConfig = getOptimalSeamConfig(modelType || "organic");
+  const filamentColor = (settings as any).baseColor || "#00AE42";
+
+  // project_settings.config com TODOS os campos obrigatórios
+  const projectSettings = {
+    from: "User",
+    name: profileName,
+    version: "02.00.00.00",
+    is_custom_defined: "0",
+    printer_settings_id: printerInfo.settings_id,
+    print_settings_id: printSettingsId,
+    filament_settings_id: [filamentId],
+    printer_model: printerInfo.model,
+    printer_variant: "0.4",
+    nozzle_diameter: ["0.4"],
+    // CAMPOS QUE EVITAM CRASH (null pointer dereference) — arrays paralelos do tamanho 1
+    filament_colour: [filamentColor],
+    filament_diameter: ["1.75"],
+    filament_type: [settings.filamentType],
+    filament_is_support: ["0"],
+    filament_max_volumetric_speed: ["21"],
+    // Defaults para evitar warnings
+    default_print_profile: printSettingsId,
+    default_filament_profile: [filamentId],
+    inherits_group: ["", "", ""],
+    different_settings_to_system: ["", "", ""],
+    curr_bed_type: "1",
+    // Overrides da IA
+    layer_height: String(settings.layerHeight),
+    initial_layer_print_height: "0.2",
     wall_loops: String(settings.wallLoops),
     sparse_infill_density: settings.infillDensity + "%",
     sparse_infill_pattern: settings.infillPattern || "grid",
-    ...getOptimalSupportConfig(modelType || "organic", settings.enableSupport),
-    ...getOptimalSeamConfig(modelType || "organic"),
-    inner_wall_speed: String(settings.printSpeed),
-    outer_wall_speed: String(Math.round(settings.printSpeed * 0.6)),
-    sparse_infill_speed: String(settings.printSpeed),
-    travel_speed: String(settings.travelSpeed || 200),
+    enable_support: settings.enableSupport ? "1" : "0",
+    ...supportConfig,  // valores otimizados de suporte (tree_organic etc)
+    ...seamConfig,     // posição da costura
     nozzle_temperature: [String(settings.nozzleTemp)],
     nozzle_temperature_initial_layer: [String(settings.nozzleTemp + 5)],
     hot_plate_temp: [String(settings.bedTemp)],
     hot_plate_temp_initial_layer: [String(settings.bedTemp + 5)],
-    filament_type: [settings.filamentType], filament_flow_ratio: ["1"],
-    filament_max_volumetric_speed: ["15"], filament_diameter: ["1.75"],
     enable_ironing: settings.enableIroning ? "1" : "0",
-  }, null, 2));
+  };
+  zip.file("Metadata/project_settings.config", JSON.stringify(projectSettings, null, 2));
+
+  // EMBARCAR preset de processo dentro do .3mf — garante funcionamento mesmo sem o perfil instalado
+  const embeddedProcess = {
+    type: "process",
+    name: printSettingsId,
+    from: "User",
+    setting_id: "GP004_USER",
+    inherits: printSettingsId,
+    instantiation: "true",
+    version: "02.00.00.00",
+    print_settings_id: printSettingsId,
+    layer_height: String(settings.layerHeight),
+    initial_layer_print_height: "0.2",
+    wall_loops: String(settings.wallLoops),
+    sparse_infill_density: settings.infillDensity + "%",
+    sparse_infill_pattern: settings.infillPattern || "grid",
+    enable_support: settings.enableSupport ? "1" : "0",
+    ...supportConfig,
+    ...seamConfig,
+    inner_wall_speed: String(settings.printSpeed),
+    outer_wall_speed: String(Math.round(settings.printSpeed * 0.6)),
+    sparse_infill_speed: String(settings.printSpeed),
+    travel_speed: String(settings.travelSpeed || 200),
+    enable_ironing: settings.enableIroning ? "1" : "0",
+    compatible_printers: [printerInfo.settings_id],
+  };
+  zip.file("Metadata/process_settings_1.config", JSON.stringify(embeddedProcess, null, 2));
+
+  // EMBARCAR preset de filamento — arrays paralelos críticos para não crashar
+  const filamentIdMap: Record<string, string> = {
+    PLA: "GFA00", ABS: "GFB00", PETG: "GFG00", TPU: "GFU00", ASA: "GFB01",
+  };
+  const embeddedFilament = {
+    type: "filament",
+    name: filamentId,
+    from: "User",
+    setting_id: "GFSA00_USER",
+    filament_id: filamentIdMap[settings.filamentType] || "GFA00",
+    inherits: filamentId,
+    instantiation: "true",
+    version: "02.00.00.00",
+    filament_settings_id: [filamentId],
+    filament_type: [settings.filamentType],
+    filament_diameter: ["1.75"],
+    filament_colour: [filamentColor],
+    filament_max_volumetric_speed: ["21"],
+    nozzle_temperature: [String(settings.nozzleTemp)],
+    nozzle_temperature_initial_layer: [String(settings.nozzleTemp + 5)],
+    hot_plate_temp: [String(settings.bedTemp)],
+    hot_plate_temp_initial_layer: [String(settings.bedTemp + 5)],
+    compatible_printers: [printerInfo.settings_id],
+  };
+  zip.file("Metadata/filament_settings_1.config", JSON.stringify(embeddedFilament, null, 2));
 
   zip.file("Metadata/model_settings.config", `<?xml version="1.0" encoding="UTF-8"?>
 <config>
