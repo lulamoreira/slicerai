@@ -8,21 +8,21 @@ export interface MeshData {
 
 const PRINTER_MAP: Record<string, any> = {
   "X1C": { settings_id: "Bambu Lab X1 Carbon 0.4 nozzle", model: "Bambu Lab X1 Carbon", model_id: "BL-P001", plate: [256, 256] },
-  "X1": { settings_id: "Bambu Lab X1 0.4 nozzle", model: "Bambu Lab X1", model_id: "BL-P002", plate: [256, 256] },
+  "X1E": { settings_id: "Bambu Lab X1E 0.4 nozzle", model: "Bambu Lab X1E", model_id: "BL-P001", plate: [256, 256] },
   "P1S": { settings_id: "Bambu Lab P1S 0.4 nozzle", model: "Bambu Lab P1S", model_id: "C11", plate: [256, 256] },
   "P1P": { settings_id: "Bambu Lab P1P 0.4 nozzle", model: "Bambu Lab P1P", model_id: "C12", plate: [256, 256] },
   "A1": { settings_id: "Bambu Lab A1 0.4 nozzle", model: "Bambu Lab A1", model_id: "N2S", plate: [256, 256] },
-  "A1 Mini": { settings_id: "Bambu Lab A1 mini 0.4 nozzle", model: "Bambu Lab A1 mini", model_id: "N1", plate: [180, 180] },
+  "A1-Mini": { settings_id: "Bambu Lab A1 mini 0.4 nozzle", model: "Bambu Lab A1 mini", model_id: "N1", plate: [180, 180] },
 };
 
 const PRINT_SETTINGS_MAP: Record<string, string> = {
-  "X1C": "0.20mm Standard @BBL X1C", "X1": "0.20mm Standard @BBL X1",
+  "X1C": "0.20mm Standard @BBL X1C", "X1E": "0.20mm Standard @BBL X1E",
   "P1S": "0.20mm Standard @BBL P1S", "P1P": "0.20mm Standard @BBL P1P",
-  "A1": "0.20mm Standard @BBL A1", "A1 Mini": "0.20mm Standard @BBL A1M",
+  "A1": "0.20mm Standard @BBL A1", "A1-Mini": "0.20mm Standard @BBL A1M",
 };
 
 const FILAMENT_MAP: Record<string, Record<string, string>> = {
-  PLA: { X1C: "Bambu PLA Basic @BBL X1C", P1S: "Bambu PLA Basic @BBL P1S", A1: "Bambu PLA Basic @BBL A1", "A1 Mini": "Bambu PLA Basic @BBL A1M" },
+  PLA: { X1C: "Bambu PLA Basic @BBL X1C", P1S: "Bambu PLA Basic @BBL P1S", A1: "Bambu PLA Basic @BBL A1", "A1-Mini": "Bambu PLA Basic @BBL A1M" },
   ABS: { X1C: "Bambu ABS @BBL X1C", P1S: "Bambu ABS @BBL P1S" },
   PETG: { X1C: "Bambu PETG HF @BBL X1C", P1S: "Bambu PETG HF @BBL P1S", A1: "Bambu PETG HF @BBL A1" },
   TPU: { X1C: "Bambu TPU 95A @BBL X1C", P1S: "Bambu TPU 95A @BBL P1S" },
