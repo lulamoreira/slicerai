@@ -29,16 +29,21 @@ const FILAMENT_MAP: Record<string, Record<string, string>> = {
   ASA: { X1C: "Bambu ASA @BBL X1C", P1S: "Bambu ASA @BBL P1S" },
 };
 
-function getOptimalSupportConfig(modelType: "organic" | "technical", enableSupport: boolean) {
+function getOptimalSupportConfig(modelType: "organic" | "technical", enableSupport: boolean, triangleCount: number = 0) {
   if (!enableSupport) {
     return { enable_support: "0" };
   }
+  
+  // Ângulo de suporte mais conservador para orgânicos ou modelos complexos
+  const thresholdAngle = (modelType === "organic" || triangleCount > 200000) ? "30" : "35";
+  const removeSmallOverhang = modelType === "organic" ? "0" : "1";
+
   if (modelType === "organic") {
     return {
       enable_support: "1",
       support_type: "tree(auto)",
       support_style: "tree_organic",
-      support_threshold_angle: "40",
+      support_threshold_angle: thresholdAngle,
       support_top_z_distance: "0.22",
       support_bottom_z_distance: "0.22",
       support_object_xy_distance: "0.35",
@@ -50,7 +55,7 @@ function getOptimalSupportConfig(modelType: "organic" | "technical", enableSuppo
       support_expansion: "0",
       support_wall_loops: "0",
       dont_support_bridges: "1",
-      support_remove_small_overhang: "1",
+      support_remove_small_overhang: removeSmallOverhang,
       support_critical_regions_only: "0",
       tree_support_branch_distance: "4",
       tree_support_branch_diameter: "3",
@@ -64,7 +69,7 @@ function getOptimalSupportConfig(modelType: "organic" | "technical", enableSuppo
     enable_support: "1",
     support_type: "normal(auto)",
     support_style: "grid",
-    support_threshold_angle: "35",
+    support_threshold_angle: thresholdAngle,
     support_top_z_distance: "0.2",
     support_bottom_z_distance: "0.2",
     support_object_xy_distance: "0.5",
@@ -76,7 +81,7 @@ function getOptimalSupportConfig(modelType: "organic" | "technical", enableSuppo
     support_expansion: "0",
     support_wall_loops: "1",
     dont_support_bridges: "0",
-    support_remove_small_overhang: "1",
+    support_remove_small_overhang: removeSmallOverhang,
     independent_support_layer_height: "1",
   };
 }
@@ -158,7 +163,11 @@ ${tXml}
  </build>
 </model>`);
 
-  const supportConfig = getOptimalSupportConfig(modelType || "organic", settings.enableSupport);
+  const triangleCount = mesh.triangles.length;
+  // Force enable support for very complex models
+  const shouldEnableSupport = settings.enableSupport || triangleCount > 500000;
+  
+  const supportConfig = getOptimalSupportConfig(modelType || "organic", shouldEnableSupport, triangleCount);
   const seamConfig = getOptimalSeamConfig(modelType || "organic");
   const filamentColor = (settings as any).baseColor || "#00AE42";
 
