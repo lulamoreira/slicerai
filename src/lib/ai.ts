@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { WizardState, AIResponse } from "./types";
 import { supabase } from "../integrations/supabase/client";
-import { useSettingsStore } from "../store/useAppStore";
+import { useSettingsStore, useAppStore } from "../store/useAppStore";
 import { detectModelType, getSupportProfile } from "./supportProfiles";
 
 
@@ -185,7 +185,7 @@ export const generateSettings = async (
   currentVersion?: number,
   previousResults?: AIResponse
 ): Promise<AIResponse> => {
-  const stats = wizard.geometryStats;
+  const stats = useAppStore.getState().geometry;
   const dimensions = stats?.boundingBox || { x: 0, y: 0, z: 0 };
   const volume = (stats?.volume || 0).toFixed(2);
   const surfaceArea = (stats?.surfaceArea || 0).toFixed(2);
@@ -204,16 +204,16 @@ export const generateSettings = async (
   const weight = ((stats?.volume || 0) * 1.24).toFixed(1); // Estimativa padrão baseada em PLA
 
   const geometryContext = `
-ANÁLISE GEOMÉTRICA DA PEÇA:
+DADOS GEOMÉTRICOS DA PEÇA (NUNCA UNDEFINED):
 - Dimensões: ${dimensions.x.toFixed(1)}×${dimensions.y.toFixed(1)}×${dimensions.z.toFixed(1)}mm
 - Volume: ${volume}cm³
 - Área de superfície: ${surfaceArea}cm²
 - Peso estimado: ${weight}g
 - Razão altura/base: ${heightBaseRatio}
+- Número de triângulos: ${triangleCount}
+- Tipo detectado: ${modelType}
 - Overhangs detectados: ${hasOverhangs ? "Sim" : "Não"}
 - Ângulo máximo de overhang: ${maxOverhangAngle}°
-- Triângulos: ${triangleCount}
-- Tipo detectado: ${modelType}
   `.trim();
 
   const historyContext = history && history.length > 0
@@ -235,7 +235,8 @@ INSTRUÇÃO: Com base nesse histórico, identifique preferências do usuário e 
        - Se a razão altura/base for maior que 1.5, a peça é alta e provavelmente uma figura — mantenha vertical para melhor acabamento.
        - Se for menor que 0.5, a peça é plana — mantenha horizontal para estabilidade.
        - Se houver muitos overhangs em ângulos íngremes, sugira rotação que reduza esses overhangs.
-       - NUNCA retorne 'undefined', 'não determinado' ou 'impossível recomendar' — sempre escolha uma orientação concreta entre: 'Sem rotação — orientação padrão é ideal', 'Rotacionar 90° no eixo X', 'Rotacionar 180° no eixo Z', 'Rotacionar 90° no eixo Y'.
+       - Sempre escolha uma rotação concreta entre: 'Sem rotação', 'Rotacionar 90° eixo X', 'Rotacionar 90° eixo Y', 'Rotacionar 180° eixo Z'.
+       - NUNCA retorne 'undefined', 'não determinado' ou 'impossível recomendar'.
        - Sempre preencha o campo \`reason\` explicando a escolha baseada nos dados fornecidos.
        - Sempre estime \`supportReduction\` como um valor concreto entre '0%' e '60%'.
 

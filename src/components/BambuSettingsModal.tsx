@@ -6,7 +6,7 @@ import { Copy, Download, FileArchive } from "lucide-react";
 import { downloadBambuProfile, BambuSettings } from "@/lib/bambuExport";
 import { downloadThreeMfProject, MeshData } from "@/lib/threeMfExport";
 import { detectModelType } from "@/lib/supportProfiles";
-import { useStore } from "@/lib/store";
+import { useAppStore } from "@/store/useAppStore";
 import { toast } from "sonner";
 
 
@@ -104,7 +104,7 @@ function Row({ label, value, onCopy, decision }: { label: string; value: string;
 export function BambuSettingsModal({ open, onClose, settings }: Props) {
   const [activeTab, setActiveTab] = useState<Tab>("Quality");
   const [lang, setLang] = useState<Lang>("PT");
-  const meshData = useStore((state) => state.meshData);
+  const meshData = useAppStore((state) => state.meshData);
   const t = LABELS[lang];
 
 

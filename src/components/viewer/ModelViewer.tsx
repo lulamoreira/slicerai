@@ -139,6 +139,31 @@ const Model = ({ file }: { file: File }) => {
       const posCopy = new Float32Array(geom.attributes.position.array).slice();
       const idxArray = geom.index?.array;
       const idxCopy = idxArray ? new Uint32Array(idxArray).slice() : undefined;
+
+      const vertices: [number, number, number][] = [];
+      for (let i = 0; i < posCopy.length; i += 3) {
+        vertices.push([posCopy[i], posCopy[i + 1], posCopy[i + 2]]);
+      }
+      const triangles: [number, number, number][] = [];
+      if (idxCopy) {
+        for (let i = 0; i < idxCopy.length; i += 3) {
+          triangles.push([idxCopy[i], idxCopy[i + 1], idxCopy[i + 2]]);
+        }
+      } else {
+        for (let i = 0; i < vertices.length; i += 3) {
+          triangles.push([i, i + 1, i + 2]);
+        }
+      }
+      let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity, minZ = Infinity;
+      vertices.forEach(([x, y, z]) => {
+        if (x < minX) minX = x; if (x > maxX) maxX = x;
+        if (y < minY) minY = y; if (y > maxY) maxY = y;
+        if (z < minZ) minZ = z;
+      });
+      const cx = (minX + maxX) / 2, cy = (minY + maxY) / 2, offsetZ = minZ < 0 ? -minZ : 0;
+      const centeredVertices: [number, number, number][] = vertices.map(([x, y, z]) => [x - cx, y - cy, z + offsetZ]);
+      useAppStore.getState().setMeshData({ vertices: centeredVertices, triangles });
+
       worker.postMessage(
         { geometryData: { position: posCopy, index: idxCopy } },
         idxCopy ? [posCopy.buffer, idxCopy.buffer] : [posCopy.buffer]
