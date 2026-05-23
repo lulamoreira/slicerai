@@ -470,16 +470,32 @@ Retorne este JSON exato (todos os campos obrigatórios):
     if (!openaiKey) throw new Error('NO_API_KEY');
     const cleanKey = openaiKey.trim().replace(/[^\x20-\x7E]/g, "");
 
+    const openaiMessages = [];
+    if (improvementImage) {
+      openaiMessages.push({
+        role: "user",
+        content: [
+          { type: "text", text: fullPrompt },
+          { type: "image_url", image_url: { url: improvementImage } }
+        ]
+      });
+    } else {
+      openaiMessages.push({ role: "user", content: fullPrompt });
+    }
+
     response = await fetch(
-      "https://lgjbjvauavgtbtfejcwc.supabase.co/functions/v1/ai-proxy",
+      "https://api.openai.com/v1/chat/completions",
       {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Authorization": `Bearer ${cleanKey}`,
+          "Content-Type": "application/json" 
+        },
         body: JSON.stringify({
-          provider: "openai",
-          apiKey: cleanKey,
-          prompt: fullPrompt,
-          imageBase64: improvementImage ? improvementImage.split(',')[1] : undefined
+          model: "gpt-4o-mini",
+          messages: openaiMessages,
+          temperature: 0.2,
+          max_tokens: 2048,
         }),
       }
     );
