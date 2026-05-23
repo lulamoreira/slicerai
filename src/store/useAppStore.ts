@@ -137,7 +137,6 @@ interface WizardState {
   fileName: string;
   fileSize: number;
   geometryStats?: GeometryStats;
-  shouldRotate90X: boolean;
 }
 
 interface AppStore {
