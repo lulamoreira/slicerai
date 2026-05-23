@@ -187,7 +187,6 @@ const initialWizard: WizardState = {
   supportInterface: "Mesmo material",
   fileName: "",
   fileSize: 0,
-  shouldRotate90X: false,
 };
 
 export const useAppStore = create<AppStore>((set) => ({
