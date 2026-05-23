@@ -93,7 +93,8 @@ export async function downloadThreeMfProject(
   mesh: MeshData,
   settings: BambuSettings,
   profileName: string,
-  orientation?: { rotation?: string }
+  orientation?: { rotation?: string },
+  modelType?: "organic" | "technical"
 ): Promise<void> {
   const printerKey = (settings as any).printer || "X1C";
   const printerInfo = PRINTER_MAP[printerKey] || PRINTER_MAP["X1C"];
