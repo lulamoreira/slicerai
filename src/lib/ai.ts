@@ -185,6 +185,37 @@ export const generateSettings = async (
   currentVersion?: number,
   previousResults?: AIResponse
 ): Promise<AIResponse> => {
+  const stats = wizard.geometryStats;
+  const dimensions = stats?.boundingBox || { x: 0, y: 0, z: 0 };
+  const volume = (stats?.volume || 0).toFixed(2);
+  const surfaceArea = (stats?.surfaceArea || 0).toFixed(2);
+  const hasOverhangs = stats?.overhangsDetected || false;
+  const maxOverhangAngle = (stats?.maxOverhangAngle || 0).toFixed(0);
+  const triangleCount = stats?.triangleCount || 0;
+  const modelType = detectModelType({
+    width: dimensions.x,
+    depth: dimensions.y,
+    height: dimensions.z,
+    volume: stats?.volume || 0,
+    triangleCount: triangleCount
+  }) === "organic" ? "Orgânico" : "Técnico";
+
+  const heightBaseRatio = (dimensions.z / Math.max(dimensions.x, dimensions.y || 1)).toFixed(2);
+  const weight = ((stats?.volume || 0) * 1.24).toFixed(1); // Estimativa padrão baseada em PLA
+
+  const geometryContext = `
+ANÁLISE GEOMÉTRICA DA PEÇA:
+- Dimensões: ${dimensions.x.toFixed(1)}×${dimensions.y.toFixed(1)}×${dimensions.z.toFixed(1)}mm
+- Volume: ${volume}cm³
+- Área de superfície: ${surfaceArea}cm²
+- Peso estimado: ${weight}g
+- Razão altura/base: ${heightBaseRatio}
+- Overhangs detectados: ${hasOverhangs ? "Sim" : "Não"}
+- Ângulo máximo de overhang: ${maxOverhangAngle}°
+- Triângulos: ${triangleCount}
+- Tipo detectado: ${modelType}
+  `.trim();
+
   const historyContext = history && history.length > 0
     ? `HISTÓRICO DE IMPRESSÕES ANTERIORES DO USUÁRIO (use para calibrar sua recomendação):
 ${history.slice(0, 3).map((h, i) => `
@@ -193,92 +224,70 @@ Peça ${i + 1}: ${h.fileName || 'sem nome'}
 - Configurações geradas: temperatura ${h.results?.temperature?.nozzle}°C, layer ${h.results?.quality?.layer_height}mm, velocidade ${h.results?.speed?.infill}mm/s
 - Suporte: ${h.results?.support?.type}, Infill: ${h.results?.strength?.infill_density}%
 `).join('\n')}
-INSTRUÇÃO: Com base nesse histórico, identifique preferências do usuário e padrões de uso. Se o usuário imprime frequentemente peças funcionais, priorize resistência. Se imprime peças decorativas, priorize acabamento.`
+INSTRUÇÃO: Com base nesse histórico, identifique preferências do usuário e padrões de uso.`
     : '';
 
   const systemPrompt = `
-    Você é o SlicerAI, especialista sênior em impressão 3D FDM com domínio completo do Bambu Studio (versão mais recente, 2024-2025). Conhece todos os perfis, materiais, build plates, configurações AMS, suporte, velocidade, temperatura e nuances de cada impressora Bambu Lab. Responda sempre em português do Brasil (ou inglês se o usuário selecionou EN). Seja preciso, técnico e acessível. Justifique cada recomendação com base nos dados de geometria e escolhas do usuário. Respond ONLY with valid JSON. No markdown, no explanation. Retorne APENAS JSON válido conforme o schema solicitado, sem markdown, sem texto extra.
+    Você é o SlicerAI, especialista sênior em impressão 3D FDM com domínio completo do Bambu Studio. Respond ONLY with valid JSON. No markdown, no explanation.
 
     INSTRUÇÕES CRÍTICAS:
-    1. O campo support.type é OBRIGATÓRIO e NUNCA pode ser omitido na resposta JSON. Use 'tree(auto)' para figuras orgânicas, personagens e animais. Use 'normal(auto)' para peças técnicas e mecânicas. Use 'tree(organic)' para figuras muito detalhadas onde a remoção do suporte precisa ser fácil.
-    2. Os campos de suporte já foram calculados automaticamente com base na geometria. Não inclua support_type, support_style, support_interface_pattern nem nenhum campo support_ na sua resposta JSON. Justifique a necessidade de suporte em supportReason se necessário, mas não defina os parâmetros técnicos de suporte.
+    1. ORIENTAÇÃO DE IMPRESSÃO: Com base nos dados geométricos acima (que NUNCA são undefined — sempre use os valores fornecidos), decida a orientação ideal. 
+       - Se a razão altura/base for maior que 1.5, a peça é alta e provavelmente uma figura — mantenha vertical para melhor acabamento.
+       - Se for menor que 0.5, a peça é plana — mantenha horizontal para estabilidade.
+       - Se houver muitos overhangs em ângulos íngremes, sugira rotação que reduza esses overhangs.
+       - NUNCA retorne 'undefined', 'não determinado' ou 'impossível recomendar' — sempre escolha uma orientação concreta entre: 'Sem rotação — orientação padrão é ideal', 'Rotacionar 90° no eixo X', 'Rotacionar 180° no eixo Z', 'Rotacionar 90° no eixo Y'.
+       - Sempre preencha o campo \`reason\` explicando a escolha baseada nos dados fornecidos.
+       - Sempre estime \`supportReduction\` como um valor concreto entre '0%' e '60%'.
 
-    2. Escolha o seam_position mais adequado para a peça usando estes critérios:
-       - Use "back" para figuras humanas, personagens e animais pois esconde a costura na parte traseira.
-       - Use "aligned" para peças técnicas e mecânicas onde a costura alinhada facilita pós-processamento.
-       - Use "nearest" para peças com geometria complexa e muitas curvas onde velocidade importa mais.
-       - Use "random" apenas para peças decorativas orgânicas onde nenhuma face é preferível.
-    3. Adicione o campo seamReason no objeto quality com uma frase curta explicando a escolha, por exemplo "Figura humana — costura posicionada na parte traseira para ficar invisível".
-    4. Decida AUTOMATICAMENTE se o ironing (alisamento) é benéfico baseado no propósito e geometria da peça.
-    5. Escolha uma cor de filamento funcional e apropriada para o propósito do objeto.
-    6. O usuário NÃO fornece estas escolhas (incluindo suportes e seam position) - VOCÊ decide baseado na sua expertise técnica.
-
-    8. Você tem acesso ao histórico de impressões do usuário acima. Use-o para: 1) Identificar as preferências de impressora e material do usuário, 2) Calibrar as recomendações de temperatura e velocidade com base no que funcionou anteriormente, 3) Melhorar as decisões de suporte e qualidade ao longo do tempo. Se esta for a primeira impressão (sem histórico), use padrões seguros.
-    9. SE FOR FORNECIDA UMA IMAGEM DE MELHORIA: Analise o print screen do fatiamento, identifique problemas visíveis como stringing excessivo, má adesão, suportes desnecessários, qualidade de superfície ruim, ou tempo de impressão muito alto, e gere um perfil melhorado corrigindo esses problemas. Explique em quality.improveReason o que foi identificado e o que foi ajustado. O novo perfil gerado deve ter o número da versão incrementado. Inclua também o campo improvements no JSON de resposta, contendo um objeto onde as chaves são os nomes das configurações alteradas e os valores explicam especificamente o que foi visto no print screen que motivou o ajuste.
-    10. EXPLICAÇÕES DIDÁTICAS (Campo decisions): Para cada configuração principal escolhida, você DEVE explicar em português em 1 ou 2 frases curtas e didáticas o MOTIVO da sua escolha no campo decisions do JSON. Imagine que está ensinando um iniciante. Mencione características da geometria da peça que influenciaram a decisão. 
-        Exemplos de tom e conteúdo:
-        - layerHeight: "Escolhi 0.20mm pois a peça tem detalhes finos no rosto e capacete — camadas mais finas capturam melhor as curvas sem perder muito tempo."
-        - support: "Ativei suporte do tipo tree pois os braços formam ângulos de 70° — sem suporte essas partes colapsariam durante a impressão."
-        - ironing: "Desatvei o ironing pois a peça é uma figura com superfícies curvas — o ironing só beneficia superfícies planas e adicionaria 40 minutos desnecessários."
-
-    11. ORIENTAÇÃO DE IMPRESSÃO: Analise a geometria da peça e decida a orientação ideal de impressão. Considere: qual face deve ficar na mesa para minimizar suportes, maximizar resistência estrutural e obter melhor acabamento superficial nas faces mais visíveis. Retorne obrigatoriamente no JSON o campo orientation com os seguintes subcampos: rotation (string descrevendo a rotação recomendada, ex: 'Sem rotação — base plana na mesa', 'Rotacionar 90° no eixo X', 'Rotacionar 180° no eixo Z'), reason (explicação em português em 2-3 frases do porquê dessa orientação é ideal para esta peça específica, mencionando redução de suportes, resistência e qualidade), e supportReduction (estimativa em % de quanto a orientação escolhida reduz os suportes necessários em relação à orientação padrão, ex: '40%'). Exemplo para uma figura humana em pé: rotation deve ser 'Sem rotação — pés na mesa', reason deve explicar que manter a figura vertical minimiza suportes nos braços e garante que as camadas horizontais aumentem a resistência vertical do corpo.
+    2. O campo support.type é OBRIGATÓRIO. Use 'tree(auto)' para modelos orgânicos e 'normal(auto)' para peças técnicas.
+    3. Escolha o seam_position mais adequado (back, aligned, nearest, random).
+    4. Adicione o campo seamReason no objeto quality.
+    5. Decida AUTOMATICAMENTE se o ironing (alisamento) é benéfico.
+    6. EXPLICAÇÕES DIDÁTICAS (Campo decisions): Justifique cada escolha principal em 1 ou 2 frases curtas no campo decisions.
   `;
 
   const improvementContext = improvementImage 
     ? `
 ALERTA DE MELHORIA (Versão v${currentVersion}):
-O usuário enviou um print screen do fatiamento no Bambu Studio usando as configurações da versão v${currentVersion} (fornecidas abaixo).
-Analise a imagem em anexo e melhore os parâmetros.
-
+O usuário enviou um print screen do fatiamento no Bambu Studio usando as configurações da versão v${currentVersion}.
+Analise a imagem e melhore os parâmetros.
 CONFIGURAÇÕES v${currentVersion} ATUAIS:
 ${JSON.stringify(previousResults, null, 2)}
-
-INSTRUÇÃO ADICIONAL: "O usuário aplicou o perfil v${currentVersion} e fatiou o modelo. Analise o print screen do fatiamento, identifique problemas visíveis como stringing excessivo, má adesão, suportes desnecessários, qualidade de superfície ruim, ou tempo de impressão muito alto, e gere um perfil melhorado corrigindo esses problemas. Explique em \`improveReason\` o que foi identificado e o que foi ajustado."
 ` : '';
 
   const userMessage = `
-Analise este modelo 3D e gere as melhores configurações para o Bambu Studio.
+${geometryContext}
 
-GEOMETRIA:
-- Dimensões: ${wizard.geometryStats?.boundingBox.x.toFixed(1)}mm × ${wizard.geometryStats?.boundingBox.y.toFixed(1)}mm × ${wizard.geometryStats?.boundingBox.z.toFixed(1)}mm
-- Volume: ${wizard.geometryStats?.volume.toFixed(2)} cm³ | Área: ${wizard.geometryStats?.surfaceArea.toFixed(2)} cm² | Peso: ${(wizard.geometryStats?.volume || 0).toFixed(1)}g
-- Overhangs > 45°: ${wizard.geometryStats?.overhangsDetected ? "Sim" : "Não"} (máximo: ${wizard.geometryStats?.maxOverhangAngle.toFixed(0)}°, ${wizard.geometryStats?.overhangPercentage.toFixed(1)}% da área)
-- Bridging: ${wizard.geometryStats?.bridging ? "Sim" : "Não"} | Paredes finas: ${wizard.geometryStats?.thinWalls ? "Sim" : "Não"} | Alto > 150mm: ${wizard.geometryStats?.isTall ? "Sim" : "Não"}
-- Multi-part: ${wizard.geometryStats?.parts && wizard.geometryStats.parts > 1 ? "Sim" : "Não"} (${wizard.geometryStats?.parts} partes, ${wizard.geometryStats?.colors} cores)
-- Orientação rotacionada 90° X: ${wizard.shouldRotate90X ? "Sim" : "Não"}
+Analise este modelo 3D e gere as melhores configurações para o Bambu Studio.
 
 CONFIGURAÇÕES:
 - Impressora: ${wizard.printer} | Nozzle: ${wizard.nozzle}mm
 - AMS: ${wizard.hasAMS ? "Sim" : "Não"}, ${wizard.amsSlotCount} slots
 - Material: ${wizard.material} (${wizard.variant})
 ${wizard.hasAMS ? wizard.amsSlots.slice(0, wizard.amsSlotCount).map(s => `- Slot ${s.slot}: ${s.material}`).join('\n') : ''}
-- Flush AMS: ${wizard.flushStrategy} | Wipe tower: ${wizard.wipeTower ? "Sim" : "Não"}
 - Build plate: ${wizard.buildPlate}
-- Layer height: ${wizard.layerHeight}mm
 - Propósitos: ${wizard.purposes.join(', ')}
-
-- Custo filamento: R$120/kg
 
 Retorne este JSON exato (todos os campos obrigatórios):
 {
   "quality": { "layer_height": number, "first_layer_height": number, "seam_position": string, "seamReason": string, "improveReason": string, "ironing": boolean, "ironing_flow": number, "ironing_speed": number },
   "strength": { "infill_density": number, "infill_pattern": string, "wall_loops": number, "top_layers": number, "bottom_layers": number, "top_surface_pattern": string, "bottom_surface_pattern": string },
-  "support": { "needed": boolean, "type": string, "style": string, "threshold_angle": number, "top_z_distance": number, "bottom_z_distance": number, "xy_distance": number, "interface_layers": number, "interface_pattern": string, "tree_support_angle": number, "on_build_plate_only": boolean, "supportReason": string },
+  "support": { "needed": boolean, "type": string, "style": string, "threshold_angle": number, "supportReason": string },
   "temperature": { "nozzle": number, "nozzle_first_layer": number, "bed": number, "bed_first_layer": number, "chamber": number, "chamber_required": boolean, "part_cooling_fan": number, "part_cooling_first_layer": number },
-  "speed": { "mode": string, "outer_wall": number, "inner_wall": number, "top_surface": number, "bottom_surface": number, "infill": number, "travel": number, "first_layer": number, "bridge": number, "overhang_slow": number },
+  "speed": { "outer_wall": number, "inner_wall": number, "top_surface": number, "bottom_surface": number, "infill": number, "travel": number, "first_layer": number, "bridge": number, "overhang_slow": number },
   "ams": { "wipe_tower_enabled": boolean, "wipe_tower_width": number, "flush_multiplier": number, "flush_into_infill": boolean, "flush_into_objects": boolean, "prime_all_extruders": boolean },
   "adhesion": { "brim_type": string, "brim_width": number, "skirt_loops": number },
   "advanced": { "elephant_foot_compensation": number, "enable_overhang_speed": boolean, "bridge_flow": number, "precise_outer_wall": boolean, "thick_bridges": boolean, "small_perimeter_speed": number },
-  "estimates": { "print_time_minutes": number, "filament_grams": number, "filament_meters": number, "filament_per_color": [{ "slot": number, "color": string, "grams": number, "meters": number }], "estimated_cost_brl": number },
+  "estimates": { "print_time_minutes": number, "filament_grams": number, "filament_meters": number, "estimated_cost_brl": number },
   "explanation": { "layer_height_reason": string, "infill_reason": string, "support_reason": string, "material_plate_tips": string, "postprocessing_tips": string, "warnings": [string], "pre_print_checklist_extra": [string] },
   "profile_name_suggestion": string,
   "decisions": { "layerHeight": string, "wallLoops": string, "infillDensity": string, "infillPattern": string, "printSpeed": string, "support": string, "seam": string, "ironing": string, "temperatures": string, "overall": string },
-  "improvements": { "campo": "o que foi visto no print e por que mudou" },
+  "improvements": { "campo": "motivo" },
   "orientation": { "rotation": "string", "reason": "string", "supportReduction": "string" }
 }
-  `;
+  \`;
 
-  const fullPrompt = `${historyContext}\n\n${improvementContext}\n\n${systemPrompt}\n\n${userMessage}`;
+  const fullPrompt = \`\${historyContext}\\n\\n\${improvementContext}\\n\\n\${systemPrompt}\\n\\n\${userMessage}\`;
 
   const messageContents: any[] = [];
   if (improvementImage) {
@@ -306,12 +315,12 @@ Retorne este JSON exato (todos os campos obrigatórios):
   if (userProfile?.api_key_mode === 'centralized' && aiProvider === 'gemini') {
     const { data: { session } } = await supabase.auth.getSession();
     response = await fetch(
-      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/gemini-proxy`,
+      \`\${import.meta.env.VITE_SUPABASE_URL}/functions/v1/gemini-proxy\`,
       {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${session?.access_token}`
+          "Authorization": \`Bearer \${session?.access_token}\`
         },
         body: JSON.stringify({
           contents: [{ parts: messageContents }],
@@ -322,6 +331,7 @@ Retorne este JSON exato (todos os campos obrigatórios):
   } else if (aiProvider === 'groq') {
     const groqApiKey = useSettingsStore.getState().groqApiKey;
     if (!groqApiKey) throw new Error('NO_API_KEY');
+
     const cleanKey = groqApiKey.trim().replace(/[^\x20-\x7E]/g, "");
 
     const messages = [];
