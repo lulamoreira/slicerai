@@ -218,7 +218,6 @@ export const useAppStore = create<AppStore>((set) => ({
   setMeshData: (meshData) => set({ meshData }),
   updateWizard: (updates) => set((state) => ({ wizard: { ...state.wizard, ...updates } })),
   setResults: (results) => set({ results, status: results ? 'result' : 'ready' }),
-  setOrientationAdvice: (advice) => set((state) => ({ orientationAdvice: { ...state.orientationAdvice, ...advice } })),
   toggleWireframe: () => set((state) => ({ isWireframe: !state.isWireframe })),
   resetApp: () => set({
     status: 'idle',
