@@ -104,7 +104,8 @@ function Row({ label, value, onCopy, decision }: { label: string; value: string;
 export function BambuSettingsModal({ open, onClose, settings }: Props) {
   const [activeTab, setActiveTab] = useState<Tab>("Quality");
   const [lang, setLang] = useState<Lang>("PT");
-  const meshData = useAppStore((state) => state.meshData);
+  const meshData = useAppStore(s => s.meshData);
+  const results = useAppStore(s => s.results);
   const t = LABELS[lang];
 
 
