@@ -130,7 +130,6 @@ interface WizardState {
   buildPlate: string;
   purposes: string[];
   ironing: boolean;
-  seamPosition: string;
   supportEnabled: boolean;
   supportType: string;
   supportInterface: string;
@@ -181,7 +180,6 @@ const initialWizard: WizardState = {
   buildPlate: "Textured PEI Plate",
   purposes: ["Funcional"],
   ironing: false,
-  seamPosition: "Alinhada",
   supportEnabled: false,
   supportType: "Tree (Auto)",
   supportInterface: "Mesmo material",

@@ -115,22 +115,8 @@ export const PriorityStep: React.FC = () => {
         <div className="space-y-6">
             <h3 className="card-section-title">Acabamento Externo</h3>
             <div className="space-y-4">
-                <div className="space-y-2">
-                    <label className="text-[9px] font-bold uppercase tracking-widest text-muted">Posição da Costura (Seam)</label>
-                    <div className="flex flex-wrap gap-2">
-                        {["Alinhada", "Aleatória", "Traseira", "Arestas"].map(s => (
-                            <button
-                                key={s}
-                                onClick={() => updateWizard({ seamPosition: s as any })}
-                                className={cn(
-                                    "px-3 py-2 rounded-lg text-[9px] font-black transition-all border",
-                                    wizard.seamPosition === s ? "border-primary bg-primary-subtle text-primary" : "border-border bg-surface-raised text-muted hover:text-foreground hover:border-border-strong"
-                                )}
-                            >
-                                {s.toUpperCase()}
-                            </button>
-                        ))}
-                    </div>
+                <div className="p-4 bg-primary/10 border border-primary/20 rounded-xl">
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-primary">A IA vai decidir seam position e ironing com base na geometria</span>
                 </div>
             </div>
         </div>

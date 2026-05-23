@@ -189,7 +189,23 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
               <Row label={t.topLayers} value={String(settings.topLayers)} onCopy={() => copy(String(settings.topLayers))} />
               <Row label={t.bottomLayers} value={String(settings.bottomLayers)} onCopy={() => copy(String(settings.bottomLayers))} />
               <Row label={t.ironing} value={settings.enableIroning ? "✓ On" : "✗ Off"} onCopy={() => copy(settings.enableIroning ? "1" : "0")} decision={settings.decisions?.ironing} />
-              <Row label={t.seamPosition} value={settings.seamPosition || "aligned"} onCopy={() => copy(settings.seamPosition || "aligned")} decision={settings.decisions?.seam} />
+              <div className="py-2 border-b border-gray-700">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-gray-200 font-medium">{t.seamPosition}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-mono font-semibold text-white">
+                      {detectModelType({
+                        width: settings.geometryStats?.boundingBox.x || 0,
+                        depth: settings.geometryStats?.boundingBox.y || 0,
+                        height: settings.geometryStats?.boundingBox.z || 0,
+                        volume: settings.geometryStats?.volume || 0,
+                        triangleCount: settings.geometryStats?.triangleCount || 0
+                      }) === "organic" ? "Traseira (Back)" : "Alinhada (Aligned)"}
+                    </span>
+                  </div>
+                </div>
+                <DecisionNote text={lang === "PT" ? "Posição otimizada automaticamente para esconder a costura em modelos orgânicos ou garantir precisão em técnicos." : "Automatically optimized to hide seam on organic models or ensure precision on technical ones."} />
+              </div>
               {settings.seamReason && (
                 <p className="text-[11px] text-gray-400 italic mb-2 -mt-1 px-1">
                   {settings.seamReason}
