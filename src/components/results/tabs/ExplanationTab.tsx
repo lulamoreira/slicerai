@@ -13,7 +13,7 @@ import {
 
 export const ExplanationTab = ({ results }: { results: AIResponse }) => {
   const { profileHistory } = useAppStore();
-  const isV2Plus = profileHistory.length > 1;
+  const isV2Plus = (profileHistory || []).length > 1;
   
   const cards = [
     { icon: Layers, label: "Estratégia Geral", text: results.decisions.overall, isOverall: true },
@@ -60,14 +60,14 @@ export const ExplanationTab = ({ results }: { results: AIResponse }) => {
         </div>
       ))}
 
-      {results.explanation.warnings.length > 0 && (
+      {(results.explanation.warnings || []).length > 0 && (
         <div className="p-5 bg-[rgba(255,180,84,0.07)] border border-border-strong border-l-[3px] border-l-warning rounded-xl shadow-sm">
           <div className="flex items-center gap-3 mb-4 text-warning">
             <AlertTriangle className="w-5 h-5" />
             <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Alertas Importantes</span>
           </div>
           <ul className="space-y-3">
-            {results.explanation.warnings.map((w, i) => (
+            {(results.explanation.warnings || []).map((w, i) => (
               <li key={i} className="flex gap-3 text-sm text-warning leading-relaxed">
                 <span className="text-warning font-bold mt-0.5">•</span>
                 {w}

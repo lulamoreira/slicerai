@@ -138,7 +138,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onShowSettings, onShowHistory })
           className="p-1.5 hover:bg-primary-subtle rounded-lg transition-all text-muted hover:text-primary relative"
         >
           <HistoryIcon className="w-5 h-5" />
-          {history.length > 0 && (
+          {(history || []).length > 0 && (
             <span className="absolute top-1 right-1 w-2 h-2 bg-primary rounded-full" />
           )}
         </button>
