@@ -137,7 +137,6 @@ interface WizardState {
   fileName: string;
   fileSize: number;
   geometryStats?: GeometryStats;
-  shouldRotate90X: boolean;
 }
 
 interface AppStore {
@@ -147,7 +146,6 @@ interface AppStore {
   meshData: { vertices: [number,number,number][]; triangles: [number,number,number][] } | null;
   wizard: WizardState;
   results: AIResponse | null;
-  orientationAdvice: { suggested: boolean; dismissed: boolean };
   isWireframe: boolean;
   profileVersion: number;
   profileHistory: ProfileHistoryItem[];
@@ -159,7 +157,6 @@ interface AppStore {
   setMeshData: (mesh: AppStore['meshData']) => void;
   updateWizard: (updates: Partial<WizardState>) => void;
   setResults: (results: AIResponse | null) => void;
-  setOrientationAdvice: (advice: Partial<AppStore['orientationAdvice']>) => void;
   toggleWireframe: () => void;
   resetApp: () => void;
   setProfileVersion: (version: number) => void;
@@ -190,7 +187,6 @@ const initialWizard: WizardState = {
   supportInterface: "Mesmo material",
   fileName: "",
   fileSize: 0,
-  shouldRotate90X: false,
 };
 
 export const useAppStore = create<AppStore>((set) => ({
@@ -200,7 +196,6 @@ export const useAppStore = create<AppStore>((set) => ({
   meshData: null,
   wizard: initialWizard,
   results: null,
-  orientationAdvice: { suggested: false, dismissed: false },
   isWireframe: false,
   profileVersion: 1,
   profileHistory: [],
@@ -223,7 +218,6 @@ export const useAppStore = create<AppStore>((set) => ({
   setMeshData: (meshData) => set({ meshData }),
   updateWizard: (updates) => set((state) => ({ wizard: { ...state.wizard, ...updates } })),
   setResults: (results) => set({ results, status: results ? 'result' : 'ready' }),
-  setOrientationAdvice: (advice) => set((state) => ({ orientationAdvice: { ...state.orientationAdvice, ...advice } })),
   toggleWireframe: () => set((state) => ({ isWireframe: !state.isWireframe })),
   resetApp: () => set({
     status: 'idle',
@@ -235,7 +229,6 @@ export const useAppStore = create<AppStore>((set) => ({
       printer: (useSettingsStore.getState().defaultPrinter as any) || "X1C"
     },
     results: null,
-    orientationAdvice: { suggested: false, dismissed: false },
     profileVersion: 1,
     profileHistory: [],
     isFinalized: false
