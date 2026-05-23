@@ -181,6 +181,19 @@ export const SummaryTab = ({ results }: { results: AIResponse }) => {
             </div>
         )}
       </div>
+
+      <div className="col-span-1 md:col-span-2 p-6 bg-blue-950/30 border border-blue-500/30 rounded-2xl animate-in slide-in-from-top-2 duration-500">
+        <p className="text-[10px] text-blue-400 mb-2 uppercase tracking-[0.2em] font-bold flex items-center justify-between">
+          <span>📐 ORIENTAÇÃO RECOMENDADA</span>
+          <span className="bg-green-500 text-white border-none text-[9px] px-1.5 py-0 h-4 font-black flex items-center rounded-sm">
+            ⬇️ {results.orientation?.supportReduction || "0%"} de suportes
+          </span>
+        </p>
+        <p className="text-white font-semibold text-sm">{results.orientation?.rotation || "Orientação padrão detectada"}</p>
+        <p className="text-gray-300 text-xs mt-1.5 leading-relaxed">
+          {results.orientation?.reason || "A geometria base sugere que esta é a melhor posição para garantir estabilidade e acabamento."}
+        </p>
+      </div>
     </div>
   );
 };
