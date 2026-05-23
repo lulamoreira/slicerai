@@ -14,7 +14,9 @@ interface Viewer3DProps {
 const Model = ({ file }: { file: File }) => {
   const [geometry, setGeometry] = useState<THREE.BufferGeometry | null>(null);
   const updateWizard = useStore((state) => state.updateWizard);
+  const setMeshData = (data: { vertices: [number, number, number][]; triangles: [number, number, number][] }) => useStore.setState({ meshData: data });
   const meshRef = useRef<THREE.Mesh>(null);
+
 
   useEffect(() => {
     if (!file) return;
