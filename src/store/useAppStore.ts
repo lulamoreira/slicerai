@@ -229,7 +229,6 @@ export const useAppStore = create<AppStore>((set) => ({
       printer: (useSettingsStore.getState().defaultPrinter as any) || "X1C"
     },
     results: null,
-    orientationAdvice: { suggested: false, dismissed: false },
     profileVersion: 1,
     profileHistory: [],
     isFinalized: false
