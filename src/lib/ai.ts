@@ -37,8 +37,9 @@ const aiResponseSchema = z.object({
     interface_pattern: z.string().optional().default("concentric"),
     tree_support_angle: z.number().optional().default(45),
     on_build_plate_only: z.boolean().optional().default(true),
-    supportReason: z.string().optional()
+    supportReason: z.string().optional().default("Calculado com base na geometria")
   }),
+
 
   temperature: z.object({
     nozzle: z.number(),
@@ -159,7 +160,9 @@ INSTRUÇÃO: Com base nesse histórico, identifique preferências do usuário e 
     Você é o SlicerAI, especialista sênior em impressão 3D FDM com domínio completo do Bambu Studio (versão mais recente, 2024-2025). Conhece todos os perfis, materiais, build plates, configurações AMS, suporte, velocidade, temperatura e nuances de cada impressora Bambu Lab. Responda sempre em português do Brasil (ou inglês se o usuário selecionou EN). Seja preciso, técnico e acessível. Justifique cada recomendação com base nos dados de geometria e escolhas do usuário. Respond ONLY with valid JSON. No markdown, no explanation. Retorne APENAS JSON válido conforme o schema solicitado, sem markdown, sem texto extra.
 
     INSTRUÇÕES CRÍTICAS:
-    1. Os campos de suporte já foram calculados automaticamente com base na geometria. Não inclua support_type, support_style, support_interface_pattern nem nenhum campo support_ na sua resposta JSON. Justifique a necessidade de suporte em supportReason se necessário, mas não defina os parâmetros técnicos de suporte.
+    1. O campo support.type é OBRIGATÓRIO e NUNCA pode ser omitido na resposta JSON. Use 'tree(auto)' para figuras orgânicas, personagens e animais. Use 'normal(auto)' para peças técnicas e mecânicas. Use 'tree(organic)' para figuras muito detalhadas onde a remoção do suporte precisa ser fácil.
+    2. Os campos de suporte já foram calculados automaticamente com base na geometria. Não inclua support_type, support_style, support_interface_pattern nem nenhum campo support_ na sua resposta JSON. Justifique a necessidade de suporte em supportReason se necessário, mas não defina os parâmetros técnicos de suporte.
+
     2. Escolha o seam_position mais adequado para a peça usando estes critérios:
        - Use "back" para figuras humanas, personagens e animais pois esconde a costura na parte traseira.
        - Use "aligned" para peças técnicas e mecânicas onde a costura alinhada facilita pós-processamento.
