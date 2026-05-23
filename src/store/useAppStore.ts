@@ -111,6 +111,25 @@ export const useSettingsStore = create<SettingsStore>()(
     }),
     {
       name: "slicerai-settings",
+      version: 2,
+      migrate: (persistedState: any, version: number) => {
+        // Garante defaults para campos novos
+        return {
+          ...persistedState,
+          meshData: persistedState?.meshData ?? null,
+          parsedProject: persistedState?.parsedProject ?? null,
+          selectedPlateId: persistedState?.selectedPlateId ?? 1,
+        };
+      },
+      merge: (persistedState: any, currentState: any) => {
+        return {
+          ...currentState,
+          ...persistedState,
+          meshData: persistedState?.meshData ?? null,
+          parsedProject: persistedState?.parsedProject ?? null,
+          selectedPlateId: persistedState?.selectedPlateId ?? 1,
+        };
+      },
     }
   )
 );

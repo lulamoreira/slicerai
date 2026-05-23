@@ -212,7 +212,11 @@ const Model = ({ file }: { file: File }) => {
 };
 
 export const ModelViewer: React.FC<ModelViewerProps> = ({ file: fileProp }) => {
+  const meshData = useAppStore((s) => s.meshData);
   const storeFile = useAppStore((s) => s.file);
+
+  if (typeof meshData === "undefined") return <div className="text-gray-400 p-4">Carregando viewer...</div>;
+
   const file = fileProp || storeFile || undefined;
   return (
     <div className="w-full h-full bg-[var(--background)] relative rounded-xl overflow-hidden border border-border">
