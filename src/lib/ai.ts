@@ -599,8 +599,7 @@ Retorne este JSON exato (todos os campos obrigatórios):
   }
   
   if (!content) throw new Error(`Empty response from ${aiProvider}`);
-  const repaired = repairJSON(content);
-  const parsed = JSON.parse(repaired);
+  const parsed = parseAIResponse(content);
 
   // Fallback for support fields from geometric profiles if AI didn't provide them
   if (parsed.support && wizard.geometryStats) {
