@@ -428,39 +428,16 @@ Retorne este JSON exato (todos os campos obrigatórios):
     if (!claudeKey) throw new Error('NO_API_KEY');
     const cleanKey = claudeKey.trim().replace(/[^\x20-\x7E]/g, "");
 
-    const claudeMessages = [];
-    if (improvementImage) {
-      claudeMessages.push({
-        role: "user",
-        content: [
-          { type: "text", text: fullPrompt },
-          { 
-            type: "image", 
-            source: { 
-              type: "base64", 
-              media_type: "image/jpeg", 
-              data: improvementImage.split(',')[1] 
-            } 
-          }
-        ]
-      });
-    } else {
-      claudeMessages.push({ role: "user", content: fullPrompt });
-    }
-
     response = await fetch(
-      "https://api.anthropic.com/v1/messages",
+      "https://lgjbjvauavgtbtfejcwc.supabase.co/functions/v1/ai-proxy",
       {
         method: "POST",
-        headers: { 
-          "x-api-key": cleanKey,
-          "anthropic-version": "2023-06-01",
-          "Content-Type": "application/json" 
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "claude-3-5-haiku-20241022",
-          max_tokens: 2048,
-          messages: claudeMessages,
+          provider: "claude",
+          apiKey: cleanKey,
+          prompt: fullPrompt,
+          imageBase64: improvementImage ? improvementImage.split(',')[1] : undefined
         }),
       }
     );
@@ -469,32 +446,16 @@ Retorne este JSON exato (todos os campos obrigatórios):
     if (!openaiKey) throw new Error('NO_API_KEY');
     const cleanKey = openaiKey.trim().replace(/[^\x20-\x7E]/g, "");
 
-    const openaiMessages = [];
-    if (improvementImage) {
-      openaiMessages.push({
-        role: "user",
-        content: [
-          { type: "text", text: fullPrompt },
-          { type: "image_url", image_url: { url: improvementImage } }
-        ]
-      });
-    } else {
-      openaiMessages.push({ role: "user", content: fullPrompt });
-    }
-
     response = await fetch(
-      "https://api.openai.com/v1/chat/completions",
+      "https://lgjbjvauavgtbtfejcwc.supabase.co/functions/v1/ai-proxy",
       {
         method: "POST",
-        headers: { 
-          "Authorization": `Bearer ${cleanKey}`,
-          "Content-Type": "application/json" 
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "gpt-4o-mini",
-          messages: openaiMessages,
-          temperature: 0.2,
-          max_tokens: 2048,
+          provider: "openai",
+          apiKey: cleanKey,
+          prompt: fullPrompt,
+          imageBase64: improvementImage ? improvementImage.split(',')[1] : undefined
         }),
       }
     );
