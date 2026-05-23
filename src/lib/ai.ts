@@ -662,3 +662,47 @@ export const testGroqKey = async (apiKey: string): Promise<ConnectionResult> => 
     return "error";
   }
 };
+
+export const testClaudeKey = async (apiKey: string): Promise<ConnectionResult> => {
+  try {
+    const response = await fetch(
+      "https://lgjbjvauavgtbtfejcwc.supabase.co/functions/v1/ai-proxy",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          provider: "claude",
+          apiKey,
+          prompt: "ok"
+        })
+      }
+    );
+    if (response.ok) return "ok";
+    if (response.status === 401 || response.status === 403) return "invalid";
+    return "error";
+  } catch {
+    return "error";
+  }
+};
+
+export const testOpenAIKey = async (apiKey: string): Promise<ConnectionResult> => {
+  try {
+    const response = await fetch(
+      "https://lgjbjvauavgtbtfejcwc.supabase.co/functions/v1/ai-proxy",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          provider: "openai",
+          apiKey,
+          prompt: "ok"
+        })
+      }
+    );
+    if (response.ok) return "ok";
+    if (response.status === 401 || response.status === 403) return "invalid";
+    return "error";
+  } catch {
+    return "error";
+  }
+};
