@@ -431,7 +431,7 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
             </div>
           )}
 
-          {meshData && results?.support?.enabled === false && meshData.triangles.length > 200_000 && (
+          {meshData && results?.support?.needed === false && meshData.triangles.length > 200_000 && (
             <div className="bg-orange-950/50 border border-orange-500/40 rounded-lg p-3 mb-1">
               <p className="text-orange-300 text-sm font-semibold">
                 ⚠️ Atenção: A IA não ativou suportes, mas o modelo parece complexo
