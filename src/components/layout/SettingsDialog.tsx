@@ -129,7 +129,7 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
         }
 
         const body = aiProvider === 'claude' 
-          ? JSON.stringify({ model: "claude-3-5-haiku-20241022", max_tokens: 1, messages: [{role: "user", content: "hi"}] })
+          ? JSON.stringify({ model: "claude-haiku-4-5", max_tokens: 1, messages: [{role: "user", content: "hi"}] })
           : aiProvider === 'openai'
           ? JSON.stringify({ model: "gpt-4o-mini", max_tokens: 1, messages: [{role: "user", content: "hi"}] })
           : undefined;
@@ -300,7 +300,7 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({ onClose }) => {
                    aiProvider === 'groq' ? 'GROQ API KEY' : 
                    aiProvider === 'deepseek' ? 'DeepSeek API KEY' : 
                    aiProvider === 'openrouter' ? 'OpenRouter API KEY' :
-                   aiProvider === 'claude' ? 'CLAUDE API KEY' :
+                   aiProvider === 'claude' ? 'CLAUDE API KEY (claude-haiku-4-5)' :
                    'OPENAI API KEY'}
                 </label>
                 <div className="flex items-center gap-1 opacity-50">
