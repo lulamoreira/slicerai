@@ -422,31 +422,51 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
         <div className="px-4 pb-4 pt-3 shrink-0 border-t border-gray-700 flex flex-col gap-2 bg-[#1c1c1e]">
           <p className="text-[10px] text-gray-400 text-center font-medium italic mb-1">{t.howToImport}</p>
           <div className="flex flex-col gap-2">
-            <Button size="lg" disabled={!meshData}
-              onClick={() => {
-                if (!meshData) return;
-                const modelType = settings.geometryStats ? detectModelType({
-                  width: settings.geometryStats.boundingBox.x,
-                  depth: settings.geometryStats.boundingBox.y,
-                  height: settings.geometryStats.boundingBox.z,
-                  volume: settings.geometryStats.volume,
-                  triangleCount: settings.geometryStats.triangleCount
-                }) : "organic";
-                downloadThreeMfProject(meshData, settings, settings.profileName || "SlicerAI_Project", results?.orientation, modelType);
-              }}
-              className="w-full gap-2 bg-green-600 hover:bg-green-700 text-white font-bold h-12 text-sm">
-              <FileArchive className="w-5 h-5" />
-              {lang === "PT" ? "📦 BAIXAR PROJETO .3MF (PRONTO PARA IMPRIMIR)" : "📦 DOWNLOAD .3MF PROJECT (READY TO PRINT)"}
+            <Button size="lg" disabled={!meshData || isGenerating}
+              onClick={handleDownload3mf}
+              className="w-full gap-2 bg-green-600 hover:bg-green-700 disabled:bg-green-900 text-white font-bold h-14 text-sm relative overflow-hidden transition-all">
+              {isGenerating ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <div className="flex flex-col items-center">
+                    <span className="text-sm font-bold">
+                      {lang === "PT" ? "GERANDO ARQUIVO .3MF..." : "GENERATING .3MF FILE..."}
+                    </span>
+                    <span className="text-xs font-normal opacity-90 mt-0.5">{generationStep}</span>
+                  </div>
+                  <div className="absolute bottom-0 left-0 h-1 bg-white/40 animate-pulse" style={{width: "60%"}}/>
+                </>
+              ) : (
+                <>
+                  <FileArchive className="w-5 h-5" />
+                  {lang === "PT" ? "📦 BAIXAR PROJETO .3MF (PRONTO PARA IMPRIMIR)" : "📦 DOWNLOAD .3MF PROJECT (READY TO PRINT)"}
+                </>
+              )}
             </Button>
             {!meshData && <p className="text-xs text-amber-400 text-center mt-1">⚠️ Recarregue o modelo 3D para ativar o download .3mf</p>}
             
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={copyAll} className="flex-1 text-xs gap-1 border-gray-600 text-gray-300 hover:bg-gray-800 text-xs">
+              <Button variant="outline" size="sm" onClick={copyAll} className="flex-1 text-xs gap-1 border-gray-600 text-gray-300 hover:bg-gray-800 h-10">
                 <Copy className="w-3 h-3" /> {t.copyAll}
               </Button>
-              <Button variant="outline" size="sm" onClick={() => downloadBambuProfile(settings)}
-                className="flex-1 text-xs gap-1 border-gray-600 text-gray-300 hover:bg-gray-800 text-xs">
-                <Download className="w-3 h-3" /> {lang === "PT" ? "Baixar só configurações (.bbscfg)" : "Settings only (.bbscfg)"}
+              <Button 
+                variant="outline" 
+                size="sm" 
+                disabled={isDownloadingCfg}
+                onClick={handleDownloadCfg}
+                className={`flex-1 text-xs gap-1 border-gray-600 hover:bg-gray-800 h-10 transition-all ${isDownloadingCfg ? "text-green-400 border-green-900 bg-green-950/20" : "text-gray-300"}`}
+              >
+                {isDownloadingCfg ? (
+                  <>
+                    <Loader2 className="w-3 h-3 animate-spin" />
+                    <span className="truncate">{cfgStatus}</span>
+                  </>
+                ) : (
+                  <>
+                    <Download className="w-3 h-3" /> 
+                    {lang === "PT" ? "Baixar só configurações (.bbscfg)" : "Settings only (.bbscfg)"}
+                  </>
+                )}
               </Button>
             </div>
           </div>
