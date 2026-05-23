@@ -565,37 +565,17 @@ Retorne este JSON exato (todos os campos obrigatórios):
   if (!content) throw new Error(`Empty response from ${aiProvider}`);
   const parsed = parseAIResponse(content);
 
-  // Fallback for support fields from geometric profiles if AI didn't provide them
-  if (parsed.support && wizard.geometryStats) {
-    const modelType = detectModelType({
-      width: wizard.geometryStats.boundingBox.x,
-      depth: wizard.geometryStats.boundingBox.y,
-      height: wizard.geometryStats.boundingBox.z,
-      volume: wizard.geometryStats.volume,
-      triangleCount: wizard.geometryStats.triangleCount || 10000 // Default if missing
-    });
-    
-    const geometricSupport = getSupportProfile(modelType);
-    
-    // Fill in missing fields from geometric profile
-    parsed.support.type = parsed.support.type || geometricSupport.support_type;
-    parsed.support.style = parsed.support.style || geometricSupport.support_style;
-    parsed.support.threshold_angle = parsed.support.threshold_angle || Number(geometricSupport.support_threshold_angle);
-    parsed.support.top_z_distance = parsed.support.top_z_distance || Number(geometricSupport.support_top_z_distance);
-    parsed.support.bottom_z_distance = parsed.support.bottom_z_distance || Number(geometricSupport.support_bottom_z_distance);
-    parsed.support.xy_distance = parsed.support.xy_distance || Number(geometricSupport.support_object_xy_distance);
-    parsed.support.interface_layers = parsed.support.interface_layers || Number(geometricSupport.support_interface_top_layers);
-    parsed.support.interface_pattern = parsed.support.interface_pattern || geometricSupport.support_interface_pattern;
-    parsed.support.tree_support_angle = parsed.support.tree_support_angle || Number(geometricSupport.tree_support_branch_angle);
-    
-    // Explicitly set needed based on geometry if not specified
-    if (parsed.support.needed === undefined) {
-      parsed.support.needed = wizard.geometryStats.overhangsDetected;
-    }
+  const result = AIResponseSchema.safeParse(parsed);
+  if (!result.success) {
+    console.warn("AI Response partial failure/missing fields:", result.error.format());
+    const defaults = AIResponseSchema.parse({});
+    // Merge valid data from AI with defaults
+    return { ...defaults, ...parsed } as any;
   }
 
-  return aiResponseSchema.parse(parsed);
+  return result.data as any;
 };
+
 
 
 export type ConnectionResult = "ok" | "invalid" | "rate_limited" | "error";
