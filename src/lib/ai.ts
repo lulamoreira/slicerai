@@ -185,7 +185,7 @@ export const generateSettings = async (
   currentVersion?: number,
   previousResults?: AIResponse
 ): Promise<AIResponse> => {
-  const stats = wizard.geometryStats;
+  const stats = useAppStore.getState().geometry;
   const dimensions = stats?.boundingBox || { x: 0, y: 0, z: 0 };
   const volume = (stats?.volume || 0).toFixed(2);
   const surfaceArea = (stats?.surfaceArea || 0).toFixed(2);
@@ -204,16 +204,16 @@ export const generateSettings = async (
   const weight = ((stats?.volume || 0) * 1.24).toFixed(1); // Estimativa padrão baseada em PLA
 
   const geometryContext = `
-ANÁLISE GEOMÉTRICA DA PEÇA:
+DADOS GEOMÉTRICOS DA PEÇA (NUNCA UNDEFINED):
 - Dimensões: ${dimensions.x.toFixed(1)}×${dimensions.y.toFixed(1)}×${dimensions.z.toFixed(1)}mm
 - Volume: ${volume}cm³
 - Área de superfície: ${surfaceArea}cm²
 - Peso estimado: ${weight}g
 - Razão altura/base: ${heightBaseRatio}
+- Número de triângulos: ${triangleCount}
+- Tipo detectado: ${modelType}
 - Overhangs detectados: ${hasOverhangs ? "Sim" : "Não"}
 - Ângulo máximo de overhang: ${maxOverhangAngle}°
-- Triângulos: ${triangleCount}
-- Tipo detectado: ${modelType}
   `.trim();
 
   const historyContext = history && history.length > 0
