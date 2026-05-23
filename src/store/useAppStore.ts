@@ -197,6 +197,7 @@ export const useAppStore = create<AppStore>((set) => ({
   status: 'idle',
   file: null,
   geometry: null,
+  meshData: null,
   wizard: initialWizard,
   results: null,
   orientationAdvice: { suggested: false, dismissed: false },
