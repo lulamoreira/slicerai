@@ -627,12 +627,20 @@ Retorne este JSON exato (todos os campos obrigatórios):
   if (!result.success) {
     console.warn("AI Response partial failure/missing fields:", result.error.format());
     const defaults = AIResponseSchema.parse({});
-    // Merge valid data from AI with defaults
-    return { ...defaults, ...parsed } as any;
+    // Profundidade 1 de merge manual para os objetos principais
+    const merged = { ...defaults, ...parsed };
+    // Garante que sub-objetos não sejam sobrescritos por undefined se o spread do parsed tiver a chave mas o conteúdo for parcial
+    for (const key of Object.keys(defaults)) {
+      if (typeof (defaults as any)[key] === 'object' && (parsed as any)[key]) {
+        (merged as any)[key] = { ...(defaults as any)[key], ...(parsed as any)[key] };
+      }
+    }
+    return merged as any;
   }
 
   return result.data as any;
 };
+
 
 
 
