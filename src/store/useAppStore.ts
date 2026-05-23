@@ -156,6 +156,7 @@ interface AppStore {
   setGeometry: (geometry: GeometryStats | null) => void;
   setMeshData: (mesh: AppStore['meshData']) => void;
   updateWizard: (updates: Partial<WizardState>) => void;
+  setResults: (results: AIResponse | null) => void;
   toggleWireframe: () => void;
   resetApp: () => void;
   setProfileVersion: (version: number) => void;
