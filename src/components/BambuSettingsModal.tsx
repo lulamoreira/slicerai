@@ -324,18 +324,28 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
         </div>
 
         <div className="px-4 pb-4 pt-3 shrink-0 border-t border-gray-700 flex flex-col gap-2 bg-[#1c1c1e]">
-
           <p className="text-[10px] text-gray-400 text-center font-medium italic mb-1">{t.howToImport}</p>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={copyAll} className="flex-1 text-xs gap-1 border-gray-500 text-white hover:bg-gray-700 bg-transparent">
-              <Copy className="w-3 h-3" /> {t.copyAll}
-            </Button>
-            <Button size="sm" onClick={() => downloadBambuProfile(settings)}
-              className="flex-1 text-xs gap-1 bg-green-500 hover:bg-green-600 text-white font-bold">
-              <Download className="w-3 h-3" /> {lang === "PT" ? "Baixar .bbscfg" : "Download .bbscfg"}
+          <div className="flex flex-col gap-2">
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={copyAll} className="flex-1 text-xs gap-1 border-gray-500 text-white hover:bg-gray-700 bg-transparent">
+                <Copy className="w-3 h-3" /> {t.copyAll}
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => downloadBambuProfile(settings)}
+                className="flex-1 text-xs gap-1 border-gray-500 text-white hover:bg-gray-700 bg-transparent">
+                <Download className="w-3 h-3" /> .bbscfg
+              </Button>
+            </div>
+            
+            <Button size="sm" 
+              disabled={!meshData}
+              onClick={() => meshData && downloadThreeMfProject(meshData, settings, settings.profileName || "SlicerAI_Project")}
+              className="w-full text-xs gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold h-10">
+              <FileArchive className="w-4 h-4" /> 
+              {lang === "PT" ? "BAIXAR PROJETO .3MF COMPLETO" : "DOWNLOAD FULL .3MF PROJECT"}
             </Button>
           </div>
         </div>
+
       </DialogContent>
     </Dialog>
   );
