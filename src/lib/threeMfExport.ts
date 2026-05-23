@@ -81,6 +81,23 @@ function getOptimalSupportConfig(modelType: "organic" | "technical", enableSuppo
   };
 }
 
+function getOptimalSeamConfig(modelType: "organic" | "technical") {
+  if (modelType === "organic") {
+    return {
+      seam_position: "back",
+      seam_slope_type: "none",
+      staggered_inner_seams: "0",
+      wall_sequence: "inner wall/outer wall",
+    };
+  }
+  return {
+    seam_position: "aligned",
+    seam_slope_type: "none",
+    staggered_inner_seams: "1",
+    wall_sequence: "inner wall/outer wall",
+  };
+}
+
 function getOrientationTransform(rotation: string, cx: number, cy: number): string {
   const r = (rotation || "").toLowerCase();
   if (r.includes("90") && r.includes("x")) return `1 0 0 0 0 -1 0 1 0 ${cx} ${cy} 0`;
@@ -161,7 +178,7 @@ ${tXml}
     hot_plate_temp_initial_layer: [String(settings.bedTemp + 5)],
     filament_type: [settings.filamentType], filament_flow_ratio: ["1"],
     filament_max_volumetric_speed: ["15"], filament_diameter: ["1.75"],
-    seam_position: (settings as any).seamPosition || "back",
+    ...getOptimalSeamConfig(modelType || "organic"),
     enable_ironing: settings.enableIroning ? "1" : "0",
   }, null, 2));
 

@@ -242,7 +242,7 @@ INSTRUÇÃO: Com base nesse histórico, identifique preferências do usuário e 
 
     2. SUPORTE: Os campos técnicos de suporte são calculados automaticamente pelo sistema com base na pesquisa de melhores práticas Bambu Lab para remoção fácil. Você decide APENAS: (a) se a peça precisa de suporte ou não (needed: true/false), (b) o tipo do modelo (modelType: "organic" para figuras, personagens, animais, ou "technical" para peças mecânicas e geométricas) — o sistema aplica automaticamente o perfil completo otimizado. Inclua no JSON apenas needed e modelType dentro do objeto support, e explique no supportReason por que ativou ou não.
 
-    3. Escolha o seam_position mais adequado (back, aligned, nearest, random).
+    3. A posição da costura (seam position) é decidida automaticamente pelo sistema com base em melhores práticas da comunidade Bambu Lab — você não precisa retornar este campo. Não inclua seamPosition nem seam_position na resposta JSON.
     4. Adicione o campo seamReason no objeto quality.
     5. Decida AUTOMATICAMENTE se o ironing (alisamento) é benéfico.
     6. EXPLICAÇÕES DIDÁTICAS (Campo decisions): Justifique cada escolha principal em 1 ou 2 frases curtas no campo decisions.
