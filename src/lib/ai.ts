@@ -130,13 +130,34 @@ export const parseAIResponse = (text: string): any => {
   let cleaned = text.trim();
   // Remove markdown code blocks que Claude e outros modelos adicionam
   cleaned = cleaned.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/```\s*$/i, "").trim();
+  
   // Remove qualquer texto antes do primeiro {
   const jsonStart = cleaned.indexOf("{");
   const jsonEnd = cleaned.lastIndexOf("}");
   if (jsonStart !== -1 && jsonEnd !== -1) {
     cleaned = cleaned.substring(jsonStart, jsonEnd + 1);
   }
-  return JSON.parse(cleaned);
+  
+  try {
+    return JSON.parse(cleaned);
+  } catch {
+    // Tenta fechar chaves abertas
+    const opens = (cleaned.match(/{/g) || []).length;
+    const closes = (cleaned.match(/}/g) || []).length;
+    const missing = opens - closes;
+    if (missing > 0) {
+      const repaired = cleaned + "}".repeat(missing);
+      try { return JSON.parse(repaired); } catch {}
+    }
+    // Remove última propriedade incompleta e tenta novamente
+    const fallback = cleaned.replace(/,\s*"[^"]*"\s*:\s*[^,}]*$/, "") + "}".repeat(Math.max(0, opens - closes));
+    try {
+      return JSON.parse(fallback);
+    } catch (e) {
+      console.error("Final parse failure:", e, "Cleaned text:", cleaned);
+      throw e;
+    }
+  }
 };
 
 export const repairJSON = (json: string): string => {
@@ -481,7 +502,7 @@ Retorne este JSON exato (todos os campos obrigatórios):
         },
         body: JSON.stringify({
           model: "claude-haiku-4-5",
-          max_tokens: 2048,
+          max_tokens: 4096,
           messages: claudeMessages,
         }),
       }
