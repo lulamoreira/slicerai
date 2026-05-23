@@ -168,6 +168,7 @@ ${tXml}
     sparse_infill_density: settings.infillDensity + "%",
     sparse_infill_pattern: settings.infillPattern || "grid",
     ...getOptimalSupportConfig(modelType || "organic", settings.enableSupport),
+    ...getOptimalSeamConfig(modelType || "organic"),
     inner_wall_speed: String(settings.printSpeed),
     outer_wall_speed: String(Math.round(settings.printSpeed * 0.6)),
     sparse_infill_speed: String(settings.printSpeed),
@@ -178,7 +179,6 @@ ${tXml}
     hot_plate_temp_initial_layer: [String(settings.bedTemp + 5)],
     filament_type: [settings.filamentType], filament_flow_ratio: ["1"],
     filament_max_volumetric_speed: ["15"], filament_diameter: ["1.75"],
-    ...getOptimalSeamConfig(modelType || "organic"),
     enable_ironing: settings.enableIroning ? "1" : "0",
   }, null, 2));
 
