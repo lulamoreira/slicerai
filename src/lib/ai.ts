@@ -289,13 +289,6 @@ Retorne este JSON exato (todos os campos obrigatórios):
 
   const fullPrompt = \`\${historyContext}\\n\\n\${improvementContext}\\n\\n\${systemPrompt}\\n\\n\${userMessage}\`;
 
-
-
-
-
-
-
-
   const messageContents: any[] = [];
   if (improvementImage) {
     messageContents.push({
@@ -322,12 +315,12 @@ Retorne este JSON exato (todos os campos obrigatórios):
   if (userProfile?.api_key_mode === 'centralized' && aiProvider === 'gemini') {
     const { data: { session } } = await supabase.auth.getSession();
     response = await fetch(
-      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/gemini-proxy`,
+      \`\${import.meta.env.VITE_SUPABASE_URL}/functions/v1/gemini-proxy\`,
       {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${session?.access_token}`
+          "Authorization": \`Bearer \${session?.access_token}\`
         },
         body: JSON.stringify({
           contents: [{ parts: messageContents }],
@@ -338,6 +331,7 @@ Retorne este JSON exato (todos os campos obrigatórios):
   } else if (aiProvider === 'groq') {
     const groqApiKey = useSettingsStore.getState().groqApiKey;
     if (!groqApiKey) throw new Error('NO_API_KEY');
+
     const cleanKey = groqApiKey.trim().replace(/[^\x20-\x7E]/g, "");
 
     const messages = [];
