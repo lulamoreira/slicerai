@@ -126,6 +126,19 @@ const aiResponseSchema = z.object({
   })
 });
 
+export const parseAIResponse = (text: string): any => {
+  let cleaned = text.trim();
+  // Remove markdown code blocks que Claude e outros modelos adicionam
+  cleaned = cleaned.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/```\s*$/i, "").trim();
+  // Remove qualquer texto antes do primeiro {
+  const jsonStart = cleaned.indexOf("{");
+  const jsonEnd = cleaned.lastIndexOf("}");
+  if (jsonStart !== -1 && jsonEnd !== -1) {
+    cleaned = cleaned.substring(jsonStart, jsonEnd + 1);
+  }
+  return JSON.parse(cleaned);
+};
+
 export const repairJSON = (json: string): string => {
   let balanced = json.trim();
   const stack: string[] = [];
@@ -586,8 +599,7 @@ Retorne este JSON exato (todos os campos obrigatórios):
   }
   
   if (!content) throw new Error(`Empty response from ${aiProvider}`);
-  const repaired = repairJSON(content);
-  const parsed = JSON.parse(repaired);
+  const parsed = parseAIResponse(content);
 
   // Fallback for support fields from geometric profiles if AI didn't provide them
   if (parsed.support && wizard.geometryStats) {
