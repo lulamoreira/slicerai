@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { WizardState, AIResponse } from "./types";
 import { supabase } from "../integrations/supabase/client";
-import { useSettingsStore } from "../store/useAppStore";
+import { useSettingsStore, useAppStore } from "../store/useAppStore";
 import { detectModelType, getSupportProfile } from "./supportProfiles";
 
 
