@@ -104,7 +104,8 @@ function Row({ label, value, onCopy, decision }: { label: string; value: string;
 export function BambuSettingsModal({ open, onClose, settings }: Props) {
   const [activeTab, setActiveTab] = useState<Tab>("Quality");
   const [lang, setLang] = useState<Lang>("PT");
-  const meshData = useAppStore((state) => state.meshData);
+  const meshData = useAppStore(s => s.meshData);
+  const results = useAppStore(s => s.results);
   const t = LABELS[lang];
 
 
@@ -326,23 +327,23 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
         <div className="px-4 pb-4 pt-3 shrink-0 border-t border-gray-700 flex flex-col gap-2 bg-[#1c1c1e]">
           <p className="text-[10px] text-gray-400 text-center font-medium italic mb-1">{t.howToImport}</p>
           <div className="flex flex-col gap-2">
+            <Button size="lg" disabled={!meshData}
+              onClick={() => meshData && downloadThreeMfProject(meshData, settings, settings.profileName || "SlicerAI_Project", results?.orientation)}
+              className="w-full gap-2 bg-green-600 hover:bg-green-700 text-white font-bold h-12 text-sm">
+              <FileArchive className="w-5 h-5" />
+              {lang === "PT" ? "📦 BAIXAR PROJETO .3MF (PRONTO PARA IMPRIMIR)" : "📦 DOWNLOAD .3MF PROJECT (READY TO PRINT)"}
+            </Button>
+            {!meshData && <p className="text-xs text-amber-400 text-center mt-1">⚠️ Recarregue o modelo 3D para ativar o download .3mf</p>}
+            
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={copyAll} className="flex-1 text-xs gap-1 border-gray-500 text-white hover:bg-gray-700 bg-transparent">
+              <Button variant="outline" size="sm" onClick={copyAll} className="flex-1 text-xs gap-1 border-gray-600 text-gray-300 hover:bg-gray-800 text-xs">
                 <Copy className="w-3 h-3" /> {t.copyAll}
               </Button>
               <Button variant="outline" size="sm" onClick={() => downloadBambuProfile(settings)}
-                className="flex-1 text-xs gap-1 border-gray-500 text-white hover:bg-gray-700 bg-transparent">
-                <Download className="w-3 h-3" /> .bbscfg
+                className="flex-1 text-xs gap-1 border-gray-600 text-gray-300 hover:bg-gray-800 text-xs">
+                <Download className="w-3 h-3" /> {lang === "PT" ? "Baixar só configurações (.bbscfg)" : "Settings only (.bbscfg)"}
               </Button>
             </div>
-            
-            <Button size="sm" 
-              disabled={!meshData}
-              onClick={() => meshData && downloadThreeMfProject(meshData, settings, settings.profileName || "SlicerAI_Project", settings.orientation)}
-              className="w-full text-xs gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold h-10">
-              <FileArchive className="w-4 h-4" /> 
-              {lang === "PT" ? "BAIXAR PROJETO .3MF COMPLETO" : "DOWNLOAD FULL .3MF PROJECT"}
-            </Button>
           </div>
         </div>
 
