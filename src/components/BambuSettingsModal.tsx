@@ -420,6 +420,28 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
         </div>
 
         <div className="px-4 pb-4 pt-3 shrink-0 border-t border-gray-700 flex flex-col gap-2 bg-[#1c1c1e]">
+          {meshData && meshData.triangles.length > 1_000_000 && (
+            <div className="bg-amber-950/50 border border-amber-500/40 rounded-lg p-3 mb-1">
+              <p className="text-amber-300 text-sm font-semibold flex items-center gap-2">
+                ⚠️ Modelo complexo: {(meshData.triangles.length / 1_000_000).toFixed(1)}M triângulos
+              </p>
+              <p className="text-amber-200/80 text-xs mt-1">
+                O fatiamento no Bambu Studio será mais lento que o normal. Considere simplificar o modelo em ferramentas como Meshmixer ou Blender antes de imprimir.
+              </p>
+            </div>
+          )}
+
+          {meshData && results?.support?.enabled === false && meshData.triangles.length > 200_000 && (
+            <div className="bg-orange-950/50 border border-orange-500/40 rounded-lg p-3 mb-1">
+              <p className="text-orange-300 text-sm font-semibold">
+                ⚠️ Atenção: A IA não ativou suportes, mas o modelo parece complexo
+              </p>
+              <p className="text-orange-200/80 text-xs mt-1">
+                Modelos orgânicos como figuras geralmente precisam de suporte. Se ao abrir no Bambu Studio aparecer "floating regions", volte aqui e gere novamente, ou ative suporte manualmente no Bambu.
+              </p>
+            </div>
+          )}
+
           <p className="text-[10px] text-gray-400 text-center font-medium italic mb-1">{t.howToImport}</p>
           <div className="flex flex-col gap-2">
             <Button size="lg" disabled={!meshData || isGenerating}
