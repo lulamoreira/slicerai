@@ -167,11 +167,11 @@ export const SummaryTab = ({ results }: { results: AIResponse }) => {
 
         </div>
 
-        {results.estimates.filament_per_color.length > 0 && (
+        {(results.estimates.filament_per_color || []).length > 0 && (
             <div className="space-y-3">
                 <p className="text-[0.65rem] font-bold uppercase text-muted tracking-[0.2em] opacity-50">Breakdown por cor (AMS)</p>
                 <div className="flex flex-wrap gap-4">
-                    {results.estimates.filament_per_color.map((f: any, i: number) => (
+                    {(results.estimates.filament_per_color || []).map((f: any, i: number) => (
                         <div key={i} className="flex items-center gap-2 bg-surface-raised px-3 py-2 rounded-lg border border-border">
                             <div className="w-3 h-3 rounded-full border border-border-strong" style={{ backgroundColor: f.color }} />
                             <span className="text-[0.7rem] text-muted">Tray {f.slot}: <span className="text-foreground font-bold">{f.grams}g</span></span>

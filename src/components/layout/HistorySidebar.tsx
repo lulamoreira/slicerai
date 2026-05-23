@@ -46,7 +46,7 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({ onClose }) => {
         </div>
 
         <div className="flex-1 overflow-y-auto custom-scrollbar p-6 space-y-4">
-            {history.length === 0 ? (
+            {(history || []).length === 0 ? (
                 <div className="py-20 text-center space-y-6 opacity-30">
                     <div className="w-20 h-20 rounded-full bg-surface-raised flex items-center justify-center mx-auto border border-dashed border-border-strong">
                         <Ghost className="w-10 h-10 text-muted/30" />
@@ -56,7 +56,7 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({ onClose }) => {
                     </p>
                 </div>
             ) : (
-                history.map((entry: HistoryEntry) => (
+                (history || []).map((entry: HistoryEntry) => (
                     <button
                         key={entry.id}
                         onClick={() => {
@@ -119,7 +119,7 @@ export const HistorySidebar: React.FC<HistorySidebarProps> = ({ onClose }) => {
             )}
         </div>
 
-        {history.length > 0 && (
+        {(history || []).length > 0 && (
             <div className="p-6 border-t border-border">
                 <button 
                     onClick={clearHistory}
