@@ -286,7 +286,9 @@ Retorne este JSON exato (todos os campos obrigatórios):
   "orientation": { "rotation": "string", "reason": "string", "supportReduction": "string" }
 }
   \`;
+
   const fullPrompt = \`\${historyContext}\\n\\n\${improvementContext}\\n\\n\${systemPrompt}\\n\\n\${userMessage}\`;
+
 
 
 
