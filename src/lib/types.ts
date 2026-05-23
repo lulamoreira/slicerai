@@ -164,6 +164,11 @@ export interface AIResponse {
     overall: string;
   };
   improvements?: Record<string, string>;
+  orientation: {
+    rotation: string;
+    reason: string;
+    supportReduction: string;
+  };
 }
 
 export interface HistoryEntry {

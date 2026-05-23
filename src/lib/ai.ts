@@ -118,7 +118,12 @@ const aiResponseSchema = z.object({
     temperatures: z.string(),
     overall: z.string()
   }),
-  improvements: z.record(z.string()).optional()
+  improvements: z.record(z.string()).optional(),
+  orientation: z.object({
+    rotation: z.string(),
+    reason: z.string(),
+    supportReduction: z.string()
+  })
 });
 
 export const repairJSON = (json: string): string => {
@@ -180,6 +185,8 @@ INSTRUÇÃO: Com base nesse histórico, identifique preferências do usuário e 
         - layerHeight: "Escolhi 0.20mm pois a peça tem detalhes finos no rosto e capacete — camadas mais finas capturam melhor as curvas sem perder muito tempo."
         - support: "Ativei suporte do tipo tree pois os braços formam ângulos de 70° — sem suporte essas partes colapsariam durante a impressão."
         - ironing: "Desatvei o ironing pois a peça é uma figura com superfícies curvas — o ironing só beneficia superfícies planas e adicionaria 40 minutos desnecessários."
+
+    11. ORIENTAÇÃO DE IMPRESSÃO: Analise a geometria da peça e decida a orientação ideal de impressão. Considere: qual face deve ficar na mesa para minimizar suportes, maximizar resistência estrutural e obter melhor acabamento superficial nas faces mais visíveis. Retorne obrigatoriamente no JSON o campo orientation com os seguintes subcampos: rotation (string descrevendo a rotação recomendada, ex: 'Sem rotação — base plana na mesa', 'Rotacionar 90° no eixo X', 'Rotacionar 180° no eixo Z'), reason (explicação em português em 2-3 frases do porquê dessa orientação é ideal para esta peça específica, mencionando redução de suportes, resistência e qualidade), e supportReduction (estimativa em % de quanto a orientação escolhida reduz os suportes necessários em relação à orientação padrão, ex: '40%'). Exemplo para uma figura humana em pé: rotation deve ser 'Sem rotação — pés na mesa', reason deve explicar que manter a figura vertical minimiza suportes nos braços e garante que as camadas horizontais aumentem a resistência vertical do corpo.
   `;
 
   const improvementContext = improvementImage 
@@ -231,7 +238,8 @@ Retorne este JSON exato (todos os campos obrigatórios):
   "explanation": { "layer_height_reason": string, "infill_reason": string, "support_reason": string, "material_plate_tips": string, "postprocessing_tips": string, "warnings": [string], "pre_print_checklist_extra": [string] },
   "profile_name_suggestion": string,
   "decisions": { "layerHeight": string, "wallLoops": string, "infillDensity": string, "infillPattern": string, "printSpeed": string, "support": string, "seam": string, "ironing": string, "temperatures": string, "overall": string },
-  "improvements": { "campo": "o que foi visto no print e por que mudou" }
+  "improvements": { "campo": "o que foi visto no print e por que mudou" },
+  "orientation": { "rotation": "string", "reason": "string", "supportReduction": "string" }
 }
   `;
 

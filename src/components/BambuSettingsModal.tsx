@@ -14,6 +14,11 @@ interface Props {
   settings: BambuSettings & { 
     decisions?: any;
     improvements?: Record<string, string>;
+    orientation?: {
+      rotation: string;
+      reason: string;
+      supportReduction: string;
+    };
   };
 }
 
@@ -295,6 +300,21 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
               <li>As temperaturas e configurações estarão aplicadas automaticamente.</li>
             </ol>
           </div>
+        </div>
+
+        <div className="px-4 py-3 bg-blue-950/30 border-y border-blue-500/30 my-4">
+          <p className="text-[10px] text-blue-400 mb-2 uppercase tracking-[0.2em] font-bold flex items-center justify-between">
+            <span>📐 ORIENTAÇÃO RECOMENDADA</span>
+            {settings.orientation?.supportReduction && (
+              <Badge className="bg-green-500 text-white border-none text-[9px] px-1.5 py-0 h-4 font-black">
+                ⬇️ {settings.orientation.supportReduction} de suportes
+              </Badge>
+            )}
+          </p>
+          <p className="text-white font-semibold text-sm">{settings.orientation?.rotation || "Orientação padrão detectada"}</p>
+          <p className="text-gray-300 text-sm mt-1 leading-relaxed">
+            {settings.orientation?.reason || "A geometria base sugere que esta é a melhor posição para garantir estabilidade e acabamento."}
+          </p>
         </div>
 
         <div className="px-4 pb-4 pt-3 shrink-0 border-t border-gray-700 flex flex-col gap-2 bg-[#1c1c1e]">
