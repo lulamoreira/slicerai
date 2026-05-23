@@ -6,7 +6,7 @@ import { Copy, Download, FileArchive } from "lucide-react";
 import { downloadBambuProfile, BambuSettings } from "@/lib/bambuExport";
 import { downloadThreeMfProject, MeshData } from "@/lib/threeMfExport";
 import { detectModelType } from "@/lib/supportProfiles";
-import { useStore } from "@/lib/store";
+import { useAppStore } from "@/store/useAppStore";
 import { toast } from "sonner";
 
 
