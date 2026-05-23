@@ -30,17 +30,17 @@ export const StatsCard: React.FC = () => {
         <StatItem 
           icon={Ruler} 
           label="Dimensões" 
-          value={`${geometry.boundingBox.x.toFixed(0)}×${geometry.boundingBox.y.toFixed(0)}×${geometry.boundingBox.z.toFixed(0)}`} 
+          value={`${geometry.boundingBox?.x?.toFixed(0) ?? "?"}×${geometry.boundingBox?.y?.toFixed(0) ?? "?"}×${geometry.boundingBox?.z?.toFixed(0) ?? "?"}`} 
         />
         <StatItem 
           icon={Box} 
           label="Volume" 
-          value={`${geometry.volume.toFixed(1)}cm³`} 
+          value={`${geometry.volume?.toFixed(1) ?? "?"}cm³`} 
         />
         <StatItem 
           icon={Layers} 
           label="Área" 
-          value={`${geometry.surfaceArea.toFixed(0)}cm²`} 
+          value={`${geometry.surfaceArea?.toFixed(0) ?? "?"}cm²`} 
         />
         <StatItem 
           icon={Weight} 
@@ -54,7 +54,7 @@ export const StatsCard: React.FC = () => {
         <StatusBadge 
           label="Overhangs > 45°" 
           active={geometry.overhangsDetected} 
-          value={geometry.overhangsDetected ? `Sim (max ${geometry.maxOverhangAngle.toFixed(0)}°)` : "Não"}
+          value={geometry.overhangsDetected ? `Sim (max ${geometry.maxOverhangAngle?.toFixed(0) ?? "?"}°)` : "Não"}
           warning={geometry.overhangsDetected}
         />
         <StatusBadge 
