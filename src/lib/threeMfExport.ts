@@ -29,6 +29,58 @@ const FILAMENT_MAP: Record<string, Record<string, string>> = {
   ASA: { X1C: "Bambu ASA @BBL X1C", P1S: "Bambu ASA @BBL P1S" },
 };
 
+function getOptimalSupportConfig(modelType: "organic" | "technical", enableSupport: boolean) {
+  if (!enableSupport) {
+    return { enable_support: "0" };
+  }
+  if (modelType === "organic") {
+    return {
+      enable_support: "1",
+      support_type: "tree(auto)",
+      support_style: "tree_organic",
+      support_threshold_angle: "40",
+      support_top_z_distance: "0.22",
+      support_bottom_z_distance: "0.22",
+      support_object_xy_distance: "0.35",
+      support_interface_top_layers: "2",
+      support_interface_bottom_layers: "2",
+      support_interface_pattern: "concentric",
+      support_interface_spacing: "0",
+      support_base_pattern_spacing: "2.5",
+      support_expansion: "0",
+      support_wall_loops: "0",
+      dont_support_bridges: "1",
+      support_remove_small_overhang: "1",
+      support_critical_regions_only: "0",
+      tree_support_branch_distance: "4",
+      tree_support_branch_diameter: "3",
+      tree_support_branch_angle: "45",
+      tree_support_tip_diameter: "0.8",
+      tree_support_wall_count: "0",
+      independent_support_layer_height: "1",
+    };
+  }
+  return {
+    enable_support: "1",
+    support_type: "normal(auto)",
+    support_style: "grid",
+    support_threshold_angle: "35",
+    support_top_z_distance: "0.2",
+    support_bottom_z_distance: "0.2",
+    support_object_xy_distance: "0.5",
+    support_interface_top_layers: "3",
+    support_interface_bottom_layers: "2",
+    support_interface_pattern: "rectilinear",
+    support_interface_spacing: "0.15",
+    support_base_pattern_spacing: "2.5",
+    support_expansion: "0",
+    support_wall_loops: "1",
+    dont_support_bridges: "0",
+    support_remove_small_overhang: "1",
+    independent_support_layer_height: "1",
+  };
+}
+
 function getOrientationTransform(rotation: string, cx: number, cy: number): string {
   const r = (rotation || "").toLowerCase();
   if (r.includes("90") && r.includes("x")) return `1 0 0 0 0 -1 0 1 0 ${cx} ${cy} 0`;
