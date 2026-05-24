@@ -26,7 +26,7 @@ interface Props {
   };
 }
 
-type Tab = "Quality" | "Strength" | "Speed" | "Support" | "Analysis";
+type Tab = "Quality" | "Strength" | "Speed" | "Support" | "Geometry" | "Analysis";
 type Lang = "EN" | "PT";
 
 const LABELS: Record<Lang, Record<string, string>> = {
@@ -192,9 +192,9 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
     toast.success(t.copied);
   };
 
-  const tabs: Tab[] = ["Quality", "Strength", "Speed", "Support", "Analysis"];
+  const tabs: Tab[] = ["Quality", "Strength", "Speed", "Support", "Geometry", "Analysis"];
   const tabLabel: Record<Tab, string> = {
-    Quality: t.quality, Strength: t.strength, Speed: t.speed, Support: t.support, Analysis: t.analysis,
+    Quality: t.quality, Strength: t.strength, Speed: t.speed, Support: t.support, Geometry: lang === "PT" ? "Geometria" : "Geometry", Analysis: t.analysis,
   };
 
 
@@ -236,120 +236,84 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
 
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto px-4 py-2 min-h-0">
+        <div className="flex-1 overflow-y-auto px-4 py-3 min-h-0">
           {activeTab === "Quality" && (
-            <div>
-              <Row label={t.layerHeight} value={`${settings.layerHeight} mm`} onCopy={() => copy(String(settings.layerHeight))} decision={settings.decisions?.layerHeight} />
+            <div className="space-y-1">
+              <Row label={t.layerHeight} value={`${settings.layerHeight} mm`} onCopy={() => copy(String(settings.layerHeight))} />
               <Row label={t.initialLayer} value={`${Math.max(settings.layerHeight, 0.2)} mm`} onCopy={() => copy(String(Math.max(settings.layerHeight, 0.2)))} />
               <Row label={t.topLayers} value={String(settings.topLayers)} onCopy={() => copy(String(settings.topLayers))} />
               <Row label={t.bottomLayers} value={String(settings.bottomLayers)} onCopy={() => copy(String(settings.bottomLayers))} />
-              <Row label={t.ironing} value={settings.enableIroning ? "✓ On" : "✗ Off"} onCopy={() => copy(settings.enableIroning ? "1" : "0")} decision={settings.decisions?.ironing} />
-              <div className="py-1.5 border-b border-gray-700">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-gray-200 font-medium">{t.seamPosition}</span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-mono font-semibold text-white">
-                      {detectModelType({
-                        width: settings.geometryStats?.boundingBox.x || 0,
-                        depth: settings.geometryStats?.boundingBox.y || 0,
-                        height: settings.geometryStats?.boundingBox.z || 0,
-                        volume: settings.geometryStats?.volume || 0,
-                        triangleCount: settings.geometryStats?.triangleCount || 0
-                      }) === "organic" ? "Traseira (Back)" : "Alinhada (Aligned)"}
-                    </span>
-                  </div>
-                </div>
-                <DecisionNote text={lang === "PT" ? "Posição otimizada automaticamente para esconder a costura em modelos orgânicos ou garantir precisão em técnicos." : "Automatically optimized to hide seam on organic models or ensure precision on technical ones."} />
-              </div>
-              {settings.seamReason && (
-                <p className="text-[11px] text-gray-400 italic mb-1.5 -mt-1 px-1">
-                  {settings.seamReason}
-                </p>
+              <Row label={t.ironing} value={settings.enableIroning ? "✓ On" : "✗ Off"} onCopy={() => copy(settings.enableIroning ? "1" : "0")} />
+              {results?.decisions?.layerHeight && (
+                <p className="text-xs text-gray-400 italic mt-1 px-1">💡 {results.decisions.layerHeight}</p>
               )}
+            </div>
+          )}
 
-            </div>
-          )}
           {activeTab === "Strength" && (
-            <div>
-              <Row label={t.wallLoops} value={String(settings.wallLoops)} onCopy={() => copy(String(settings.wallLoops))} decision={settings.decisions?.wallLoops} />
-              <Row label={t.infillDensity} value={`${settings.infillDensity}%`} onCopy={() => copy(`${settings.infillDensity}%`)} decision={settings.decisions?.infillDensity} />
-              <Row label={t.infillPattern} value={settings.infillPattern || "grid"} onCopy={() => copy(settings.infillPattern || "grid")} decision={settings.decisions?.infillPattern} />
+            <div className="space-y-1">
+              <Row label={t.wallLoops} value={String(settings.wallLoops)} onCopy={() => copy(String(settings.wallLoops))} />
+              <Row label={t.infillDensity} value={`${settings.infillDensity}%`} onCopy={() => copy(`${settings.infillDensity}%`)} />
+              <Row label={t.infillPattern} value={settings.infillPattern || "grid"} onCopy={() => copy(settings.infillPattern || "grid")} />
               <Row label={t.brimWidth} value={`${settings.brimWidth ?? 0} mm`} onCopy={() => copy(String(settings.brimWidth ?? 0))} />
+              {results?.decisions?.infillDensity && (
+                <p className="text-xs text-gray-400 italic mt-1 px-1">💡 {results.decisions.infillDensity}</p>
+              )}
             </div>
           )}
+
           {activeTab === "Speed" && (
-            <div>
-              <Row label={t.printSpeed} value={`${settings.printSpeed} mm/s`} onCopy={() => copy(String(settings.printSpeed))} decision={settings.decisions?.printSpeed} />
+            <div className="space-y-1">
+              <Row label={t.printSpeed} value={`${settings.printSpeed} mm/s`} onCopy={() => copy(String(settings.printSpeed))} />
               <Row label={t.outerWallSpeed} value={`${Math.round(settings.printSpeed * 0.6)} mm/s`} onCopy={() => copy(String(Math.round(settings.printSpeed * 0.6)))} />
               <Row label={t.infillSpeed} value={`${settings.printSpeed} mm/s`} onCopy={() => copy(String(settings.printSpeed))} />
               <Row label={t.topSpeed} value={`${Math.round(settings.printSpeed * 0.5)} mm/s`} onCopy={() => copy(String(Math.round(settings.printSpeed * 0.5)))} />
               <Row label={t.travelSpeed} value={`${settings.travelSpeed} mm/s`} onCopy={() => copy(String(settings.travelSpeed))} />
-              <Row label={t.initSpeed} value="30 mm/s" onCopy={() => copy("30")} />
+              {results?.decisions?.printSpeed && (
+                <p className="text-xs text-gray-400 italic mt-1 px-1">💡 {results.decisions.printSpeed}</p>
+              )}
             </div>
           )}
+
           {activeTab === "Support" && (
-            <div>
-              {settings.geometryStats && (
-                <div className="mb-3 p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
-                  <p className="text-[10px] font-bold text-green-400 uppercase tracking-widest mb-1">
-                    {lang === "PT" ? "Análise Geométrica" : "Geometric Analysis"}
-                  </p>
-                  <p className="text-sm font-semibold text-white">
-                    {detectModelType({
-                      width: settings.geometryStats.boundingBox.x,
-                      depth: settings.geometryStats.boundingBox.y,
-                      height: settings.geometryStats.boundingBox.z,
-                      volume: settings.geometryStats.volume,
-                      triangleCount: settings.geometryStats.triangleCount
-                    }) === "organic" 
-                        ? (lang === "PT" ? "Modelo orgânico — Tree Organic" : "Organic Model — Tree Organic")
-                        : (lang === "PT" ? "Modelo técnico — Normal Grid" : "Technical Model — Normal Grid")}
-                    </p>
-                  </div>
-                )}
-
-              {settings.enableSupport && (
-                <div className="mb-3 p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg animate-in fade-in slide-in-from-top-2">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Badge className="bg-green-600 hover:bg-green-700 text-white border-none text-[10px] px-2 py-0.5">
-                      ✨ {lang === "PT" ? "Perfil otimizado para remoção fácil" : "Optimized for easy removal"}
-                    </Badge>
-                  </div>
-                  <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-                    <div className="text-[10px] text-gray-400 flex items-center gap-1" title={lang === "PT" ? "Estilo de suporte pesquisado para menor contato" : "Researched support style for minimal contact"}>
-                      • tree organic
-                    </div>
-                    <div className="text-[10px] text-gray-400 flex items-center gap-1" title={lang === "PT" ? "Interface concêntrica solta mais fácil" : "Concentric interface releases easier"}>
-                      • concentric interface
-                    </div>
-                    <div className="text-[10px] text-gray-400 flex items-center gap-1" title={lang === "PT" ? "Espaçamento zero evita cicatrizes" : "Zero spacing prevents scarring"}>
-                      • spacing 0
-                    </div>
-                    <div className="text-[10px] text-gray-400 flex items-center gap-1" title={lang === "PT" ? "Sem paredes externas no suporte para quebrar fácil" : "No support walls for easy break-away"}>
-                      • wall loops 0
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              <Row label={t.enableSupport} value={settings.enableSupport ? "✓ On" : "✗ Off"} onCopy={() => copy(settings.enableSupport ? "1" : "0")} decision={settings.decisions?.support} />
-
-              {settings.supportReason && (
-                <p className="text-[11px] text-gray-400 italic mb-1.5 -mt-1 px-1">
-                  {settings.supportReason}
-                </p>
-              )}
-
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 mb-2">
+                <Badge className="bg-green-600 text-white text-xs">📐 Calculado pela geometria</Badge>
+              </div>
+              <Row label={t.enableSupport} value={settings.enableSupport ? "✓ On" : "✗ Off"} onCopy={() => copy(settings.enableSupport ? "1" : "0")} />
               {settings.enableSupport && (
                 <>
-                  <Row label={t.supportType} value={settings.supportType || "normal(auto)"} onCopy={() => copy(settings.supportType || "normal(auto)")} />
-                  <Row label={t.supportStyle} value={settings.supportStyle || "snug"} onCopy={() => copy(settings.supportStyle || "snug")} />
-                  <Row label={t.supportInterface} value={settings.supportInterfacePattern || "concentric"} onCopy={() => copy(settings.supportInterfacePattern || "concentric")} />
-                  <Row label={t.supportAngle} value={`${settings.supportThreshold ?? 45}°`} onCopy={() => copy(String(settings.supportThreshold ?? 45))} />
+                  <Row label={t.supportType} value={settings.supportType || "tree(auto)"} onCopy={() => copy(settings.supportType || "tree(auto)")} />
+                  <Row label="Style" value="tree_organic" onCopy={() => copy("tree_organic")} />
+                  <Row label="Interface pattern" value="concentric" onCopy={() => copy("concentric")} />
+                  <Row label="Interface spacing" value="0 mm" onCopy={() => copy("0")} />
+                  <Row label="Wall loops" value="0" onCopy={() => copy("0")} />
+                  <Row label={t.supportAngle} value={`${settings.supportThreshold ?? 30}°`} onCopy={() => copy(String(settings.supportThreshold ?? 30))} />
                 </>
+              )}
+              {results?.support?.reason && (
+                <p className="text-xs text-gray-400 italic mt-2 px-1">💡 {results.support.reason}</p>
               )}
             </div>
           )}
+
+          {activeTab === "Geometry" && (
+            <div className="space-y-1">
+              <Row label="Dimensões" value={settings.geometryStats ? `${settings.geometryStats.boundingBox.x.toFixed(1)}×${settings.geometryStats.boundingBox.y.toFixed(1)}×${settings.geometryStats.boundingBox.z.toFixed(1)} mm` : "—"} onCopy={() => {}} />
+              <Row label="Volume" value={settings.geometryStats ? `${(settings.geometryStats.volume / 1000).toFixed(2)} cm³` : "—"} onCopy={() => {}} />
+              <Row label="Área" value={settings.geometryStats ? `${(settings.geometryStats.surfaceArea / 100).toFixed(2)} cm²` : "—"} onCopy={() => {}} />
+              <Row label="Peso estimado" value={settings.geometryStats ? `${(settings.geometryStats.volume / 1000 * 1.25).toFixed(1)} g` : "—"} onCopy={() => {}} />
+              <Row label="Triângulos" value={meshData ? `${(meshData.triangles.length / 1000).toFixed(0)}k` : "—"} onCopy={() => {}} />
+              <Row label="Tipo detectado" value={detectModelType({
+                width: settings.geometryStats?.boundingBox.x || 0,
+                depth: settings.geometryStats?.boundingBox.y || 0,
+                height: settings.geometryStats?.boundingBox.z || 0,
+                volume: settings.geometryStats?.volume || 0,
+                triangleCount: settings.geometryStats?.triangleCount || 0
+              }) === "organic" ? "Orgânico (figura)" : "Técnico (mecânico)"} onCopy={() => {}} />
+            </div>
+          )}
+
           {activeTab === "Analysis" && (
             <div className="space-y-6 py-2">
               <div className="space-y-2">
@@ -372,7 +336,6 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
                     {Object.entries(settings.improvements).map(([field, reason]) => (
                       <div key={field} className="p-3 bg-green-500/5 border border-green-500/20 rounded-lg">
                         <p className="text-xs font-bold text-green-500 uppercase mb-1">{field}</p>
-
                         <p className="text-xs text-gray-200">{reason}</p>
                       </div>
                     ))}
@@ -382,38 +345,14 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
             </div>
           )}
 
-        </div>
-
-        <div className="mt-3 pt-3 border-t border-gray-700 px-4">
-          <p className="text-[10px] text-gray-300 mb-1.5 uppercase tracking-[0.2em] font-bold">🧵 FILAMENTO</p>
-          <Row label={t.filament} value={settings.filamentType} onCopy={() => copy(settings.filamentType)} />
-          <Row label={t.nozzleTemp} value={`${settings.nozzleTemp}°C`} onCopy={() => copy(String(settings.nozzleTemp))} decision={settings.decisions?.temperatures} />
-          <Row label={t.bedTemp} value={`${settings.bedTemp}°C`} onCopy={() => copy(String(settings.bedTemp))} />
-          
-          <div className="bg-blue-950/40 border border-blue-500/40 rounded-lg p-3 mb-3 mt-4">
-            <p className="text-blue-200 text-sm font-semibold mb-1.5 flex items-center gap-2">
-              📦 Como usar o arquivo .3mf
-            </p>
-            <p className="text-blue-100/90 text-xs leading-relaxed">
-              Após baixar, basta dar <strong>duplo clique</strong> no arquivo .3mf. O Bambu Studio abre com o modelo posicionado e todas as configurações aplicadas automaticamente — sem nenhum passo manual.
-            </p>
+          <div className="mt-4 pt-3 border-t border-gray-700">
+            <p className="text-xs text-gray-400 mb-2 uppercase tracking-widest">🧵 Filamento</p>
+            <Row label={t.filament} value={settings.filamentType} onCopy={() => copy(settings.filamentType)} />
+            <Row label={t.nozzleTemp} value={`${settings.nozzleTemp}°C`} onCopy={() => copy(String(settings.nozzleTemp))} />
+            <Row label={t.bedTemp} value={`${settings.bedTemp}°C`} onCopy={() => copy(String(settings.bedTemp))} />
           </div>
         </div>
 
-        <div className="px-4 py-3 bg-blue-950/30 border-y border-blue-500/30 my-3">
-          <p className="text-[10px] text-blue-400 mb-1.5 uppercase tracking-[0.2em] font-bold flex items-center justify-between">
-            <span>📐 ORIENTAÇÃO RECOMENDADA</span>
-            {settings.orientation?.supportReduction && (
-              <Badge className="bg-green-500 text-white border-none text-[9px] px-1.5 py-0 h-4 font-black">
-                ⬇️ {settings.orientation.supportReduction} de suportes
-              </Badge>
-            )}
-          </p>
-          <p className="text-white font-bold text-base">{settings.orientation?.rotation || "Orientação padrão detectada"}</p>
-          <p className="text-blue-100/90 text-sm mt-1 leading-relaxed">
-            {settings.orientation?.reason || "A geometria base sugere que esta é a melhor posição para garantir estabilidade e acabamento."}
-          </p>
-        </div>
 
         <div className="px-4 pb-4 pt-3 shrink-0 border-t border-gray-700 flex flex-col gap-2 bg-[#1c1c1e] sticky bottom-0 z-10">
           {meshData && meshData.triangles.length > 1_000_000 && (
