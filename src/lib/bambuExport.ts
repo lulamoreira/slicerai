@@ -103,6 +103,7 @@ export interface BambuSettings {
     volume: number;
     triangleCount: number;
   };
+  buildPlate?: string;
 }
 
 
