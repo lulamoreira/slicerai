@@ -291,8 +291,8 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
                   <Row label={t.supportAngle} value={`${settings.supportThreshold ?? 30}°`} onCopy={() => copy(String(settings.supportThreshold ?? 30))} />
                 </>
               )}
-              {results?.support?.reason && (
-                <p className="text-xs text-gray-400 italic mt-2 px-1">💡 {results.support.reason}</p>
+              {settings.supportReason && (
+                <p className="text-xs text-gray-400 italic mt-2 px-1">💡 {settings.supportReason}</p>
               )}
             </div>
           )}
@@ -301,7 +301,7 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
             <div className="space-y-1">
               <Row label="Dimensões" value={settings.geometryStats ? `${settings.geometryStats.boundingBox.x.toFixed(1)}×${settings.geometryStats.boundingBox.y.toFixed(1)}×${settings.geometryStats.boundingBox.z.toFixed(1)} mm` : "—"} onCopy={() => {}} />
               <Row label="Volume" value={settings.geometryStats ? `${(settings.geometryStats.volume / 1000).toFixed(2)} cm³` : "—"} onCopy={() => {}} />
-              <Row label="Área" value={settings.geometryStats ? `${(settings.geometryStats.surfaceArea / 100).toFixed(2)} cm²` : "—"} onCopy={() => {}} />
+              <Row label="Área" value={settings.geometryStats ? `${((settings.geometryStats.boundingBox.x * settings.geometryStats.boundingBox.y * 2 + settings.geometryStats.boundingBox.x * settings.geometryStats.boundingBox.z * 2 + settings.geometryStats.boundingBox.y * settings.geometryStats.boundingBox.z * 2) / 100).toFixed(2)} cm²` : "—"} onCopy={() => {}} />
               <Row label="Peso estimado" value={settings.geometryStats ? `${(settings.geometryStats.volume / 1000 * 1.25).toFixed(1)} g` : "—"} onCopy={() => {}} />
               <Row label="Triângulos" value={meshData ? `${(meshData.triangles.length / 1000).toFixed(0)}k` : "—"} onCopy={() => {}} />
               <Row label="Tipo detectado" value={detectModelType({
