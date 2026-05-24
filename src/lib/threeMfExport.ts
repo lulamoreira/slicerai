@@ -29,6 +29,15 @@ const FILAMENT_MAP: Record<string, Record<string, string>> = {
   ASA: { X1C: "Bambu ASA @BBL X1C", P1S: "Bambu ASA @BBL P1S" },
 };
 
+const VALID_BED_TYPES = [
+  "Cool Plate",
+  "Engineering Plate",
+  "High Temp Plate",
+  "Textured PEI Plate",
+  "Smooth PEI Plate",
+  "Bambu Cool Plate SuperTack",
+];
+
 function getOptimalSupportConfig(modelType: "organic" | "technical", enableSupport: boolean, triangleCount: number = 0) {
   if (!enableSupport) {
     return { enable_support: "0" };
@@ -201,6 +210,10 @@ ${tXml}
   const filamentColor = (settings as any).baseColor || "#00AE42";
 
   // project_settings.config com TODOS os campos obrigatórios
+  const safeBedType = VALID_BED_TYPES.includes(settings.buildPlate as string)
+    ? settings.buildPlate
+    : "Textured PEI Plate";
+
   const projectSettings = {
     from: "User",
     name: profileName,
@@ -223,7 +236,7 @@ ${tXml}
     default_filament_profile: [uniqueFilamentName],
     inherits_group: ["", "", ""],
     different_settings_to_system: ["", "", ""],
-    curr_bed_type: "1",
+    curr_bed_type: safeBedType,
     // Overrides da IA
     layer_height: String(settings.layerHeight),
     initial_layer_print_height: "0.2",

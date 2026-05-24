@@ -85,6 +85,7 @@ export const ResultsPanel: React.FC = () => {
       seamPosition: res.quality.seam_position,
       seamReason: res.quality.seamReason,
       filamentType: (wizard as any).material || "PLA",
+      buildPlate: (wizard as any).buildPlate || "Textured PEI Plate",
       profileName: `SlicerAI_${(wizard as any).fileName?.split('.')[0] || 'perfil'}`,
       version: versionNum
     });
@@ -419,6 +420,7 @@ export const ResultsPanel: React.FC = () => {
               seamPosition: results.quality.seam_position,
               seamReason: results.quality.seamReason,
               filamentType: (wizard as any).material || "PLA",
+              buildPlate: (wizard as any).buildPlate || "Textured PEI Plate",
               profileName: `SlicerAI_${(wizard as any).fileName?.split('.')[0] || 'perfil'}`,
               version: profileVersion,
               decisions: results.decisions,
