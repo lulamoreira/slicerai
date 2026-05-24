@@ -136,6 +136,10 @@ export async function downloadThreeMfProject(
   const cx = plateW / 2, cy = plateH / 2;
   const transformStr = getOrientationTransform(orientation?.rotation || "", cx, cy);
 
+  // Nomes únicos para os presets embarcados (evita conflito com presets de sistema)
+  const uniqueProcessName = `SlicerAI_${profileName.replace(/\s+/g, '_')}_Process`;
+  const uniqueFilamentName = `SlicerAI_${profileName.replace(/\s+/g, '_')}_${settings.filamentType}`;
+
   const zip = new JSZip();
   zip.file("[Content_Types].xml", `<?xml version="1.0" encoding="UTF-8"?>
 <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
@@ -203,8 +207,8 @@ ${tXml}
     version: "02.00.00.00",
     is_custom_defined: "0",
     printer_settings_id: printerInfo.settings_id,
-    print_settings_id: printSettingsId,
-    filament_settings_id: [filamentId],
+    print_settings_id: uniqueProcessName,
+    filament_settings_id: [uniqueFilamentName],
     printer_model: printerInfo.model,
     printer_variant: "0.4",
     nozzle_diameter: ["0.4"],
@@ -215,8 +219,8 @@ ${tXml}
     filament_is_support: ["0"],
     filament_max_volumetric_speed: ["21"],
     // Defaults para evitar warnings
-    default_print_profile: printSettingsId,
-    default_filament_profile: [filamentId],
+    default_print_profile: uniqueProcessName,
+    default_filament_profile: [uniqueFilamentName],
     inherits_group: ["", "", ""],
     different_settings_to_system: ["", "", ""],
     curr_bed_type: "1",
@@ -239,13 +243,13 @@ ${tXml}
   // EMBARCAR preset de processo dentro do .3mf — garante funcionamento mesmo sem o perfil instalado
   const embeddedProcess = {
     type: "process",
-    name: printSettingsId,
+    name: uniqueProcessName,
     from: "User",
-    setting_id: "GP004_USER",
+    setting_id: `GP_SLICERAI_${Date.now()}`,
     inherits: printSettingsId,
     instantiation: "true",
     version: "02.00.00.00",
-    print_settings_id: printSettingsId,
+    print_settings_id: uniqueProcessName,
     layer_height: String(settings.layerHeight),
     initial_layer_print_height: "0.2",
     wall_loops: String(settings.wallLoops),
@@ -268,14 +272,14 @@ ${tXml}
   };
   const embeddedFilament = {
     type: "filament",
-    name: filamentId,
+    name: uniqueFilamentName,
     from: "User",
-    setting_id: "GFSA00_USER",
+    setting_id: `GFS_SLICERAI_${Date.now()}`,
     filament_id: filamentIdMap[settings.filamentType] || "GFA00",
     inherits: filamentId,
     instantiation: "true",
     version: "02.00.00.00",
-    filament_settings_id: [filamentId],
+    filament_settings_id: [uniqueFilamentName],
     filament_type: [settings.filamentType],
     filament_diameter: ["1.75"],
     filament_colour: [filamentColor],
@@ -317,6 +321,10 @@ ${tXml}
   <metadata key="nozzle_diameters" value="0.4"/>
  </plate>
 </config>`);
+
+  console.log("[SlicerAI 3MF] enable_support será:", (projectSettings as any).enable_support, "tipo:", typeof (projectSettings as any).enable_support);
+  console.log("[SlicerAI 3MF] support_style:", (projectSettings as any).support_style);
+  console.log("[SlicerAI 3MF] support_type:", (projectSettings as any).support_type);
 
   const blob = await zip.generateAsync({ type: "blob", compression: "DEFLATE" });
   const url = URL.createObjectURL(blob);
