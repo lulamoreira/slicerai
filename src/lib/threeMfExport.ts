@@ -42,27 +42,28 @@ function getOptimalSupportConfig(modelType: "organic" | "technical", enableSuppo
     return {
       enable_support: "1",
       support_type: "tree(auto)",
-      support_style: "tree_organic",
+      support_style: "tree_organic",          // SNUG style — segue contorno
       support_threshold_angle: thresholdAngle,
       support_top_z_distance: "0.22",
       support_bottom_z_distance: "0.22",
       support_object_xy_distance: "0.35",
       support_interface_top_layers: "2",
       support_interface_bottom_layers: "2",
-      support_interface_pattern: "concentric",
-      support_interface_spacing: "0",
+      support_interface_pattern: "concentric",  // remoção como uma folha única
+      support_interface_spacing: "0",           // CHAVE para remoção fácil
       support_base_pattern_spacing: "2.5",
       support_expansion: "0",
-      support_wall_loops: "0",
+      support_wall_loops: "0",                  // CHAVE — sem paredes = quebra fácil
       dont_support_bridges: "1",
-      support_remove_small_overhang: removeSmallOverhang,
+      support_remove_small_overhang: "0",       // mantém suportes pequenos para evitar floating
       support_critical_regions_only: "0",
-      tree_support_branch_distance: "4",
-      tree_support_branch_diameter: "3",
+      tree_support_branch_distance: "4",        // mais ramos = mais cobertura
+      tree_support_branch_diameter: "3",        // finos para quebrar fácil
       tree_support_branch_angle: "45",
       tree_support_tip_diameter: "0.8",
       tree_support_wall_count: "0",
       independent_support_layer_height: "1",
+      raft_first_layer_expansion: "2",
     };
   }
   return {
@@ -109,6 +110,14 @@ function getOrientationTransform(rotation: string, cx: number, cy: number): stri
   if (r.includes("90") && r.includes("y")) return `0 0 1 0 1 0 -1 0 0 ${cx} ${cy} 0`;
   if (r.includes("180") && r.includes("z")) return `-1 0 0 0 -1 0 0 0 1 ${cx} ${cy} 0`;
   return `1 0 0 0 1 0 0 0 1 ${cx} ${cy} 0`;
+}
+
+export function shouldForceSupport(mesh: MeshData, dimensions?: { x: number; y: number; z: number }): boolean {
+  const triangleCount = mesh.triangles.length;
+  const isComplexModel = triangleCount > 200_000;
+  const heightRatio = dimensions ? dimensions.z / Math.max(dimensions.x, dimensions.y, 1) : 1;
+  const looksLikeFigure = heightRatio > 1.2 || triangleCount > 500_000;
+  return isComplexModel || looksLikeFigure;
 }
 
 export async function downloadThreeMfProject(
@@ -163,11 +172,27 @@ ${tXml}
  </build>
 </model>`);
 
+  // FORÇA SUPORTE para modelos complexos/orgânicos independente do que a IA decidiu
   const triangleCount = mesh.triangles.length;
-  // Force enable support for very complex models
-  const shouldEnableSupport = settings.enableSupport || triangleCount > 500000;
+  const isComplexModel = triangleCount > 200_000;
+  const dimensions = (settings as any).geometryStats?.boundingBox || (settings as any).geometry?.dimensions;
+  const heightRatio = dimensions ? dimensions.z / Math.max(dimensions.x, dimensions.y, 1) : 1;
+  const looksLikeFigure = heightRatio > 1.2 || triangleCount > 500_000;
+
+  // Override defensivo: figuras orgânicas SEMPRE têm suporte tree_organic
+  const forceSupport = isComplexModel || looksLikeFigure;
+  const effectiveSupportEnabled = forceSupport || settings.enableSupport;
+  const effectiveModelType: "organic" | "technical" = looksLikeFigure ? "organic" : (modelType || "organic");
+
+  console.log("[SlicerAI] Support decision:", { 
+    aiSaid: settings.enableSupport, 
+    forceSupport, 
+    effective: effectiveSupportEnabled,
+    triangleCount,
+    heightRatio
+  });
   
-  const supportConfig = getOptimalSupportConfig(modelType || "organic", shouldEnableSupport, triangleCount);
+  const supportConfig = getOptimalSupportConfig(effectiveModelType, effectiveSupportEnabled, triangleCount);
   const seamConfig = getOptimalSeamConfig(modelType || "organic");
   const filamentColor = (settings as any).baseColor || "#00AE42";
 
@@ -201,6 +226,7 @@ ${tXml}
     wall_loops: String(settings.wallLoops),
     sparse_infill_density: settings.infillDensity + "%",
     sparse_infill_pattern: settings.infillPattern || "grid",
+    enable_support: effectiveSupportEnabled ? "1" : "0",
     ...supportConfig,  // valores otimizados de suporte (tree_organic etc)
     ...seamConfig,     // posição da costura
     nozzle_temperature: [String(settings.nozzleTemp)],
@@ -226,6 +252,7 @@ ${tXml}
     wall_loops: String(settings.wallLoops),
     sparse_infill_density: settings.infillDensity + "%",
     sparse_infill_pattern: settings.infillPattern || "grid",
+    enable_support: effectiveSupportEnabled ? "1" : "0",
     ...supportConfig,
     ...seamConfig,
     inner_wall_speed: String(settings.printSpeed),

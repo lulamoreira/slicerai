@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Copy, Download, FileArchive, Loader2 } from "lucide-react";
 import { downloadBambuProfile, BambuSettings } from "@/lib/bambuExport";
-import { downloadThreeMfProject, MeshData } from "@/lib/threeMfExport";
+import { downloadThreeMfProject, MeshData, shouldForceSupport } from "@/lib/threeMfExport";
 import { detectModelType } from "@/lib/supportProfiles";
 import { useAppStore } from "@/store/useAppStore";
 import { toast } from "sonner";
@@ -437,6 +437,19 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
               </p>
             </div>
           )}
+
+          <div className="px-4 mb-2">
+            {meshData && shouldForceSupport(meshData, settings.geometryStats?.boundingBox) && !settings.enableSupport && (
+              <div className="bg-green-950/40 border border-green-500/40 rounded-lg p-3 mb-3">
+                <p className="text-green-300 text-sm font-semibold">
+                  🛡️ Suporte forçado automaticamente
+                </p>
+                <p className="text-green-200/80 text-xs mt-1">
+                  Detectamos {(meshData.triangles.length / 1000).toFixed(0)}k triângulos e proporções de figura orgânica. O sistema ignorou a sugestão da IA e ativou suporte tree_organic otimizado para evitar floating regions.
+                </p>
+              </div>
+            )}
+          </div>
 
           <p className="text-[10px] text-gray-400 text-center font-medium italic mb-1">{t.howToImport}</p>
           <div className="flex flex-col gap-2">
