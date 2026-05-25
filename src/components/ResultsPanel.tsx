@@ -41,8 +41,62 @@ export const ResultsPanel: React.FC = () => {
   const [showImproveArea, setShowImproveArea] = useState(false);
   const [uploadingImage, setUploadingImage] = useState<string | null>(null);
   const [isImproving, setIsImproving] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImageSelected = (file: File) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setUploadingImage(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    const files = Array.from(e.dataTransfer.files);
+    const imageFile = files.find(f => f.type === "image/png" || f.type === "image/jpeg" || /\.(png|jpe?g)$/i.test(f.name));
+    if (imageFile) {
+      handleImageSelected(imageFile);
+    } else {
+      toast.error("Apenas arquivos PNG ou JPG são aceitos");
+    }
+  };
+
+  React.useEffect(() => {
+    const handlePaste = (e: ClipboardEvent) => {
+      if (!showImproveArea) return;
+      const items = e.clipboardData?.items;
+      if (!items) return;
+      for (const item of Array.from(items)) {
+        if (item.type.startsWith("image/")) {
+          const file = item.getAsFile();
+          if (file) {
+            handleImageSelected(file);
+            toast.success("Imagem colada com sucesso");
+          }
+        }
+      }
+    };
+
+    window.addEventListener("paste", handlePaste);
+    return () => window.removeEventListener("paste", handlePaste);
+  }, [showImproveArea]);
 
   if (!results) return null;
 
