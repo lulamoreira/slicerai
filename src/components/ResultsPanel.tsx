@@ -173,13 +173,6 @@ export const ResultsPanel: React.FC = () => {
             <span className="ml-3 px-2 py-0.5 bg-surface-raised border border-border rounded text-xs text-muted-foreground font-mono align-middle">v{profileVersion}</span>
           </h2>
         </div>
-        <button 
-          onClick={() => handleCopyAll()}
-          className="flex items-center justify-center gap-2 px-6 py-3.5 bg-primary/10 border border-primary/30 rounded-xl text-[11px] font-black tracking-[0.15em] text-primary hover:bg-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-primary/5"
-        >
-          {copiedAll ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-          COPIAR TUDO
-        </button>
       </div>
 
 
