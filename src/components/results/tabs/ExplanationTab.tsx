@@ -6,7 +6,6 @@ import {
   Layers, 
   Shield, 
   Box, 
-  Palette, 
   Sparkles, 
   AlertTriangle 
 } from "lucide-react";
