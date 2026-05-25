@@ -153,16 +153,6 @@ export const ResultsPanel: React.FC = () => {
     toast.success("Link compartilhado copiado!");
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setUploadingImage(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
 
   const handleImprove = async () => {
     if (!uploadingImage) return;
