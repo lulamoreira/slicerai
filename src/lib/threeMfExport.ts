@@ -114,11 +114,8 @@ function getOptimalSeamConfig(modelType: "organic" | "technical") {
 }
 
 function getOrientationTransform(rotation: string, cx: number, cy: number): string {
-  const r = (rotation || "").toLowerCase();
-  if (r.includes("90") && r.includes("x")) return `1 0 0 0 0 -1 0 1 0 ${cx} ${cy} 0`;
-  if (r.includes("90") && r.includes("y")) return `0 0 1 0 1 0 -1 0 0 ${cx} ${cy} 0`;
-  if (r.includes("180") && r.includes("z")) return `-1 0 0 0 -1 0 0 0 1 ${cx} ${cy} 0`;
-  return `1 0 0 0 1 0 0 0 1 ${cx} ${cy} 0`;
+  // Always return identity transform for build item, let Bambu Studio handle positioning
+  return `1 0 0 0 1 0 0 0 1 0 0 0`;
 }
 
 export function shouldForceSupport(mesh: MeshData, dimensions?: { x: number; y: number; z: number }): boolean {
@@ -143,7 +140,7 @@ export async function downloadThreeMfProject(
   const filamentId = filamentMap[printerKey] || filamentMap["X1C"] || Object.values(filamentMap)[0];
   const [plateW, plateH] = printerInfo.plate;
   const cx = plateW / 2, cy = plateH / 2;
-  const transformStr = getOrientationTransform(orientation?.rotation || "", cx, cy);
+  const transformStr = "1 0 0 0 1 0 0 0 1 0 0 0";
 
   // Nomes únicos para os presets embarcados (evita conflito com presets de sistema)
   const uniqueProcessName = `SlicerAI_${profileName.replace(/\s+/g, '_')}_Process`;
@@ -162,7 +159,7 @@ export async function downloadThreeMfProject(
  <Relationship Target="/3D/3dmodel.model" Id="rel-1" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"/>
 </Relationships>`);
 
-  const vXml = mesh.vertices.map(v => `    <vertex x="${v[0].toFixed(6)}" y="${v[1].toFixed(6)}" z="${v[2].toFixed(6)}"/>`).join("\n");
+  const vXml = mesh.vertices.map(v => `    <vertex x="${v[0].toFixed(4)}" y="${v[1].toFixed(4)}" z="${v[2].toFixed(4)}"/>`).join("\n");
   const tXml = mesh.triangles.map(t => `    <triangle v1="${t[0]}" v2="${t[1]}" v3="${t[2]}"/>`).join("\n");
   zip.file("3D/3dmodel.model", `<?xml version="1.0" encoding="UTF-8"?>
 <model unit="millimeter" xml:lang="en-US" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02" xmlns:BambuStudio="http://schemas.bambulab.com/package/2021" xmlns:p="http://schemas.microsoft.com/3dmanufacturing/production/2015/06" requiredextensions="p">
