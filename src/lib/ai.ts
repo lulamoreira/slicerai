@@ -300,7 +300,8 @@ INSTRUÇÃO: Com base nesse histórico, identifique preferências do usuário e 
     ? `
 ALERTA DE MELHORIA (Versão v${currentVersion}):
 O usuário enviou um print screen do fatiamento no Bambu Studio usando as configurações da versão v${currentVersion}.
-Analise a imagem e melhore os parâmetros.
+Analise a imagem do fatiamento no Bambu Studio que estou enviando. Identifique problemas visíveis (stringing, má adesão, suportes desnecessários, qualidade de superfície, tempo de impressão alto) e gere um perfil melhorado corrigindo esses problemas. Explique no campo improvements o que foi identificado na imagem e o que foi ajustado em cada configuração.
+
 CONFIGURAÇÕES v${currentVersion} ATUAIS:
 ${JSON.stringify(previousResults, null, 2)}
 ` : '';
