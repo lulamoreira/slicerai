@@ -47,7 +47,7 @@ function HomeComponent() {
     geometry,
   } = useAppStore()
   
-  const { language, theme, apiKey } = useSettingsStore()
+  const { language, theme, claudeKey } = useSettingsStore()
   
   const [showSettings, setShowSettings] = React.useState(false)
   const [showHistory, setShowHistory] = React.useState(false)
