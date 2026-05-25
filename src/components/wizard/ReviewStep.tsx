@@ -5,12 +5,12 @@ import { useAuthStore } from "../../store/useAuthStore";
 import { 
   Sparkles, Printer, Box, Layers, Play, CheckCircle2,
   Package, Grid3x3, Target, Scale, Clock, Triangle, Palette, Wrench, Settings as SettingsIcon,
-  Cpu, AlertCircle
+  Cpu, AlertCircle, Loader2
 } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { MATERIAL_DENSITIES } from "../../lib/geometry";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 export const ReviewStep: React.FC = () => {
   const { wizard, setResults, status, geometry, profileHistory } = useAppStore();
