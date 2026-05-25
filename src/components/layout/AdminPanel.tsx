@@ -621,12 +621,12 @@ function SettingsTab() {
         </div>
 
         <div className="space-y-4">
-          <label className="text-[10px] font-black uppercase tracking-widest text-primary ml-1">Chave Gemini Centralizada</label>
+          <label className="text-[10px] font-black uppercase tracking-widest text-primary ml-1">Chave Claude Centralizada</label>
           <div className="flex gap-3">
             <div className="relative flex-1">
               <input 
                 type={showKey ? "text" : "password"}
-                placeholder="Configurada no Servidor (GEMINI_API_KEY)"
+                placeholder="Configurada no Servidor (CLAUDE_API_KEY)"
                 className="w-full bg-surface-raised border border-border rounded-xl p-3.5 text-xs font-mono font-bold outline-none opacity-50 cursor-not-allowed"
                 disabled
               />
