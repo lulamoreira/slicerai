@@ -159,7 +159,7 @@ export async function downloadThreeMfProject(
  <Relationship Target="/3D/3dmodel.model" Id="rel-1" Type="http://schemas.microsoft.com/3dmanufacturing/2013/01/3dmodel"/>
 </Relationships>`);
 
-  const vXml = mesh.vertices.map(v => `    <vertex x="${v[0].toFixed(6)}" y="${v[1].toFixed(6)}" z="${v[2].toFixed(6)}"/>`).join("\n");
+  const vXml = mesh.vertices.map(v => `    <vertex x="${v[0].toFixed(4)}" y="${v[1].toFixed(4)}" z="${v[2].toFixed(4)}"/>`).join("\n");
   const tXml = mesh.triangles.map(t => `    <triangle v1="${t[0]}" v2="${t[1]}" v3="${t[2]}"/>`).join("\n");
   zip.file("3D/3dmodel.model", `<?xml version="1.0" encoding="UTF-8"?>
 <model unit="millimeter" xml:lang="en-US" xmlns="http://schemas.microsoft.com/3dmanufacturing/core/2015/02" xmlns:BambuStudio="http://schemas.bambulab.com/package/2021" xmlns:p="http://schemas.microsoft.com/3dmanufacturing/production/2015/06" requiredextensions="p">
