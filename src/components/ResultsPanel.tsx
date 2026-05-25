@@ -70,7 +70,7 @@ export const ResultsPanel: React.FC = () => {
     e.stopPropagation();
     setIsDragging(false);
     const files = Array.from(e.dataTransfer.files);
-    const imageFile = files.find(f => f.type === "image/png" || f.type === "image/jpeg" || /\.(png|jpe?g)$/i.test(f.name));
+    const imageFile = files.find(f => f.type === "image/png" || f.type === "image/jpeg" || f.type === "image/webp" || /\.(png|jpe?g|webp)$/i.test(f.name));
     if (imageFile) {
       handleImageSelected(imageFile);
     } else {
@@ -306,7 +306,7 @@ export const ResultsPanel: React.FC = () => {
                     type="file" 
                     ref={fileInputRef} 
                     className="hidden" 
-                    accept="image/png,image/jpeg"
+                    accept="image/png,image/jpeg,image/webp"
                     onChange={(e) => {
                       const file = e.target.files?.[0];
                       if (file) handleImageSelected(file);
