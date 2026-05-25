@@ -27,7 +27,7 @@ interface SlicerStore {
 
   toggleTheme: () => void;
   setLanguage: (lang: "pt-BR" | "en") => void;
-  setOpenAIKey: (key: string) => void;
+  setClaudeKey: (key: string) => void;
   setCostPerKg: (cost: number) => void;
 
   setResults: (results: AIResponse) => void;
