@@ -451,7 +451,7 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
 
           <p className="text-[10px] text-gray-400 text-center font-medium italic mb-1">{t.howToImport}</p>
           <div className="flex flex-col gap-2">
-            <Button size="lg" disabled={!useAppStore.getState().file || isGenerating}
+            <Button size="lg" disabled={!file || isGenerating}
               onClick={handleDownload3mf}
               className="w-full gap-2 bg-green-600 hover:bg-green-700 disabled:bg-green-900 text-white font-bold h-14 text-sm relative overflow-hidden transition-all">
               {isGenerating ? (
