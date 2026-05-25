@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Copy, Download, FileArchive, Loader2, X } from "lucide-react";
+import { Download, FileArchive, Loader2, X } from "lucide-react";
 import { downloadBambuProfile, BambuSettings } from "@/lib/bambuExport";
 import { downloadThreeMfProject, MeshData, shouldForceSupport } from "@/lib/threeMfExport";
 import { parseStlFile } from "@/lib/stlParser";
@@ -48,7 +48,6 @@ const LABELS: Record<Lang, Record<string, string>> = {
     nozzleTemp: "Nozzle temperature", bedTemp: "Bed temperature",
     filament: "Filament type", printer: "Printer", nozzle: "Nozzle diameter",
     howToImport: "How to import: File → Import → Import Configs",
-    copyAll: "Copy all", copied: "Copied!",
     seamPosition: "Seam position",
     strategyTitle: "Print Strategy",
     improvementsTitle: "Improvements in this version:",
@@ -68,7 +67,6 @@ const LABELS: Record<Lang, Record<string, string>> = {
     nozzleTemp: "Temperatura do bico", bedTemp: "Temperatura da mesa",
     filament: "Tipo de filamento", printer: "Impressora", nozzle: "Diâmetro do bico",
     howToImport: "Como importar: Arquivo → Importar → Importar Configurações",
-    copyAll: "Copiar tudo", copied: "Copiado!",
     seamPosition: "Posição da costura",
     strategyTitle: "Estratégia de Impressão",
     improvementsTitle: "O que melhorei nesta versão:",
@@ -86,22 +84,18 @@ function DecisionNote({ text }: { text?: string }) {
 
 }
 
-function Row({ label, value, onCopy, decision }: { label: string; value: string; onCopy: () => void; decision?: string }) {
+function Row({ label, value, decision }: { label: string; value: string; onCopy?: () => void; decision?: string }) {
   return (
     <div className="py-1.5 border-b border-gray-700">
       <div className="flex items-center justify-between group">
         <span className="text-sm text-gray-200 font-medium">{label}</span>
         <div className="flex items-center gap-2">
           <span className="text-sm font-mono font-semibold text-white">{value}</span>
-          <button onClick={onCopy} className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-white/10 rounded text-gray-400 hover:text-white">
-            <Copy className="w-3 h-3" />
-          </button>
         </div>
       </div>
       <DecisionNote text={decision} />
     </div>
   );
-
 }
 
 export function BambuSettingsModal({ open, onClose, settings }: Props) {
@@ -122,7 +116,7 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
 
   const copy = (val: string) => {
     navigator.clipboard.writeText(val);
-    toast.success(t.copied);
+    toast.success("Copiado!");
   };
 
   const handleDownload3mf = async () => {
@@ -200,7 +194,8 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
         triangleCount: settings.geometryStats.triangleCount
       }) : "organic";
       
-      await downloadThreeMfProject(mesh, settings, settings.profileName || "SlicerAI_Project", results?.orientation, modelType);
+      const autoProfileName = `SlicerAI_${file.name.replace(/\.(stl|3mf)$/i, "")}_${new Date().toISOString().slice(0,10).replace(/-/g,"")}`;
+      await downloadThreeMfProject(mesh, settings, autoProfileName, results?.orientation, modelType);
       
       setGenerationStep(lang === "PT" ? "✅ Pronto! Verifique seus Downloads" : "✅ Done! Check your Downloads");
       setTimeout(() => { setIsGenerating(false); setGenerationStep(""); }, 2500);
@@ -228,28 +223,6 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
     }
   };
 
-  const copyAll = () => {
-    const all = [
-      `${t.printer}: ${settings.printer}`,
-      `${t.nozzle}: ${settings.nozzle}mm`,
-      `${t.filament}: ${settings.filamentType}`,
-      `${t.layerHeight}: ${settings.layerHeight}mm`,
-      `${t.wallLoops}: ${settings.wallLoops}`,
-      `${t.topLayers}: ${settings.topLayers}`,
-      `${t.bottomLayers}: ${settings.bottomLayers}`,
-      `${t.infillDensity}: ${settings.infillDensity}%`,
-      `${t.infillPattern}: ${settings.infillPattern}`,
-      `${t.ironing}: ${settings.enableIroning ? "On" : "Off"}`,
-      `${t.printSpeed}: ${settings.printSpeed}mm/s`,
-      `${t.travelSpeed}: ${settings.travelSpeed}mm/s`,
-      `${t.enableSupport}: ${settings.enableSupport ? "On" : "Off"}`,
-      `${t.supportType}: ${settings.supportType}`,
-      `${t.nozzleTemp}: ${settings.nozzleTemp}°C`,
-      `${t.bedTemp}: ${settings.bedTemp}°C`,
-    ].join("\n");
-    navigator.clipboard.writeText(all);
-    toast.success(t.copied);
-  };
 
   const tabs: Tab[] = ["Quality", "Strength", "Speed", "Support", "Geometry", "Analysis"];
   const tabLabel: Record<Tab, string> = {
@@ -477,16 +450,10 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
               <><FileArchive className="w-5 h-5" /> {lang === "PT" ? "📦 BAIXAR PROJETO .3MF (PRONTO PARA IMPRIMIR)" : "📦 DOWNLOAD .3MF PROJECT"}</>
             )}
           </Button>
-          <div className="grid grid-cols-2 gap-2">
-            <Button variant="outline" size="sm" onClick={copyAll}
-              className="border-gray-600 text-gray-200 hover:bg-gray-800 text-xs h-9">
-              <Copy className="w-3 h-3 mr-1" /> {t.copyAll}
-            </Button>
-            <Button variant="outline" size="sm" onClick={handleDownloadCfg} disabled={isDownloadingCfg}
-              className="border-gray-600 text-gray-200 hover:bg-gray-800 text-xs h-9">
-              <Download className="w-3 h-3 mr-1" /> {isDownloadingCfg ? cfgStatus : ".bbscfg"}
-            </Button>
-          </div>
+          <Button variant="outline" size="sm" onClick={handleDownloadCfg} disabled={isDownloadingCfg}
+            className="w-full border-gray-600 text-gray-300 hover:bg-gray-800 text-xs h-9">
+            <Download className="w-3 h-3 mr-1" /> {isDownloadingCfg ? cfgStatus : (lang === "PT" ? "Baixar só perfil (.bbscfg)" : "Profile only (.bbscfg)")}
+          </Button>
           <p className="text-[10px] text-gray-500 text-center">{t.howToImport}</p>
         </div>
       </DialogContent>

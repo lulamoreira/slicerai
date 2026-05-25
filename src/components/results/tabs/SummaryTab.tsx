@@ -9,9 +9,7 @@ import {
   Layers, 
   Clock, 
   Palette,
-  Wind,
-  Box,
-  DollarSign
+  Box
 } from "lucide-react";
 
 

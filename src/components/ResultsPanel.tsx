@@ -36,7 +36,6 @@ export const ResultsPanel: React.FC = () => {
   const { history: printHistory } = useSettingsStore();
   
   const [activeTab, setActiveTab] = useState(0);
-  const [copiedAll, setCopiedAll] = useState(false);
   const [showBambuModal, setShowBambuModal] = useState(false);
   const [selectedHistoryVersion, setSelectedHistoryVersion] = useState<number | null>(null);
   const [showImproveArea, setShowImproveArea] = useState(false);
@@ -57,12 +56,13 @@ export const ResultsPanel: React.FC = () => {
   const handleCopyAll = (res = results) => {
     const configText = generateFullConfigText(res);
     navigator.clipboard.writeText(configText);
-    setCopiedAll(true);
     toast.success("Todas as configurações copiadas!");
-    setTimeout(() => setCopiedAll(false), 2000);
   };
 
   const handleDownload = (res = results, versionNum = profileVersion) => {
+    const fileNameBase = (wizard as any).fileName ? (wizard as any).fileName.replace(/\.(stl|3mf)$/i, "") : "perfil";
+    const autoProfileName = `SlicerAI_${fileNameBase}_${new Date().toISOString().slice(0,10).replace(/-/g,"")}`;
+    
     downloadBambuProfile({
       printer: (wizard as any).printer || "X1 Carbon",
       nozzle: String((wizard as any).nozzle || "0.4"),
@@ -86,7 +86,7 @@ export const ResultsPanel: React.FC = () => {
       seamReason: res.quality.seamReason,
       filamentType: (wizard as any).material || "PLA",
       buildPlate: (wizard as any).buildPlate || "Textured PEI Plate",
-      profileName: `SlicerAI_${(wizard as any).fileName?.split('.')[0] || 'perfil'}`,
+      profileName: autoProfileName,
       version: versionNum
     });
   };
@@ -170,13 +170,6 @@ export const ResultsPanel: React.FC = () => {
             <span className="ml-3 px-2 py-0.5 bg-surface-raised border border-border rounded text-xs text-muted-foreground font-mono align-middle">v{profileVersion}</span>
           </h2>
         </div>
-        <button 
-          onClick={() => handleCopyAll()}
-          className="flex items-center justify-center gap-2 px-6 py-3.5 bg-primary/10 border border-primary/30 rounded-xl text-[11px] font-black tracking-[0.15em] text-primary hover:bg-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg shadow-primary/5"
-        >
-          {copiedAll ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-          COPIAR TUDO
-        </button>
       </div>
 
 
@@ -331,13 +324,6 @@ export const ResultsPanel: React.FC = () => {
                     </div>
                     <div className="flex items-center gap-2">
                       <button 
-                        onClick={() => handleCopyAll(item.results)}
-                        className="p-2 hover:bg-primary/10 text-muted-foreground hover:text-primary rounded-lg transition-all"
-                        title="Copiar configurações"
-                      >
-                        <Copy className="w-3.5 h-3.5" />
-                      </button>
-                      <button 
                         onClick={() => handleDownload(item.results, item.version)}
                         className="p-2 hover:bg-primary/10 text-muted-foreground hover:text-primary rounded-lg transition-all"
                         title="Baixar .bbscfg"
@@ -421,7 +407,7 @@ export const ResultsPanel: React.FC = () => {
               seamReason: results.quality.seamReason,
               filamentType: (wizard as any).material || "PLA",
               buildPlate: (wizard as any).buildPlate || "Textured PEI Plate",
-              profileName: `SlicerAI_${(wizard as any).fileName?.split('.')[0] || 'perfil'}`,
+              profileName: `SlicerAI_${(wizard as any).fileName ? (wizard as any).fileName.replace(/\.(stl|3mf)$/i, "") : "perfil"}_${new Date().toISOString().slice(0,10).replace(/-/g,"")}`,
               version: profileVersion,
               decisions: results.decisions,
               improvements: results.improvements,
@@ -430,23 +416,6 @@ export const ResultsPanel: React.FC = () => {
           />
         )}
 
-        <div className="space-y-3">
-          <p className="text-[10px] font-bold text-muted uppercase tracking-[0.2em] opacity-50">Sugestão de Nome de Perfil</p>
-          <div className="flex items-center gap-3 p-3 bg-surface-raised border border-border rounded-xl group shadow-inner">
-            <code className="flex-1 text-xs font-mono font-bold text-primary truncate pl-2">
-              {results.profile_name_suggestion}_v{profileVersion}
-            </code>
-            <button 
-              onClick={() => {
-                navigator.clipboard.writeText(`${results.profile_name_suggestion}_v${profileVersion}`);
-                toast.success("Nome do perfil copiado!");
-              }}
-              className="p-2.5 hover:bg-primary-subtle text-muted group-hover:text-primary rounded-lg transition-all active:scale-90"
-            >
-              <Copy className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
       </div>
     </div>
   );

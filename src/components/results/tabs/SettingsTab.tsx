@@ -1,8 +1,5 @@
-import React, { useState } from "react";
+import React from "react";
 import { AIResponse } from "../../../lib/types";
-import { Copy, Check } from "lucide-react";
-import { toast } from "sonner";
-import { cn } from "../../../lib/utils";
 
 export const SettingsTab = ({ results }: { results: AIResponse }) => {
   const sections = [
@@ -64,26 +61,10 @@ export const SettingsTab = ({ results }: { results: AIResponse }) => {
 };
 
 const ConfigSection = ({ section }: { section: any }) => {
-  const [copied, setCopied] = useState(false);
-
-  const handleCopy = () => {
-    const text = section.params.map((p: any) => `${p.key} = ${p.value}`).join('\n');
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    toast.success(`Seção ${section.title} copiada!`);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
   return (
     <div className="bg-surface-raised border border-border-strong rounded-lg overflow-hidden group shadow-sm transition-all hover:border-primary">
       <div className="bg-surface px-6 py-3 flex items-center justify-between border-b border-border-strong">
         <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">{section.title}</h3>
-        <button 
-          onClick={handleCopy}
-          className="p-1.5 hover:bg-primary-subtle rounded-lg text-muted hover:text-primary transition-all"
-        >
-          {copied ? <Check className="w-4 h-4 text-green-500" /> : <Copy className="w-4 h-4" />}
-        </button>
       </div>
       <div className="p-6 mono text-[0.8rem] leading-relaxed text-foreground-soft">
         {section.params.map((p: any, i: number) => (
@@ -95,7 +76,6 @@ const ConfigSection = ({ section }: { section: any }) => {
             </div>
           </div>
         ))}
-
       </div>
     </div>
   );
