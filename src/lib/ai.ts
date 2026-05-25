@@ -2,7 +2,7 @@ import { z } from "zod";
 import { WizardState, AIResponse } from "./types";
 import { supabase } from "../integrations/supabase/client";
 import { useSettingsStore, useAppStore } from "../store/useAppStore";
-import { detectModelType, getSupportProfile } from "./supportProfiles";
+import { detectModelType } from "./supportProfiles";
 
 
 const SafeNumber = z.number().or(z.string().transform(v => parseFloat(v) || 0)).catch(0);
@@ -123,16 +123,10 @@ export const AIResponseSchema = z.object({
   orientation: OrientationSchema.default({}),
 }).partial().passthrough();
 
-const aiResponseSchema = AIResponseSchema;
-
-
-
 export const parseAIResponse = (text: string): any => {
   let cleaned = text.trim();
-  // Remove markdown code blocks que Claude e outros modelos adicionam
   cleaned = cleaned.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/```\s*$/i, "").trim();
   
-  // Remove qualquer texto antes do primeiro {
   const jsonStart = cleaned.indexOf("{");
   const jsonEnd = cleaned.lastIndexOf("}");
   if (jsonStart !== -1 && jsonEnd !== -1) {
@@ -142,7 +136,6 @@ export const parseAIResponse = (text: string): any => {
   try {
     return JSON.parse(cleaned);
   } catch {
-    // Tenta fechar chaves abertas
     const opens = (cleaned.match(/{/g) || []).length;
     const closes = (cleaned.match(/}/g) || []).length;
     const missing = opens - closes;
@@ -150,7 +143,6 @@ export const parseAIResponse = (text: string): any => {
       const repaired = cleaned + "}".repeat(missing);
       try { return JSON.parse(repaired); } catch {}
     }
-    // Remove última propriedade incompleta e tenta novamente
     const fallback = cleaned.replace(/,\s*"[^"]*"\s*:\s*[^,}]*$/, "") + "}".repeat(Math.max(0, opens - closes));
     try {
       return JSON.parse(fallback);
@@ -161,20 +153,70 @@ export const parseAIResponse = (text: string): any => {
   }
 };
 
-export const repairJSON = (json: string): string => {
-  let balanced = json.trim();
-  const stack: string[] = [];
-  for (let i = 0; i < balanced.length; i++) {
-    const char = balanced[i];
-    if (char === "{" || char === "[") stack.push(char);
-    else if (char === "}" || char === "]") stack.pop();
+export const callClaude = async (prompt: string, apiKey: string, improvementImage?: string) => {
+  const claudeMessages = [];
+  if (improvementImage) {
+    claudeMessages.push({
+      role: "user",
+      content: [
+        { type: "text", text: prompt },
+        { 
+          type: "image", 
+          source: { 
+            type: "base64", 
+            media_type: "image/jpeg", 
+            data: improvementImage.split(',')[1] 
+          } 
+        }
+      ]
+    });
+  } else {
+    claudeMessages.push({ role: "user", content: prompt });
   }
-  while (stack.length > 0) {
-    const last = stack.pop();
-    if (last === "{") balanced += "}";
-    if (last === "[") balanced += "]";
+
+  const response = await fetch(
+    "https://api.anthropic.com/v1/messages",
+    {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json",
+        "x-api-key": apiKey.trim().replace(/[^\x20-\x7E]/g, ""),
+        "anthropic-version": "2023-06-01",
+        "anthropic-dangerous-direct-browser-access": "true"
+      },
+      body: JSON.stringify({
+        model: "claude-haiku-4-5",
+        max_tokens: 4096,
+        messages: claudeMessages,
+      }),
+    }
+  );
+
+  if (!response.ok) {
+    const errBody = await response.json().catch(() => ({}));
+    const errorMessage = errBody?.error?.message || errBody?.error?.status || response.statusText || "Erro desconhecido";
+    
+    if (response.status === 402) {
+      throw { 
+        code: "NO_BALANCE", 
+        provider: "Claude", 
+        message: "Saldo insuficiente — seus créditos acabaram. Acesse console.anthropic.com para recarregar." 
+      };
+    }
+
+    if (response.status === 401) {
+      throw { 
+        code: "INVALID_KEY", 
+        provider: "Claude", 
+        message: "Chave de API inválida para Claude. Verifique nas Configurações." 
+      };
+    }
+    
+    throw new Error(`Claude [${response.status}]: ${errorMessage}`);
   }
-  return balanced;
+
+  const data = await response.json();
+  return data?.content?.[0]?.text;
 };
 
 export const generateSettings = async (
@@ -189,7 +231,6 @@ export const generateSettings = async (
   const geometry = state.geometry;
   const meshData = state.meshData;
 
-  // Bloco de contexto geométrico só é montado se os dados existirem
   let geometryContext = "DADOS GEOMÉTRICOS DA PEÇA (NUNCA UNDEFINED):\n";
   if (geometry) {
     geometryContext += `- Dimensões: ${geometry.boundingBox?.x ?? "?"}×${geometry.boundingBox?.y ?? "?"}×${geometry.boundingBox?.z ?? "?"} mm\n`;
@@ -294,33 +335,12 @@ Retorne este JSON exato (todos os campos obrigatórios):
 
   const fullPrompt = `${historyContext}\n\n${improvementContext}\n\n${systemPrompt}\n\n${userMessage}`;
 
-  const messageContents: any[] = [];
-  if (improvementImage) {
-    messageContents.push({
-      text: fullPrompt
-    });
-    messageContents.push({
-      inlineData: {
-        mimeType: "image/jpeg",
-        data: improvementImage.split(',')[1] // remove data:image/jpeg;base64,
-      }
-    });
-  } else {
-    messageContents.push({ text: fullPrompt });
-  }
-
-  let response: Response;
-  const generationConfig = {
-    temperature: 0.2,
-    maxOutputTokens: 4096,
-  };
-
-  const aiProvider = useSettingsStore.getState().aiProvider;
-
-  if (userProfile?.api_key_mode === 'centralized' && aiProvider === 'gemini') {
+  let claudeKey = useSettingsStore.getState().claudeKey;
+  
+  if (userProfile?.api_key_mode === 'centralized') {
     const { data: { session } } = await supabase.auth.getSession();
-    response = await fetch(
-      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/gemini-proxy`,
+    const response = await fetch(
+      `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/claude-proxy`,
       {
         method: "POST",
         headers: { 
@@ -328,323 +348,32 @@ Retorne este JSON exato (todos os campos obrigatórios):
           "Authorization": `Bearer ${session?.access_token}`
         },
         body: JSON.stringify({
-          contents: [{ parts: messageContents }],
-          generationConfig,
+          prompt: fullPrompt,
+          improvementImage,
         }),
       }
     );
-  } else if (aiProvider === 'groq') {
-    const groqApiKey = useSettingsStore.getState().groqApiKey;
-    if (!groqApiKey) throw new Error('NO_API_KEY');
-
-    const cleanKey = groqApiKey.trim().replace(/[^\x20-\x7E]/g, "");
-
-    const messages = [];
-    if (improvementImage) {
-      messages.push({
-        role: "user",
-        content: [
-          { type: "text", text: fullPrompt },
-          { type: "image_url", image_url: { url: improvementImage } }
-        ]
-      });
-    } else {
-      messages.push({ role: "user", content: fullPrompt });
-    }
-
-    const groqModels = improvementImage 
-      ? ["llava-v1.5-7b-4096-preview", "llama-3.2-90b-vision-preview"] 
-      : ["llama-3.3-70b-versatile"];
     
-    let groqResponse: Response | undefined;
-    for (const model of groqModels) {
-      const currentTry = await fetch(
-        "https://api.groq.com/openai/v1/chat/completions",
-        {
-          method: "POST",
-          headers: { 
-            "Authorization": `Bearer ${cleanKey}`,
-            "Content-Type": "application/json" 
-          },
-          body: JSON.stringify({
-            model,
-            messages,
-            temperature: 0.2,
-            max_tokens: improvementImage ? 2048 : 8192,
-            response_format: { type: "json_object" }
-          }),
-        }
-      );
-      groqResponse = currentTry;
-      if (currentTry.ok) break;
-      const errData = await currentTry.json().catch(() => ({}));
-      if (improvementImage && (currentTry.status === 400 || errData?.error?.message?.includes("decommissioned") || errData?.error?.code === "model_not_found")) {
-        console.log(`Groq: model ${model} failed, trying next fallback...`);
-        continue;
-      }
-      break;
+    if (!response.ok) {
+       throw new Error(`Claude Proxy error: ${response.statusText}`);
     }
-    if (!groqResponse) throw new Error("Falha ao conectar com Groq");
-    response = groqResponse;
-  } else if (aiProvider === 'deepseek') {
-    const deepseekKey = useSettingsStore.getState().deepseekKey;
-    if (!deepseekKey) throw new Error('NO_API_KEY');
-    const cleanKey = deepseekKey.trim().replace(/[^\x20-\x7E]/g, "");
-
-    response = await fetch(
-      "https://api.deepseek.com/v1/chat/completions",
-      {
-        method: "POST",
-        headers: { 
-          "Authorization": `Bearer ${cleanKey}`,
-          "Content-Type": "application/json" 
-        },
-        body: JSON.stringify({
-          model: "deepseek-chat",
-          messages: [{ role: "user", content: fullPrompt + (improvementImage ? " [IMAGE ATTACHED AND SUPPORTED VIA VISION ANALYST]" : "") }],
-          temperature: 0.2,
-          max_tokens: 4096,
-        }),
-      }
-    );
-  } else if (aiProvider === 'openrouter') {
-    const openrouterKey = useSettingsStore.getState().openrouterKey;
-    if (!openrouterKey) throw new Error('NO_API_KEY');
-    const cleanKey = openrouterKey.trim().replace(/[^\x20-\x7E]/g, "");
-
-    const messages = [];
-    if (improvementImage) {
-      messages.push({
-        role: "user",
-        content: [
-          { type: "text", text: fullPrompt },
-          { type: "image_url", image_url: { url: improvementImage } }
-        ]
-      });
-    } else {
-      messages.push({ role: "user", content: fullPrompt });
-    }
-
-    response = await fetch(
-      "https://openrouter.ai/api/v1/chat/completions",
-      {
-        method: "POST",
-        headers: { 
-          "Authorization": `Bearer ${cleanKey}`,
-          "Content-Type": "application/json",
-          "HTTP-Referer": "https://slicerai.app"
-        },
-        body: JSON.stringify({
-          model: improvementImage ? "google/gemma-3-27b-it:free" : "meta-llama/llama-3.3-70b-instruct:free",
-          messages,
-          temperature: 0.2,
-          max_tokens: 4096,
-        }),
-      }
-    );
-
-    // Automatic fallback for OpenRouter free models if the first one fails
-    if (!response.ok && response.status === 404 && !improvementImage) {
-      console.log("OpenRouter: primary model not found, trying fallback 1...");
-      const fallbacks = ["google/gemma-3-27b-it:free", "mistralai/mistral-7b-instruct:free"];
-      
-      for (const fallbackModel of fallbacks) {
-        response = await fetch(
-          "https://openrouter.ai/api/v1/chat/completions",
-          {
-            method: "POST",
-            headers: { 
-              "Authorization": `Bearer ${cleanKey}`,
-              "Content-Type": "application/json",
-              "HTTP-Referer": "https://slicerai.app"
-            },
-            body: JSON.stringify({
-              model: fallbackModel,
-              messages,
-              temperature: 0.2,
-              max_tokens: 4096,
-            }),
-          }
-        );
-        if (response.ok) break;
-        console.log(`OpenRouter: fallback ${fallbackModel} failed, checking next...`);
-      }
-    }
-
-    if (!response.ok && !improvementImage) {
-      const errData = await response.json().catch(() => ({}));
-      if (response.status === 404 || errData?.error?.code === 404) {
-        throw {
-          code: "OPENROUTER_NO_MODELS",
-          provider: "OpenRouter",
-          message: "OpenRouter: nenhum modelo gratuito disponível no momento. Tente outro provedor."
-        };
-      }
-    }
-  } else if (aiProvider === 'claude') {
-    const claudeKey = useSettingsStore.getState().claudeKey;
-    if (!claudeKey) throw new Error('NO_API_KEY');
-    const cleanKey = claudeKey.trim().replace(/[^\x20-\x7E]/g, "");
-
-    const claudeMessages = [];
-    if (improvementImage) {
-      claudeMessages.push({
-        role: "user",
-        content: [
-          { type: "text", text: fullPrompt },
-          { 
-            type: "image", 
-            source: { 
-              type: "base64", 
-              media_type: "image/jpeg", 
-              data: improvementImage.split(',')[1] 
-            } 
-          }
-        ]
-      });
-    } else {
-      claudeMessages.push({ role: "user", content: fullPrompt });
-    }
-
-    response = await fetch(
-      "https://api.anthropic.com/v1/messages",
-      {
-        method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-          "x-api-key": cleanKey,
-          "anthropic-version": "2023-06-01",
-          "anthropic-dangerous-direct-browser-access": "true"
-        },
-        body: JSON.stringify({
-          model: "claude-haiku-4-5",
-          max_tokens: 4096,
-          messages: claudeMessages,
-        }),
-      }
-    );
-  } else if (aiProvider === 'openai') {
-    const openaiKey = useSettingsStore.getState().openaiKey;
-    if (!openaiKey) throw new Error('NO_API_KEY');
-    const cleanKey = openaiKey.trim().replace(/[^\x20-\x7E]/g, "");
-
-    const openaiMessages = [];
-    if (improvementImage) {
-      openaiMessages.push({
-        role: "user",
-        content: [
-          { type: "text", text: fullPrompt },
-          { type: "image_url", image_url: { url: improvementImage } }
-        ]
-      });
-    } else {
-      openaiMessages.push({ role: "user", content: fullPrompt });
-    }
-
-    response = await fetch(
-      "https://api.openai.com/v1/chat/completions",
-      {
-        method: "POST",
-        headers: { 
-          "Authorization": `Bearer ${cleanKey}`,
-          "Content-Type": "application/json" 
-        },
-        body: JSON.stringify({
-          model: "gpt-4o-mini",
-          messages: openaiMessages,
-          temperature: 0.2,
-          max_tokens: 2048,
-        }),
-      }
-    );
-  } else {
-    const apiKey = useSettingsStore.getState().apiKey;
-    if (!apiKey) throw new Error('NO_API_KEY');
-
-    response = await fetch(
-      `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: messageContents }],
-          generationConfig,
-        }),
-      }
-    );
+    const data = await response.json();
+    const content = data?.content?.[0]?.text;
+    if (!content) throw new Error("Empty response from Claude Proxy");
+    const parsed = parseAIResponse(content);
+    return AIResponseSchema.parse(parsed) as any;
   }
 
-  if (!response.ok) {
-    const errBody = await response.json().catch(() => ({}));
-    const errorMessage = errBody?.error?.message || errBody?.error?.status || response.statusText || "Erro desconhecido";
-    
-    // Model not found or decommissioned (Vision models usually)
-    if (improvementImage && (response.status === 404 || response.status === 400 || errorMessage.toLowerCase().includes("not found") || errorMessage.toLowerCase().includes("decommissioned"))) {
-      throw {
-        code: "VISION_NOT_AVAILABLE",
-        provider: aiProvider.charAt(0).toUpperCase() + aiProvider.slice(1),
-        message: "O modelo de visão atual não está disponível para este provedor."
-      };
-    }
+  if (!claudeKey) throw new Error('NO_API_KEY');
 
-    // DeepSeek/Claude/OpenAI balance error
-    if (response.status === 402) {
-      const providerName = aiProvider === 'claude' ? 'Claude' : aiProvider === 'openai' ? 'OpenAI' : 'DeepSeek';
-      const billingUrl = aiProvider === 'claude' ? 'console.anthropic.com' : aiProvider === 'openai' ? 'platform.openai.com' : 'platform.deepseek.com';
-      throw { 
-        code: "NO_BALANCE", 
-        provider: providerName, 
-        message: `Saldo insuficiente — seus créditos acabaram. Acesse ${billingUrl} para recarregar ou troque de provedor.` 
-      };
-    }
-
-    // Gemini/Generic quota error
-    if (response.status === 429) {
-      const providerName = aiProvider.charAt(0).toUpperCase() + aiProvider.slice(1);
-      throw { 
-        code: "QUOTA_EXCEEDED", 
-        provider: providerName, 
-        message: `${providerName}: Cota esgotada ou limite atingido. Tente outro provedor.` 
-      };
-    }
-
-    // Invalid API key
-    if (response.status === 401) {
-      const providerName = aiProvider.charAt(0).toUpperCase() + aiProvider.slice(1);
-      throw { 
-        code: "INVALID_KEY", 
-        provider: providerName, 
-        message: `Chave de API inválida para ${providerName}. Verifique nas Configurações.` 
-      };
-    }
-    
-    const providerName = aiProvider.charAt(0).toUpperCase() + aiProvider.slice(1);
-    throw new Error(
-      `${providerName} [${response.status}]: ${errorMessage}`
-    );
-  }
-
-
-  const data = await response.json();
-  let content = "";
-  if (aiProvider === 'claude') {
-    content = data?.content?.[0]?.text;
-  } else if (aiProvider === 'groq' || aiProvider === 'deepseek' || aiProvider === 'openrouter' || aiProvider === 'openai') {
-    content = data?.choices?.[0]?.message?.content;
-  } else {
-    content = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-  }
-  
-  if (!content) throw new Error(`Empty response from ${aiProvider}`);
+  const content = await callClaude(fullPrompt, claudeKey, improvementImage);
+  if (!content) throw new Error("Empty response from Claude");
   const parsed = parseAIResponse(content);
 
   const result = AIResponseSchema.safeParse(parsed);
   if (!result.success) {
-    console.warn("AI Response partial failure/missing fields:", result.error.format());
     const defaults = AIResponseSchema.parse({});
-    // Profundidade 1 de merge manual para os objetos principais
     const merged = { ...defaults, ...parsed };
-    // Garante que sub-objetos não sejam sobrescritos por undefined se o spread do parsed tiver a chave mas o conteúdo for parcial
     for (const key of Object.keys(defaults)) {
       if (typeof (defaults as any)[key] === 'object' && (parsed as any)[key]) {
         (merged as any)[key] = { ...(defaults as any)[key], ...(parsed as any)[key] };
@@ -656,99 +385,12 @@ Retorne este JSON exato (todos os campos obrigatórios):
   return result.data as any;
 };
 
-
-
-
-export type ConnectionResult = "ok" | "invalid" | "rate_limited" | "error";
-
-export const testConnection = async (apiKey: string): Promise<boolean> => {
-  const result = await testConnectionDetailed(apiKey);
-  return result === "ok";
-};
-
-export const testConnectionDetailed = async (apiKey: string): Promise<ConnectionResult> => {
+export const testClaudeKey = async (apiKey: string): Promise<"ok" | "invalid" | "error"> => {
   try {
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ parts: [{ text: "ok" }] }],
-          generationConfig: { maxOutputTokens: 1 },
-        }),
-      }
-    );
-    if (response.ok) {
-      const data = await response.json().catch(() => null);
-      return data?.candidates ? "ok" : "error";
-    }
-    if (response.status === 429) return "rate_limited";
-    if (response.status === 400 || response.status === 403) return "invalid";
-    return "error";
-  } catch {
-    return "error";
-  }
-};
-
-export const testGroqKey = async (apiKey: string): Promise<ConnectionResult> => {
-  try {
-    const response = await fetch(
-      "https://api.groq.com/openai/v1/models",
-      {
-        method: "GET",
-        headers: { 
-          "Authorization": `Bearer ${apiKey}`,
-          "Content-Type": "application/json" 
-        }
-      }
-    );
-    return response.ok ? "ok" : "invalid";
-  } catch {
-    return "error";
-  }
-};
-
-export const testClaudeKey = async (apiKey: string): Promise<ConnectionResult> => {
-  try {
-    const response = await fetch(
-      "https://lgjbjvauavgtbtfejcwc.supabase.co/functions/v1/ai-proxy",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          provider: "claude",
-          apiKey,
-          prompt: "ok"
-        })
-      }
-    );
-    if (response.ok) return "ok";
-    if (response.status === 401 || response.status === 403) return "invalid";
-    return "error";
-  } catch {
-    return "error";
-  }
-};
-
-export const testOpenAIKey = async (apiKey: string): Promise<ConnectionResult> => {
-  try {
-    const response = await fetch(
-      "https://lgjbjvauavgtbtfejcwc.supabase.co/functions/v1/ai-proxy",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          provider: "openai",
-          apiKey,
-          prompt: "ok"
-        })
-      }
-    );
-    if (response.ok) return "ok";
-    if (response.status === 401 || response.status === 403) return "invalid";
-    return "error";
-  } catch {
+    const content = await callClaude("ok", apiKey);
+    return content ? "ok" : "error";
+  } catch (e: any) {
+    if (e.code === "INVALID_KEY") return "invalid";
     return "error";
   }
 };
