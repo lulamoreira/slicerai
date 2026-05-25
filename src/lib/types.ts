@@ -193,6 +193,6 @@ export interface ProfileHistoryItem {
 export interface AppState {
   theme: "light" | "dark";
   language: "pt-BR" | "en";
-  openaiKey?: string;
+  claudeKey?: string;
   costPerKg: number;
 }
