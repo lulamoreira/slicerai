@@ -194,7 +194,8 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
         triangleCount: settings.geometryStats.triangleCount
       }) : "organic";
       
-      await downloadThreeMfProject(mesh, settings, settings.profileName || "SlicerAI_Project", results?.orientation, modelType);
+      const autoProfileName = `SlicerAI_${file.name.replace(/\.(stl|3mf)$/i, "")}_${new Date().toISOString().slice(0,10).replace(/-/g,"")}`;
+      await downloadThreeMfProject(mesh, settings, autoProfileName, results?.orientation, modelType);
       
       setGenerationStep(lang === "PT" ? "✅ Pronto! Verifique seus Downloads" : "✅ Done! Check your Downloads");
       setTimeout(() => { setIsGenerating(false); setGenerationStep(""); }, 2500);
