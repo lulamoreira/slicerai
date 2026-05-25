@@ -306,7 +306,7 @@ export const ResultsPanel: React.FC = () => {
                     type="file" 
                     ref={fileInputRef} 
                     className="hidden" 
-                    accept="image/png,image/jpeg"
+                    accept="image/png,image/jpeg,image/webp"
                     onChange={(e) => {
                       const file = e.target.files?.[0];
                       if (file) handleImageSelected(file);
