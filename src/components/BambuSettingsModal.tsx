@@ -259,9 +259,10 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="w-full h-full md:h-auto max-w-lg md:max-h-[90vh] flex flex-col p-0 gap-0 bg-[#1c1c1e] text-white border-white/10 rounded-none md:rounded-[2.5rem] [&>button.absolute]:hidden">
-        <DialogHeader className="px-4 pt-4 pb-0 shrink-0">
-          <div className="flex items-center justify-between gap-3">
+      <DialogContent className="max-w-lg max-h-[90vh] flex flex-col p-0 gap-0 bg-[#1c1c1e] text-white border-gray-700 overflow-hidden">
+        {/* HEADER fixo */}
+        <DialogHeader className="px-4 pt-4 pb-2 shrink-0 border-b border-gray-700">
+          <div className="flex items-center justify-between gap-3 mb-2">
             <DialogTitle className="text-base font-semibold text-white">Process — SlicerAI</DialogTitle>
             <div className="flex items-center gap-2 shrink-0">
               <div className="flex items-center gap-1 bg-white/5 rounded p-0.5 border border-white/10">
@@ -281,15 +282,17 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
               </button>
             </div>
           </div>
-          <div className="flex gap-2 mt-2 flex-wrap">
-            <Badge variant="outline" className="text-xs bg-gray-700 text-white border-gray-600 px-2 py-0.5">{settings.printer}</Badge>
-            <Badge variant="outline" className="text-xs bg-gray-700 text-white border-gray-600 px-2 py-0.5">⌀ {settings.nozzle}mm</Badge>
-            <Badge variant="outline" className="text-xs bg-gray-700 text-white border-gray-600 px-2 py-0.5">{settings.filamentType}</Badge>
+
+          <div className="flex gap-2 flex-wrap mb-3">
+            <Badge variant="outline" className="text-[10px] bg-gray-700 text-white border-gray-600 px-2 py-0.5">{settings.printer}</Badge>
+            <Badge variant="outline" className="text-[10px] bg-gray-700 text-white border-gray-600 px-2 py-0.5">⌀ {settings.nozzle}mm</Badge>
+            <Badge variant="outline" className="text-[10px] bg-gray-700 text-white border-gray-600 px-2 py-0.5">{settings.filamentType}</Badge>
           </div>
-          <div className="flex mt-3 border-b border-gray-700 overflow-x-auto no-scrollbar">
+
+          <div className="flex border-b border-transparent overflow-x-auto no-scrollbar">
             {tabs.map((tab) => (
               <button key={tab} onClick={() => setActiveTab(tab)}
-                className={`px-4 py-2 text-xs font-bold uppercase tracking-wider transition-all border-b-2 -mb-px whitespace-nowrap group ${activeTab === tab ? "border-green-400 text-white" : "border-transparent"}`}>
+                className={`px-3 py-2 text-[11px] font-bold uppercase tracking-wider transition-all border-b-2 -mb-px whitespace-nowrap group ${activeTab === tab ? "border-green-400 text-white" : "border-transparent"}`}>
                 <div className="flex items-center gap-1.5">
                   <span className={activeTab === tab ? "text-white" : "text-gray-500 group-hover:text-gray-200"}>{tabLabel[tab]}</span>
                   {tab === "Support" && (
@@ -301,9 +304,9 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
               </button>
             ))}
           </div>
-
         </DialogHeader>
 
+        {/* CONTEÚDO rolável */}
         <div className="flex-1 overflow-y-auto px-4 py-3 min-h-0">
           {activeTab === "Quality" && (
             <div className="space-y-1">
@@ -419,35 +422,32 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
             <Row label={t.nozzleTemp} value={`${settings.nozzleTemp}°C`} onCopy={() => copy(String(settings.nozzleTemp))} />
             <Row label={t.bedTemp} value={`${settings.bedTemp}°C`} onCopy={() => copy(String(settings.bedTemp))} />
           </div>
-        </div>
 
+          <div className="mt-4 space-y-3">
+            {meshData && meshData.triangles.length > 1_000_000 && (
+              <div className="bg-amber-950/50 border border-amber-500/40 rounded-lg p-3">
+                <p className="text-amber-300 text-sm font-semibold flex items-center gap-2">
+                  ⚠️ Modelo complexo: {(meshData.triangles.length / 1_000_000).toFixed(1)}M triângulos
+                </p>
+                <p className="text-amber-200/80 text-xs mt-1">
+                  O fatiamento no Bambu Studio será mais lento que o normal. Considere simplificar o modelo em ferramentas como Meshmixer ou Blender antes de imprimir.
+                </p>
+              </div>
+            )}
 
-        <div className="px-4 pb-4 pt-3 shrink-0 border-t border-gray-700 flex flex-col gap-2 bg-[#1c1c1e] sticky bottom-0 z-10">
-          {meshData && meshData.triangles.length > 1_000_000 && (
-            <div className="bg-amber-950/50 border border-amber-500/40 rounded-lg p-3 mb-1">
-              <p className="text-amber-300 text-sm font-semibold flex items-center gap-2">
-                ⚠️ Modelo complexo: {(meshData.triangles.length / 1_000_000).toFixed(1)}M triângulos
-              </p>
-              <p className="text-amber-200/80 text-xs mt-1">
-                O fatiamento no Bambu Studio será mais lento que o normal. Considere simplificar o modelo em ferramentas como Meshmixer ou Blender antes de imprimir.
-              </p>
-            </div>
-          )}
+            {meshData && results?.support?.needed === false && meshData.triangles.length > 200_000 && (
+              <div className="bg-orange-950/50 border border-orange-500/40 rounded-lg p-3">
+                <p className="text-orange-300 text-sm font-semibold">
+                  ⚠️ Atenção: A IA não ativou suportes, mas o modelo parece complexo
+                </p>
+                <p className="text-orange-200/80 text-xs mt-1">
+                  Modelos orgânicos como figuras geralmente precisam de suporte. Se ao abrir no Bambu Studio aparecer "floating regions", volte aqui e gere novamente, ou ative suporte manualmente no Bambu.
+                </p>
+              </div>
+            )}
 
-          {meshData && results?.support?.needed === false && meshData.triangles.length > 200_000 && (
-            <div className="bg-orange-950/50 border border-orange-500/40 rounded-lg p-3 mb-1">
-              <p className="text-orange-300 text-sm font-semibold">
-                ⚠️ Atenção: A IA não ativou suportes, mas o modelo parece complexo
-              </p>
-              <p className="text-orange-200/80 text-xs mt-1">
-                Modelos orgânicos como figuras geralmente precisam de suporte. Se ao abrir no Bambu Studio aparecer "floating regions", volte aqui e gere novamente, ou ative suporte manualmente no Bambu.
-              </p>
-            </div>
-          )}
-
-          <div className="px-4 mb-2">
             {meshData && shouldForceSupport(meshData, settings.geometryStats?.boundingBox) && !settings.enableSupport && (
-              <div className="bg-green-950/40 border border-green-500/40 rounded-lg p-3 mb-3">
+              <div className="bg-green-950/40 border border-green-500/40 rounded-lg p-3">
                 <p className="text-green-300 text-sm font-semibold">
                   🛡️ Suporte forçado automaticamente
                 </p>
@@ -456,61 +456,41 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
                 </p>
               </div>
             )}
-          </div>
 
-          <p className="text-[10px] text-gray-400 text-center font-medium italic mb-1">{t.howToImport}</p>
-          <div className="flex flex-col gap-2">
-            <Button size="lg" disabled={!file || isGenerating}
-              onClick={handleDownload3mf}
-              className="w-full gap-2 bg-green-600 hover:bg-green-700 disabled:bg-green-900 text-white font-bold h-14 text-sm relative overflow-hidden transition-all">
-              {isGenerating ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  <div className="flex flex-col items-center">
-                    <span className="text-sm font-bold">
-                      {lang === "PT" ? "GERANDO ARQUIVO .3MF..." : "GENERATING .3MF FILE..."}
-                    </span>
-                    <span className="text-xs font-normal opacity-90 mt-0.5">{generationStep}</span>
-                  </div>
-                  <div className="absolute bottom-0 left-0 h-1 bg-white/40 animate-pulse" style={{width: "60%"}}/>
-                </>
-              ) : (
-                <>
-                  <FileArchive className="w-5 h-5" />
-                  {lang === "PT" ? "📦 BAIXAR PROJETO .3MF (PRONTO PARA IMPRIMIR)" : "📦 DOWNLOAD .3MF PROJECT (READY TO PRINT)"}
-                </>
-              )}
-            </Button>
-            
-            
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={copyAll} className="flex-1 text-xs gap-1 border-gray-600 text-gray-300 hover:bg-gray-800 h-10">
-                <Copy className="w-3 h-3" /> {t.copyAll}
-              </Button>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                disabled={isDownloadingCfg}
-                onClick={handleDownloadCfg}
-                className={`flex-1 text-xs gap-1 border-gray-600 hover:bg-gray-800 h-10 transition-all ${isDownloadingCfg ? "text-green-400 border-green-900 bg-green-950/20" : "text-gray-300"}`}
-              >
-                {isDownloadingCfg ? (
-                  <>
-                    <Loader2 className="w-3 h-3 animate-spin" />
-                    <span className="truncate">{cfgStatus}</span>
-                  </>
-                ) : (
-                  <>
-                    <Download className="w-3 h-3" /> 
-                    {lang === "PT" ? "Baixar só configurações (.bbscfg)" : "Settings only (.bbscfg)"}
-                  </>
-                )}
-              </Button>
+            <div className="bg-white/5 border border-white/10 rounded-lg p-4">
+              <h4 className="text-xs font-bold text-white uppercase mb-2">Como usar o arquivo .3mf</h4>
+              <p className="text-xs text-gray-400 leading-relaxed">
+                Ao abrir no Bambu Studio, selecione "Open as Project". Todas as configurações de processo, filamento e orientação já estarão aplicadas.
+              </p>
             </div>
           </div>
         </div>
 
+        {/* FOOTER fixo - apenas botões */}
+        <div className="shrink-0 px-4 py-3 border-t border-gray-700 bg-[#1c1c1e] space-y-2">
+          <Button size="lg" disabled={!file || isGenerating}
+            onClick={handleDownload3mf}
+            className="w-full gap-2 bg-green-600 hover:bg-green-700 disabled:bg-green-900 text-white font-bold h-12 text-sm">
+            {isGenerating ? (
+              <><Loader2 className="w-5 h-5 animate-spin" /><span className="flex flex-col items-center"><span>{lang === "PT" ? "GERANDO ARQUIVO .3MF..." : "GENERATING .3MF FILE..."}</span><span className="text-xs opacity-90">{generationStep}</span></span></>
+            ) : (
+              <><FileArchive className="w-5 h-5" /> {lang === "PT" ? "📦 BAIXAR PROJETO .3MF (PRONTO PARA IMPRIMIR)" : "📦 DOWNLOAD .3MF PROJECT"}</>
+            )}
+          </Button>
+          <div className="grid grid-cols-2 gap-2">
+            <Button variant="outline" size="sm" onClick={copyAll}
+              className="border-gray-600 text-gray-200 hover:bg-gray-800 text-xs h-9">
+              <Copy className="w-3 h-3 mr-1" /> {t.copyAll}
+            </Button>
+            <Button variant="outline" size="sm" onClick={handleDownloadCfg} disabled={isDownloadingCfg}
+              className="border-gray-600 text-gray-200 hover:bg-gray-800 text-xs h-9">
+              <Download className="w-3 h-3 mr-1" /> {isDownloadingCfg ? cfgStatus : ".bbscfg"}
+            </Button>
+          </div>
+          <p className="text-[10px] text-gray-500 text-center">{t.howToImport}</p>
+        </div>
       </DialogContent>
     </Dialog>
+
   );
 }
