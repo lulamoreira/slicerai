@@ -5,6 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { Copy, Download, FileArchive, Loader2 } from "lucide-react";
 import { downloadBambuProfile, BambuSettings } from "@/lib/bambuExport";
 import { downloadThreeMfProject, MeshData, shouldForceSupport } from "@/lib/threeMfExport";
+import { parseStlFile } from "@/lib/stlParser";
+import { ThreeMFLoader } from "three-stdlib";
+import * as THREE from "three";
 import { detectModelType } from "@/lib/supportProfiles";
 import { useAppStore } from "@/store/useAppStore";
 import { toast } from "sonner";
@@ -122,11 +125,66 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
   };
 
   const handleDownload3mf = async () => {
-    if (!meshData) return;
+    const file = useAppStore.getState().file;
+    if (!file) return;
+
     setIsGenerating(true);
     try {
-      setGenerationStep(lang === "PT" ? "Preparando geometria..." : "Preparing geometry...");
-      await new Promise(r => setTimeout(r, 100));
+      setGenerationStep(lang === "PT" ? "Lendo arquivo original..." : "Reading original file...");
+      let mesh: MeshData;
+
+      if (file.name.toLowerCase().endsWith('.stl')) {
+        const parsed = await parseStlFile(file);
+        mesh = { vertices: parsed.vertices, triangles: parsed.triangles };
+      } else if (file.name.toLowerCase().endsWith('.3mf')) {
+        setGenerationStep(lang === "PT" ? "Processando projeto 3MF..." : "Processing 3MF project...");
+        const loader = new ThreeMFLoader();
+        const buffer = await file.arrayBuffer();
+        const group = loader.parse(buffer);
+        
+        const vertices: [number, number, number][] = [];
+        const triangles: [number, number, number][] = [];
+        let vertexOffset = 0;
+
+        group.traverse((child) => {
+          if ((child as THREE.Mesh).isMesh) {
+            const m = child as THREE.Mesh;
+            const geo = m.geometry as THREE.BufferGeometry;
+            m.updateWorldMatrix(true, false);
+            
+            const posAttr = geo.attributes.position;
+            for (let i = 0; i < posAttr.count; i++) {
+              const v = new THREE.Vector3().fromBufferAttribute(posAttr, i);
+              v.applyMatrix4(m.matrixWorld);
+              vertices.push([v.x, v.y, v.z]);
+            }
+
+            const index = geo.index;
+            if (index) {
+              for (let i = 0; i < index.count; i += 3) {
+                triangles.push([
+                  index.getX(i) + vertexOffset,
+                  index.getX(i + 1) + vertexOffset,
+                  index.getX(i + 2) + vertexOffset
+                ]);
+              }
+            } else {
+              for (let i = 0; i < posAttr.count; i += 3) {
+                triangles.push([
+                  i + vertexOffset,
+                  i + 1 + vertexOffset,
+                  i + 2 + vertexOffset
+                ]);
+              }
+            }
+            vertexOffset += posAttr.count;
+          }
+        });
+        mesh = { vertices, triangles };
+      } else {
+        throw new Error("Formato não suportado");
+      }
+
       setGenerationStep(lang === "PT" ? "Aplicando configurações da IA..." : "Applying AI settings...");
       await new Promise(r => setTimeout(r, 100));
       setGenerationStep(lang === "PT" ? "Embutindo perfis de processo e filamento..." : "Embedding profiles...");
@@ -141,7 +199,7 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
         triangleCount: settings.geometryStats.triangleCount
       }) : "organic";
       
-      await downloadThreeMfProject(meshData, settings, settings.profileName || "SlicerAI_Project", results?.orientation, modelType);
+      await downloadThreeMfProject(mesh, settings, settings.profileName || "SlicerAI_Project", results?.orientation, modelType);
       
       setGenerationStep(lang === "PT" ? "✅ Pronto! Verifique seus Downloads" : "✅ Done! Check your Downloads");
       setTimeout(() => { setIsGenerating(false); setGenerationStep(""); }, 2500);
