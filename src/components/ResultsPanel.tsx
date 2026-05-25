@@ -183,7 +183,7 @@ export const ResultsPanel: React.FC = () => {
     setIsDownloading(true);
     try {
       // Import dynamicly to avoid circular or heavy initial load
-      const { generateThreeMf } = await import("../lib/threeMfGenerator");
+      const { generateThreeMf } = await import("../lib/threeMfExport");
       const res = version.results;
       const fileNameBase = (wizard as any).fileName ? (wizard as any).fileName.replace(/\.(stl|3mf)$/i, "") : "perfil";
       const fileName = `SlicerAI_${fileNameBase}_v${version.version}.3mf`;
