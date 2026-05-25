@@ -116,7 +116,7 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
 
   const copy = (val: string) => {
     navigator.clipboard.writeText(val);
-    toast.success(t.copied);
+    toast.success("Copiado!");
   };
 
   const handleDownload3mf = async () => {
