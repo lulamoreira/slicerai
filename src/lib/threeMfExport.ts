@@ -114,11 +114,8 @@ function getOptimalSeamConfig(modelType: "organic" | "technical") {
 }
 
 function getOrientationTransform(rotation: string, cx: number, cy: number): string {
-  const r = (rotation || "").toLowerCase();
-  if (r.includes("90") && r.includes("x")) return `1 0 0 0 0 -1 0 1 0 ${cx} ${cy} 0`;
-  if (r.includes("90") && r.includes("y")) return `0 0 1 0 1 0 -1 0 0 ${cx} ${cy} 0`;
-  if (r.includes("180") && r.includes("z")) return `-1 0 0 0 -1 0 0 0 1 ${cx} ${cy} 0`;
-  return `1 0 0 0 1 0 0 0 1 ${cx} ${cy} 0`;
+  // Always return identity transform for build item, let Bambu Studio handle positioning
+  return `1 0 0 0 1 0 0 0 1 0 0 0`;
 }
 
 export function shouldForceSupport(mesh: MeshData, dimensions?: { x: number; y: number; z: number }): boolean {
