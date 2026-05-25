@@ -63,6 +63,9 @@ export const ResultsPanel: React.FC = () => {
   };
 
   const handleDownload = (res = results, versionNum = profileVersion) => {
+    const fileNameBase = (wizard as any).fileName ? (wizard as any).fileName.replace(/\.(stl|3mf)$/i, "") : "perfil";
+    const autoProfileName = `SlicerAI_${fileNameBase}_${new Date().toISOString().slice(0,10).replace(/-/g,"")}`;
+    
     downloadBambuProfile({
       printer: (wizard as any).printer || "X1 Carbon",
       nozzle: String((wizard as any).nozzle || "0.4"),
@@ -86,7 +89,7 @@ export const ResultsPanel: React.FC = () => {
       seamReason: res.quality.seamReason,
       filamentType: (wizard as any).material || "PLA",
       buildPlate: (wizard as any).buildPlate || "Textured PEI Plate",
-      profileName: `SlicerAI_${(wizard as any).fileName?.split('.')[0] || 'perfil'}`,
+      profileName: autoProfileName,
       version: versionNum
     });
   };
