@@ -33,61 +33,19 @@ interface SettingsStore {
 export const useSettingsStore = create<SettingsStore>()(
   persist(
     (set) => ({
-      apiKey: "",
-      aiProvider: "gemini",
-      groqApiKey: "",
-      deepseekKey: "",
-      openrouterKey: "",
       claudeKey: "",
-      openaiKey: "",
       costPerKg: 120,
       defaultPrinter: "X1C",
       language: "pt-BR",
       theme: "dark",
       history: [],
 
-      setApiKey: (apiKey) => {
-        const cleanKey = apiKey.trim().replace(/[^\x20-\x7E]/g, "");
-        if (apiKey && cleanKey.length < 10) {
-          throw new Error("Chave inválida — verifique se copiou corretamente");
-        }
-        set({ apiKey: cleanKey });
-      },
-      setAiProvider: (aiProvider) => set({ aiProvider }),
-      setGroqApiKey: (groqApiKey) => {
-        const cleanKey = groqApiKey.trim().replace(/[^\x20-\x7E]/g, "");
-        if (groqApiKey && cleanKey.length < 10) {
-          throw new Error("Chave inválida — verifique se copiou corretamente");
-        }
-        set({ groqApiKey: cleanKey });
-      },
-      setDeepseekKey: (deepseekKey) => {
-        const cleanKey = deepseekKey.trim().replace(/[^\x20-\x7E]/g, "");
-        if (deepseekKey && cleanKey.length < 10) {
-          throw new Error("Chave inválida — verifique se copiou corretamente");
-        }
-        set({ deepseekKey: cleanKey });
-      },
-      setOpenrouterKey: (openrouterKey) => {
-        const cleanKey = openrouterKey.trim().replace(/[^\x20-\x7E]/g, "");
-        if (openrouterKey && cleanKey.length < 10) {
-          throw new Error("Chave inválida — verifique se copiou corretamente");
-        }
-        set({ openrouterKey: cleanKey });
-      },
       setClaudeKey: (claudeKey) => {
         const cleanKey = claudeKey.trim().replace(/[^\x20-\x7E]/g, "");
         if (claudeKey && cleanKey.length < 10) {
           throw new Error("Chave inválida — verifique se copiou corretamente");
         }
         set({ claudeKey: cleanKey });
-      },
-      setOpenaiKey: (openaiKey) => {
-        const cleanKey = openaiKey.trim().replace(/[^\x20-\x7E]/g, "");
-        if (openaiKey && cleanKey.length < 10) {
-          throw new Error("Chave inválida — verifique se copiou corretamente");
-        }
-        set({ openaiKey: cleanKey });
       },
       setCostPerKg: (costPerKg) => set({ costPerKg }),
       setDefaultPrinter: (defaultPrinter) => set({ defaultPrinter }),
