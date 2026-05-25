@@ -471,7 +471,7 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
                 </>
               )}
             </Button>
-            {!meshData && <p className="text-xs text-amber-400 text-center mt-1">⚠️ Recarregue o modelo 3D para ativar o download .3mf</p>}
+            
             
             <div className="flex gap-2">
               <Button variant="outline" size="sm" onClick={copyAll} className="flex-1 text-xs gap-1 border-gray-600 text-gray-300 hover:bg-gray-800 h-10">
