@@ -259,17 +259,26 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="w-full h-full md:h-auto max-w-lg md:max-h-[90vh] flex flex-col p-0 gap-0 bg-[#1c1c1e] text-white border-white/10 rounded-none md:rounded-[2.5rem]">
+      <DialogContent className="w-full h-full md:h-auto max-w-lg md:max-h-[90vh] flex flex-col p-0 gap-0 bg-[#1c1c1e] text-white border-white/10 rounded-none md:rounded-[2.5rem] [&>button.absolute]:hidden">
         <DialogHeader className="px-4 pt-4 pb-0 shrink-0">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-3">
             <DialogTitle className="text-base font-semibold text-white">Process — SlicerAI</DialogTitle>
-            <div className="flex items-center gap-1 bg-white/5 rounded p-0.5 border border-white/10">
-              {(["EN", "PT"] as Lang[]).map((l) => (
-                <button key={l} onClick={() => setLang(l)}
-                  className={`px-3 py-0.5 rounded text-[10px] font-bold transition-all ${lang === l ? "bg-green-500 text-white shadow-lg" : "text-gray-400 hover:text-white"}`}>
-                  {l}
-                </button>
-              ))}
+            <div className="flex items-center gap-2 shrink-0">
+              <div className="flex items-center gap-1 bg-white/5 rounded p-0.5 border border-white/10">
+                {(["EN", "PT"] as Lang[]).map((l) => (
+                  <button key={l} onClick={() => setLang(l)}
+                    className={`px-3 py-0.5 rounded text-[10px] font-bold transition-all ${lang === l ? "bg-green-500 text-white shadow-lg" : "text-gray-400 hover:text-white"}`}>
+                    {l}
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={onClose}
+                aria-label="Fechar"
+                className="flex items-center justify-center h-8 w-8 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/15 transition-colors cursor-pointer"
+              >
+                <X className="h-4 w-4" />
+              </button>
             </div>
           </div>
           <div className="flex gap-2 mt-2 flex-wrap">
