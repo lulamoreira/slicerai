@@ -187,6 +187,10 @@ export interface ProfileHistoryItem {
   settings: any; // BambuSettings from bambuExport.ts, but we use AIResponse mostly
   results: AIResponse;
   downloadedAt: string;
+  aiAnalysis?: string;     // o que a IA viu na imagem
+  improvements?: Record<string, string>;  // campo → motivo da mudança
+  summary?: string;        // resumo geral (legado v1)
+  meshData?: { vertices: any[]; triangles: any[] };  // necessário para regenerar .3mf
   improveReason?: string;
 }
 

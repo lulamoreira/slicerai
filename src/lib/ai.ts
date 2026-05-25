@@ -300,9 +300,16 @@ INSTRUÇÃO: Com base nesse histórico, identifique preferências do usuário e 
     ? `
 ALERTA DE MELHORIA (Versão v${currentVersion}):
 O usuário enviou um print screen do fatiamento no Bambu Studio usando as configurações da versão v${currentVersion}.
-Analise a imagem do fatiamento no Bambu Studio que estou enviando. Identifique problemas visíveis (stringing, má adesão, suportes desnecessários, qualidade de superfície, tempo de impressão alto) e gere um perfil melhorado corrigindo esses problemas. Explique no campo improvements o que foi identificado na imagem e o que foi ajustado em cada configuração.
+Analise a imagem do fatiamento no Bambu Studio que estou enviando. Identifique problemas visíveis (stringing, má adesão, suportes desnecessários, qualidade de superfície, tempo de impressão alto) e gere um perfil melhorado corrigindo esses problemas.
+
+Sua resposta JSON DEVE conter dois campos extras obrigatórios:
+(1) aiAnalysis: string com 3-5 frases descrevendo CONCRETAMENTE o que você viu na imagem (exemplos: 'Detectei stringing acentuado nas pontas dos braços', 'Os suportes em árvore aparecem com má adesão à base', 'A camada superior mostra padrão zebra indicando temperatura desigual', 'Tempo de impressão estimado em 8h pode ser otimizado'). Seja específico, didático e mencione regiões da peça quando possível.
+(2) improvements: objeto onde cada chave é o nome do campo alterado e o valor é uma string curta explicando POR QUE foi alterado baseado no que você viu na imagem (exemplo: { "printSpeed": "Reduzi de 180 para 150 mm/s pois identifiquei vibração nas paredes verticais", "supportThreshold": "Diminuí de 45° para 35° pois vi floating regions no antebraço esquerdo" }).
+
+Nunca retorne aiAnalysis vazio.
 
 CONFIGURAÇÕES v${currentVersion} ATUAIS:
+
 ${JSON.stringify(previousResults, null, 2)}
 ` : '';
 

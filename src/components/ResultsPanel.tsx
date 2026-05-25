@@ -552,25 +552,11 @@ export const ResultsPanel: React.FC = () => {
             onClick={resetApp}
             className="flex-1 min-w-[120px] flex items-center justify-center gap-2 px-4 py-4 bg-surface-raised border border-border rounded-xl text-[10px] font-black tracking-widest text-foreground hover:text-primary hover:border-primary hover:bg-surface-hover transition-all"
           >
-            <RotateCcw className="w-4 h-4" />
-            REFAZER
+            <RotateCcw className="w-3.5 h-3.5" />
+            RECOMEÇAR
           </button>
-          <button 
-            onClick={() => handleDownload()}
-            className="flex-1 min-w-[120px] flex items-center justify-center gap-2 px-4 py-4 bg-surface-raised border border-border rounded-xl text-[10px] font-black tracking-widest text-foreground hover:text-primary hover:border-primary hover:bg-surface-hover transition-all"
-          >
-            <Download className="w-4 h-4" />
-            BAIXAR
-          </button>
-          <button 
-            onClick={handleShare}
-            className="flex-1 min-w-[120px] flex items-center justify-center gap-2 px-4 py-4 bg-surface-raised border border-border rounded-xl text-[10px] font-black tracking-widest text-foreground hover:text-primary hover:border-primary hover:bg-surface-hover transition-all"
-          >
-            <Share className="w-4 h-4" />
-            PARTILHAR
-          </button>
-
         </div>
+
 
         <button
           onClick={() => setShowBambuModal(true)}
