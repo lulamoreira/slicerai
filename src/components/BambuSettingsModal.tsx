@@ -449,16 +449,10 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
               <><FileArchive className="w-5 h-5" /> {lang === "PT" ? "📦 BAIXAR PROJETO .3MF (PRONTO PARA IMPRIMIR)" : "📦 DOWNLOAD .3MF PROJECT"}</>
             )}
           </Button>
-          <div className="grid grid-cols-2 gap-2">
-            <Button variant="outline" size="sm" onClick={copyAll}
-              className="border-gray-600 text-gray-200 hover:bg-gray-800 text-xs h-9">
-              <Copy className="w-3 h-3 mr-1" /> {t.copyAll}
-            </Button>
-            <Button variant="outline" size="sm" onClick={handleDownloadCfg} disabled={isDownloadingCfg}
-              className="border-gray-600 text-gray-200 hover:bg-gray-800 text-xs h-9">
-              <Download className="w-3 h-3 mr-1" /> {isDownloadingCfg ? cfgStatus : ".bbscfg"}
-            </Button>
-          </div>
+          <Button variant="outline" size="sm" onClick={handleDownloadCfg} disabled={isDownloadingCfg}
+            className="w-full border-gray-600 text-gray-300 hover:bg-gray-800 text-xs h-9">
+            <Download className="w-3 h-3 mr-1" /> {isDownloadingCfg ? cfgStatus : (lang === "PT" ? "Baixar só perfil (.bbscfg)" : "Profile only (.bbscfg)")}
+          </Button>
           <p className="text-[10px] text-gray-500 text-center">{t.howToImport}</p>
         </div>
       </DialogContent>
