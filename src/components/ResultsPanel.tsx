@@ -198,13 +198,17 @@ export const ResultsPanel: React.FC = () => {
         infillDensity: res.strength.infill_density,
         infillPattern: res.strength.infill_pattern,
         printSpeed: res.speed.inner_wall,
+        travelSpeed: res.speed.travel || 200,
         enableSupport: res.support.needed,
         supportType: res.support.type,
         supportThreshold: res.support.threshold_angle,
+        brimWidth: res.adhesion.brim_width || 0,
         nozzleTemp: res.temperature.nozzle,
         bedTemp: res.temperature.bed,
         filamentType: (wizard as any).material || "PLA",
+        enableIroning: res.quality.ironing,
       };
+
 
       const currentMeshData = version.meshData || meshData;
       if (!currentMeshData) {
