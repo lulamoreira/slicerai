@@ -602,11 +602,11 @@ function SettingsTab() {
 
   const handleSaveSecret = async () => {
     if (!apiKey) {
-      toast.error('Insira a chave Gemini');
+      toast.error('Insira a chave Claude');
       return;
     }
     setSaving(true);
-    toast.info('Para segurança, as chaves mestras devem ser configuradas no painel do Supabase (GEMINI_API_KEY).', {
+    toast.info('Para segurança, as chaves mestras devem ser configuradas no painel do Supabase (CLAUDE_API_KEY).', {
       duration: 6000
     });
     setSaving(false);
