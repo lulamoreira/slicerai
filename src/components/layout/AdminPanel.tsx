@@ -380,7 +380,7 @@ function EditUserModal({ user, onClose, onSave }: any) {
           </div>
 
           <div className="space-y-4 pt-4 border-t border-border">
-            <label className="text-[10px] font-bold uppercase tracking-widest text-primary ml-1">Modo de API Gemini</label>
+            <label className="text-[10px] font-bold uppercase tracking-widest text-primary ml-1">Modo de API Claude</label>
             <div className="space-y-3">
               <button 
                 onClick={() => setMode('personal')}
