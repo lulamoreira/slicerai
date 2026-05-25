@@ -183,7 +183,7 @@ export const ResultsPanel: React.FC = () => {
     setIsDownloading(true);
     try {
       // Import dynamicly to avoid circular or heavy initial load
-      const { generateThreeMf } = await import("../lib/threeMfExport");
+      const { downloadThreeMfProject } = await import("../lib/threeMfExport");
       const res = version.results;
       const fileNameBase = (wizard as any).fileName ? (wizard as any).fileName.replace(/\.(stl|3mf)$/i, "") : "perfil";
       const fileName = `SlicerAI_${fileNameBase}_v${version.version}.3mf`;
@@ -212,15 +212,10 @@ export const ResultsPanel: React.FC = () => {
         return;
       }
 
-      const blob = await generateThreeMf(currentMeshData, config);
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = fileName;
-      a.click();
-      URL.revokeObjectURL(url);
+      await downloadThreeMfProject(currentMeshData as any, config, fileName.replace(".3mf", ""));
       toast.success(".3mf gerado com sucesso!");
     } catch (error) {
+
       console.error("3MF generation error:", error);
       toast.error("Erro ao gerar arquivo .3mf");
     } finally {
@@ -556,6 +551,7 @@ export const ResultsPanel: React.FC = () => {
             RECOMEÇAR
           </button>
         </div>
+
 
 
         <button
