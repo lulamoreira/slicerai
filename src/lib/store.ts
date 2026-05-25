@@ -27,7 +27,7 @@ interface SlicerStore {
 
   toggleTheme: () => void;
   setLanguage: (lang: "pt-BR" | "en") => void;
-  setOpenAIKey: (key: string) => void;
+  setClaudeKey: (key: string) => void;
   setCostPerKg: (cost: number) => void;
 
   setResults: (results: AIResponse) => void;
@@ -82,7 +82,7 @@ export const useStore = create<SlicerStore>()(
         app: { ...state.app, theme: state.app.theme === "dark" ? "light" : "dark" } 
       })),
       setLanguage: (language) => set((state) => ({ app: { ...state.app, language } })),
-      setOpenAIKey: (openaiKey) => set((state) => ({ app: { ...state.app, openaiKey } })),
+      setClaudeKey: (claudeKey) => set((state) => ({ app: { ...state.app, claudeKey } })),
       setCostPerKg: (costPerKg) => set((state) => ({ app: { ...state.app, costPerKg } })),
 
       setResults: (results) => set({ currentResults: results }),

@@ -225,7 +225,7 @@ function UsersTab({ onEditUser }: { onEditUser: (user: any) => void }) {
             <tr className="border-b border-border bg-surface-raised/50">
               <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Usuário</th>
               <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Status</th>
-              <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">API Gemini</th>
+              <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">API Claude</th>
               <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Expira</th>
               <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Último Login</th>
               <th className="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground text-right">Ações</th>
@@ -380,7 +380,7 @@ function EditUserModal({ user, onClose, onSave }: any) {
           </div>
 
           <div className="space-y-4 pt-4 border-t border-border">
-            <label className="text-[10px] font-bold uppercase tracking-widest text-primary ml-1">Modo de API Gemini</label>
+            <label className="text-[10px] font-bold uppercase tracking-widest text-primary ml-1">Modo de API Claude</label>
             <div className="space-y-3">
               <button 
                 onClick={() => setMode('personal')}
@@ -602,11 +602,11 @@ function SettingsTab() {
 
   const handleSaveSecret = async () => {
     if (!apiKey) {
-      toast.error('Insira a chave Gemini');
+      toast.error('Insira a chave Claude');
       return;
     }
     setSaving(true);
-    toast.info('Para segurança, as chaves mestras devem ser configuradas no painel do Supabase (GEMINI_API_KEY).', {
+    toast.info('Para segurança, as chaves mestras devem ser configuradas no painel do Supabase (CLAUDE_API_KEY).', {
       duration: 6000
     });
     setSaving(false);
@@ -621,12 +621,12 @@ function SettingsTab() {
         </div>
 
         <div className="space-y-4">
-          <label className="text-[10px] font-black uppercase tracking-widest text-primary ml-1">Chave Gemini Centralizada</label>
+          <label className="text-[10px] font-black uppercase tracking-widest text-primary ml-1">Chave Claude Centralizada</label>
           <div className="flex gap-3">
             <div className="relative flex-1">
               <input 
                 type={showKey ? "text" : "password"}
-                placeholder="Configurada no Servidor (GEMINI_API_KEY)"
+                placeholder="Configurada no Servidor (CLAUDE_API_KEY)"
                 className="w-full bg-surface-raised border border-border rounded-xl p-3.5 text-xs font-mono font-bold outline-none opacity-50 cursor-not-allowed"
                 disabled
               />

@@ -31,7 +31,7 @@ interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ onShowSettings, onShowHistory }) => {
-  const { theme, setTheme, language, setLanguage, apiKey, history } = useSettingsStore();
+  const { theme, setTheme, language, setLanguage, claudeKey, history } = useSettingsStore();
   const { user, profile, logout } = useAuthStore();
   const { status, resetApp } = useAppStore();
   
@@ -196,7 +196,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onShowSettings, onShowHistory })
           onClick={onShowSettings}
           className={cn(
             "p-1.5 hover:bg-primary-subtle rounded-lg transition-all",
-            !apiKey ? "text-destructive animate-pulse" : "text-muted hover:text-primary"
+            !claudeKey ? "text-destructive animate-pulse" : "text-muted hover:text-primary"
           )}
         >
           <SettingsIcon className="w-5 h-5" />

@@ -3,70 +3,38 @@ import { useAppStore, useSettingsStore } from "../../store/useAppStore";
 import { generateSettings } from "../../lib/ai";
 import { useAuthStore } from "../../store/useAuthStore";
 import { 
-  Sparkles, Printer, Box, Layers, Play, CheckCircle2,
-  Package, Grid3x3, Target, Scale, Clock, Triangle, Palette, Wrench, Settings as SettingsIcon,
-  Cpu, AlertCircle
+  Sparkles, Printer, Box, Layers, CheckCircle2,
+  Package, Grid3x3, Target, Scale, Clock, Loader2
 } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { MATERIAL_DENSITIES } from "../../lib/geometry";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 export const ReviewStep: React.FC = () => {
-  const { wizard, setResults, status, geometry, profileHistory } = useAppStore();
+  const { wizard, setResults, status, geometry } = useAppStore();
   const { profile } = useAuthStore();
   const { 
-    apiKey, groqApiKey, deepseekKey, openrouterKey, aiProvider, 
-    setAiProvider, addToHistory, history: printHistory 
+    claudeKey, addToHistory, history: printHistory 
   } = useSettingsStore();
 
-  const [isAiModalOpen, setIsAiModalOpen] = React.useState(false);
-  const [isQuotaModalOpen, setIsQuotaModalOpen] = React.useState(false);
-  const [selectedProvider, setSelectedProvider] = React.useState(aiProvider);
   const [lastError, setLastError] = React.useState<{ provider: string; message: string } | null>(null);
-  const [failedProviders, setFailedProviders] = React.useState<Set<string>>(new Set());
 
-  // Reactive weight: prefer live geometry from store; fallback to PLA density placeholder.
   const volume = geometry?.volume ?? wizard.geometryStats?.volume;
   const density = MATERIAL_DENSITIES[wizard.material as keyof typeof MATERIAL_DENSITIES] || 1.24;
   const estimatedWeight = volume != null ? (volume * density).toFixed(1) + "g" : "—";
 
-  // Simple heuristic for print time (min)
   const estimatedTime = volume != null
     ? Math.round((volume * 5) / (wizard.layerHeight * 2))
     : 45;
-
-  const reviewColor = wizard.hasAMS && wizard.amsSlots[0]?.color
-    ? wizard.amsSlots[0].color
-    : wizard.baseColor;
 
   const openSettings = () => {
     window.dispatchEvent(new CustomEvent('slicerai:open-settings'));
   };
 
-  const handleGenerateClick = () => {
-    setSelectedProvider(aiProvider);
-    setIsAiModalOpen(true);
-  };
-
-  const handleConfirmGeneration = async () => {
-    setIsAiModalOpen(false);
-    
-    // Update provider in store if it changed
-    if (selectedProvider !== aiProvider) {
-      setAiProvider(selectedProvider);
-    }
-
+  const handleGenerate = async () => {
     const isCentralized = profile?.api_key_mode === 'centralized';
-    const currentApiKey = 
-      selectedProvider === 'gemini' ? apiKey : 
-      selectedProvider === 'groq' ? groqApiKey :
-      selectedProvider === 'deepseek' ? deepseekKey :
-      selectedProvider === 'claude' ? useSettingsStore.getState().claudeKey :
-      selectedProvider === 'openai' ? useSettingsStore.getState().openaiKey :
-      openrouterKey;
-
-    if (!currentApiKey && !isCentralized) {
+    
+    if (!claudeKey && !isCentralized) {
       openSettings();
       return;
     }
@@ -93,12 +61,11 @@ export const ReviewStep: React.FC = () => {
       
       addToHistory(newEntry as any);
 
-      // Initialize profile versioning in store
       useAppStore.setState({ 
         profileVersion: 1,
         profileHistory: [{
           version: 1,
-          settings: results, // Using results directly as settings for simplicity
+          settings: results,
           results: results,
           downloadedAt: new Date().toISOString()
         }],
@@ -106,38 +73,14 @@ export const ReviewStep: React.FC = () => {
       });
     } catch (error: any) {
       console.error('Generation error:', error);
-      
       useAppStore.setState({ status: 'ready' });
 
-      // Handle specific structured errors from ai.ts
-      if (error?.code === "QUOTA_EXCEEDED" || error?.code === "NO_BALANCE" || error?.code === "INVALID_KEY" || error?.code === "OPENROUTER_NO_MODELS" || error?.code === "VISION_NOT_AVAILABLE") {
-        const hasGroq = !!groqApiKey || profile?.api_key_mode === 'centralized';
-        const isQuotaOrBalanceOrNotFound = error?.code === "QUOTA_EXCEEDED" || error?.code === "NO_BALANCE" || error?.code === "OPENROUTER_NO_MODELS";
-        const isVisionError = error?.code === "VISION_NOT_AVAILABLE";
-
-        if (isQuotaOrBalanceOrNotFound && hasGroq && selectedProvider !== 'groq') {
-          // Automatic fallback to Groq
-          setAiProvider('groq');
-          setLastError({
-            provider: error.provider || selectedProvider,
-            message: `${error.message.split('.')[0]} — alternando automaticamente para Groq (gratuito)`
-          });
-          setFailedProviders(prev => new Set(prev).add(selectedProvider));
-          setIsAiModalOpen(true);
-          return;
-        }
-
+      if (error?.code === "NO_BALANCE" || error?.code === "INVALID_KEY") {
         setLastError({
-          provider: error.provider || selectedProvider,
-          message: isVisionError ? "⚠️ O modelo de visão atual não está disponível. Tentando com outro provedor..." : error.message
+          provider: "Claude",
+          message: error.message
         });
-        setFailedProviders(prev => new Set(prev).add(selectedProvider));
-        setIsAiModalOpen(true); // Re-open the selection modal
-        return;
-      }
-
-      if (error?.code === "QUOTA_EXCEEDED") {
-        setIsQuotaModalOpen(true);
+        toast.error(error.message);
         return;
       }
 
@@ -181,18 +124,10 @@ export const ReviewStep: React.FC = () => {
       </div>
 
       <div className="space-y-4">
-        {(!(aiProvider === 'gemini' ? apiKey : 
-           aiProvider === 'groq' ? groqApiKey : 
-           aiProvider === 'deepseek' ? deepseekKey : 
-           openrouterKey) && profile?.api_key_mode !== 'centralized') && (
+        {(!claudeKey && profile?.api_key_mode !== 'centralized') && (
           <div className="p-3 bg-[rgba(255,180,84,0.1)] border border-[rgba(255,180,84,0.3)] rounded-lg flex items-center justify-between gap-3">
             <span className="text-[0.85rem] font-medium text-warning">
-              ⚠️ Configure sua chave {
-                aiProvider === 'gemini' ? 'Gemini 2.0 Flash' : 
-                aiProvider === 'groq' ? 'Groq Llama 3.3' :
-                aiProvider === 'deepseek' ? 'DeepSeek V3' :
-                'OpenRouter'
-              } nas ⚙️ Configurações para continuar
+              ⚠️ Configure sua chave Claude nas ⚙️ Configurações para continuar
             </span>
             <button
               onClick={openSettings}
@@ -216,7 +151,7 @@ export const ReviewStep: React.FC = () => {
         </div>
 
         <button
-          onClick={handleGenerateClick}
+          onClick={handleGenerate}
           disabled={isGenerating}
           className={cn(
             "w-full py-10 rounded-xl flex flex-col items-center justify-center gap-3 transition-all relative overflow-hidden group",
@@ -228,7 +163,13 @@ export const ReviewStep: React.FC = () => {
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-primary/20 to-transparent -translate-x-full group-hover:animate-shimmer" />
 
           {isGenerating ? (
-            <GeneratingState />
+            <div className="flex flex-col items-center gap-3">
+              <Loader2 className="w-10 h-10 animate-spin text-[#0d0d14]" />
+              <div className="text-center">
+                <p className="text-sm font-bold uppercase tracking-widest text-[#0d0d14]">Analisando Geometria...</p>
+                <p className="text-[10px] font-medium opacity-60 text-[#0d0d14]">Isso pode levar alguns segundos</p>
+              </div>
+            </div>
           ) : (
             <>
               <div className="w-16 h-16 bg-[#0d0d14]/10 rounded-xl flex items-center justify-center mb-1 group-hover:scale-110 transition-transform shadow-inner border border-[#0d0d14]/10">
@@ -237,306 +178,33 @@ export const ReviewStep: React.FC = () => {
               <div className="text-center space-y-1">
                 <span className="text-2xl font-bold tracking-tight uppercase block text-[#0d0d14]">Gerar com SlicerAI</span>
                 <span className="text-[10px] opacity-70 font-bold uppercase tracking-[0.4em] block pl-1 text-[#0d0d14]">
-                  {aiProvider === 'gemini' ? "OTIMIZAÇÃO GOOGLE GEMINI 2.0" : 
-                   aiProvider === 'groq' ? "OTIMIZAÇÃO GROQ Llama 3.3" :
-                   aiProvider === 'deepseek' ? "OTIMIZAÇÃO DEEPSEEK V3" :
-                   aiProvider === 'claude' ? "OTIMIZAÇÃO CLAUDE 3.5 HAIKU" :
-                   aiProvider === 'openai' ? "OTIMIZAÇÃO GPT-4O MINI" :
-                   "OTIMIZAÇÃO OPENROUTER"}
+                  OTIMIZAÇÃO CLAUDE HAIKU 4.5
                 </span>
               </div>
             </>
           )}
         </button>
       </div>
-
-      <Dialog open={isAiModalOpen} onOpenChange={setIsAiModalOpen}>
-        <DialogContent className="max-w-md bg-surface text-foreground border-border-strong p-6">
-          <DialogHeader className="space-y-3">
-            <DialogTitle className="text-xl font-bold flex items-center gap-2">
-              <Cpu className="w-5 h-5 text-primary" />
-              Escolha a IA para gerar
-            </DialogTitle>
-            <p className="text-sm text-muted-foreground">
-              Você pode trocar a qualquer momento nas Configurações.
-            </p>
-            {lastError && (
-              <div className="mt-4 p-3 bg-red-500/10 border border-red-500/30 rounded-lg flex items-start gap-3 animate-in fade-in slide-in-from-top-2 duration-300">
-                <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
-                <p className="text-xs text-red-400 leading-relaxed">
-                  <span className="font-bold">⚠️ {lastError.provider}:</span> {lastError.message}
-                </p>
-              </div>
-            )}
-          </DialogHeader>
-
-          <div className="grid grid-cols-1 gap-3 my-6">
-            <ProviderButton 
-              id="gemini" 
-              name="Google Gemini 2.0" 
-              description={profileHistory.length > 1 ? "✅ Suporta análise de imagem" : "Gratuito com limite diário"}
-              hasKey={!!apiKey || profile?.api_key_mode === 'centralized'} 
-              isSelected={selectedProvider === 'gemini'} 
-              isFailed={failedProviders.has('gemini')}
-              onClick={() => {
-                setSelectedProvider('gemini');
-                setLastError(null);
-              }} 
-            />
-            <ProviderButton 
-              id="groq" 
-              name="Groq Llama 3.3" 
-              description={profileHistory.length > 1 ? "⚠️ Suporte limitado a imagens" : "Gratuito e rápido"}
-              hasKey={!!groqApiKey || profile?.api_key_mode === 'centralized'} 
-              isSelected={selectedProvider === 'groq'} 
-              isFailed={failedProviders.has('groq')}
-              onClick={() => {
-                setSelectedProvider('groq');
-                setLastError(null);
-              }} 
-            />
-            <ProviderButton 
-              id="deepseek" 
-              name="DeepSeek V3" 
-              description={profileHistory.length > 1 ? "✅ Suporta análise de imagem" : "Gratuito — $5 de crédito inicial"}
-              hasKey={!!deepseekKey || profile?.api_key_mode === 'centralized'} 
-              isSelected={selectedProvider === 'deepseek'} 
-              isFailed={failedProviders.has('deepseek')}
-              onClick={() => {
-                setSelectedProvider('deepseek');
-                setLastError(null);
-              }} 
-            />
-            <ProviderButton 
-              id="openrouter" 
-              name="OpenRouter" 
-              description={profileHistory.length > 1 ? "✅ Suporta análise de imagem" : "Modelos gratuitos disponíveis"}
-              hasKey={!!openrouterKey || profile?.api_key_mode === 'centralized'} 
-              isSelected={selectedProvider === 'openrouter'} 
-              isFailed={failedProviders.has('openrouter')}
-              onClick={() => {
-                setSelectedProvider('openrouter');
-                setLastError(null);
-              }} 
-            />
-            <ProviderButton 
-              id="claude" 
-              name="Claude (Anthropic)" 
-              description={profileHistory.length > 1 ? "✅ Suporta análise de imagem" : "Claude 3.5 Haiku — PAGO 💳"}
-              hasKey={!!useSettingsStore.getState().claudeKey || profile?.api_key_mode === 'centralized'} 
-              isSelected={selectedProvider === 'claude'} 
-              isFailed={failedProviders.has('claude')}
-              onClick={() => {
-                setSelectedProvider('claude');
-                setLastError(null);
-              }} 
-            />
-            <ProviderButton 
-              id="openai" 
-              name="ChatGPT (OpenAI)" 
-              description={profileHistory.length > 1 ? "✅ Suporta análise de imagem" : "GPT-4o Mini — PAGO 💳"}
-              hasKey={!!useSettingsStore.getState().openaiKey || profile?.api_key_mode === 'centralized'} 
-              isSelected={selectedProvider === 'openai'} 
-              isFailed={failedProviders.has('openai')}
-              onClick={() => {
-                setSelectedProvider('openai');
-                setLastError(null);
-              }} 
-            />
-          </div>
-
-          <DialogFooter className="flex gap-3 mt-2 sm:justify-end">
-            <Button 
-              variant="outline" 
-              onClick={() => setIsAiModalOpen(false)}
-              className="bg-transparent border-border text-foreground hover:bg-muted"
-            >
-              Cancelar
-            </Button>
-            <Button 
-              onClick={handleConfirmGeneration}
-              disabled={!(
-                selectedProvider === 'gemini' ? (!!apiKey || profile?.api_key_mode === 'centralized') :
-                selectedProvider === 'groq' ? (!!groqApiKey || profile?.api_key_mode === 'centralized') :
-                selectedProvider === 'deepseek' ? (!!deepseekKey || profile?.api_key_mode === 'centralized') :
-                selectedProvider === 'claude' ? (!!useSettingsStore.getState().claudeKey || profile?.api_key_mode === 'centralized') :
-                selectedProvider === 'openai' ? (!!useSettingsStore.getState().openaiKey || profile?.api_key_mode === 'centralized') :
-                (!!openrouterKey || profile?.api_key_mode === 'centralized')
-              ) || failedProviders.has(selectedProvider)}
-              className="bg-[#00AE42] hover:bg-[#009938] text-white font-bold"
-            >
-              Gerar agora
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={isQuotaModalOpen} onOpenChange={setIsQuotaModalOpen}>
-        <DialogContent className="max-w-md bg-surface text-foreground border-border-strong p-6">
-          <DialogHeader className="space-y-3">
-            <DialogTitle className="text-xl font-bold flex items-center gap-2">
-              <AlertCircle className="w-5 h-5 text-warning" />
-              Cota do Gemini esgotada
-            </DialogTitle>
-            <p className="text-sm text-muted-foreground">
-              Seu limite gratuito do Gemini foi atingido. Deseja gerar agora usando o DeepSeek ou Groq?
-            </p>
-          </DialogHeader>
-
-          <div className="grid grid-cols-1 gap-3 my-6">
-            <button
-              disabled={!deepseekKey && profile?.api_key_mode !== 'centralized'}
-              onClick={() => {
-                setAiProvider('deepseek');
-                setIsQuotaModalOpen(false);
-                setTimeout(() => handleConfirmGeneration(), 100);
-              }}
-              className={cn(
-                "flex flex-col items-start p-4 rounded-xl border transition-all text-left relative overflow-hidden group",
-                "bg-muted border border-border hover:border-primary/50 hover:bg-muted/80",
-                (!deepseekKey && profile?.api_key_mode !== 'centralized') && "opacity-50 cursor-not-allowed"
-              )}
-            >
-              <span className="font-bold text-sm text-foreground">Usar DeepSeek V3</span>
-              {(!deepseekKey && profile?.api_key_mode !== 'centralized') && (
-                <span className="text-[10px] text-red-500 flex items-center gap-1 mt-1 font-bold">
-                  <AlertCircle className="w-3 h-3" />
-                  Sem chave cadastrada
-                </span>
-              )}
-            </button>
-
-            <button
-              disabled={!groqApiKey && profile?.api_key_mode !== 'centralized'}
-              onClick={() => {
-                setAiProvider('groq');
-                setIsQuotaModalOpen(false);
-                setTimeout(() => handleConfirmGeneration(), 100);
-              }}
-              className={cn(
-                "flex flex-col items-start p-4 rounded-xl border transition-all text-left relative overflow-hidden group",
-                "bg-muted border border-border hover:border-primary/50 hover:bg-muted/80",
-                (!groqApiKey && profile?.api_key_mode !== 'centralized') && "opacity-50 cursor-not-allowed"
-              )}
-            >
-              <span className="font-bold text-sm text-foreground">Usar Groq Llama 3.3</span>
-              {(!groqApiKey && profile?.api_key_mode !== 'centralized') && (
-                <span className="text-[10px] text-red-500 flex items-center gap-1 mt-1 font-bold">
-                  <AlertCircle className="w-3 h-3" />
-                  Sem chave cadastrada
-                </span>
-              )}
-            </button>
-          </div>
-
-          <DialogFooter className="flex gap-3 mt-2 sm:justify-end">
-            <Button 
-              variant="outline" 
-              onClick={() => setIsQuotaModalOpen(false)}
-              className="bg-transparent border-border text-foreground hover:bg-muted"
-            >
-              Agora não
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
     </div>
   );
 };
 
-const ProviderButton = ({ id, name, description, hasKey, isSelected, isFailed, onClick }: { 
-  id: string; 
-  name: string; 
-  description?: string;
-  hasKey: boolean; 
-  isSelected: boolean; 
-  isFailed?: boolean;
-  onClick: () => void 
-}) => (
-  <button
-    onClick={onClick}
-    disabled={!hasKey || isFailed}
-    className={cn(
-      "flex flex-col items-start p-4 rounded-xl border transition-all text-left relative overflow-hidden group",
-      isSelected
-        ? "bg-primary/10 border-2 border-primary shadow-[0_0_15px_rgba(0,200,180,0.1)]"
-        : "bg-muted/50 border border-border hover:border-primary/50 hover:bg-muted/80",
-      (!hasKey || isFailed) && "opacity-50 cursor-not-allowed"
-    )}
-  >
-    <div className="flex items-center justify-between w-full">
-      <div className="flex items-center gap-2">
-        <span className={cn(
-          "font-bold text-sm",
-          isSelected ? "text-primary" : "text-foreground"
-        )}>
-          {name}
-        </span>
-        {isFailed && <AlertCircle className="w-3.5 h-3.5 text-red-500" />}
-      </div>
-      {isSelected && <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />}
-    </div>
-
-    {description && !isFailed && hasKey && (
-      <span className={cn(
-        "text-[10px] mt-1 font-medium italic",
-        isSelected ? "text-primary/80" : "text-muted-foreground"
-      )}>
-        {description}
-      </span>
-    )}
-
-    {!hasKey && (
-      <span className="text-[10px] text-red-500 flex items-center gap-1 mt-1 font-bold">
-        <AlertCircle className="w-3 h-3" />
-        Sem chave cadastrada — configure nas Configurações
-      </span>
-    )}
-    
-    {isFailed && (
-      <span className="text-[10px] text-red-500 flex items-center gap-1 mt-1 font-bold">
-        <AlertCircle className="w-3 h-3" />
-        Falha no provedor
-      </span>
-    )}
-  </button>
-);
-
-const Row = ({ icon: Icon, label, value, highlight, mono }: { icon: any; label: string; value: string; highlight?: boolean; mono?: boolean }) => (
-  <div className="flex items-center gap-3 min-w-0">
-    <Icon className={cn("w-4 h-4 shrink-0", highlight ? "text-primary" : "text-primary/70")} />
-    <div className="flex flex-col gap-1 min-w-0">
-      <span className="text-[0.8rem] text-muted font-medium opacity-60">{label}</span>
-      <span className={cn("text-sm font-bold truncate", highlight ? "text-primary" : "text-foreground", mono && "mono")}>{value}</span>
-    </div>
-  </div>
-);
-
-const GeneratingState = () => {
-  const [msgIndex, setMsgIndex] = React.useState(0);
-  const messages = [
-    "Lendo geometria...",
-    "Aplicando perfis de material...",
-    "Otimizando suportes...",
-    "Calculando velocidades...",
-    "Gerando relatório final..."
-  ];
-
-  React.useEffect(() => {
-    const timer = setInterval(() => {
-      setMsgIndex(prev => (prev + 1) % messages.length);
-    }, 1500);
-    return () => clearInterval(timer);
-  }, []);
-
+function Row({ icon: Icon, label, value, highlight, mono }: any) {
   return (
-    <div className="flex flex-col items-center gap-5">
-      <div className="relative">
-        <div className="w-12 h-12 border-4 border-foreground/10 border-t-foreground rounded-full animate-spin" />
-        <Sparkles className="w-5 h-5 text-foreground absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 animate-pulse" />
+    <div className="flex items-start gap-4">
+      <div className={cn(
+        "w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border",
+        highlight ? "bg-primary/10 border-primary/20" : "bg-surface-raised border-border"
+      )}>
+        <Icon className={cn("w-4 h-4", highlight ? "text-primary" : "text-muted")} />
       </div>
-      <span className="text-xs font-bold uppercase tracking-[0.2em] animate-pulse text-foreground/80">{messages[msgIndex]}</span>
+      <div className="space-y-0.5">
+        <p className="text-[9px] font-bold text-muted uppercase tracking-widest">{label}</p>
+        <p className={cn(
+          "text-xs font-bold text-foreground",
+          mono && "font-mono"
+        )}>{value}</p>
+      </div>
     </div>
   );
-};
+}
