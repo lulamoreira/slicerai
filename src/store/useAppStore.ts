@@ -14,26 +14,14 @@ import { ParsedThreeMf } from "../lib/threeMfParser";
 
 
 interface SettingsStore {
-  apiKey: string;
-  aiProvider: 'gemini' | 'groq' | 'deepseek' | 'openrouter' | 'claude' | 'openai';
-  groqApiKey: string;
-  deepseekKey: string;
-  openrouterKey: string;
   claudeKey: string;
-  openaiKey: string;
   costPerKg: number;
   defaultPrinter: string;
   language: 'pt-BR' | 'en';
   theme: 'dark' | 'light' | 'contrast' | 'rainbow';
   history: HistoryEntry[];
   
-  setApiKey: (apiKey: string) => void;
-  setAiProvider: (provider: 'gemini' | 'groq' | 'deepseek' | 'openrouter' | 'claude' | 'openai') => void;
-  setGroqApiKey: (apiKey: string) => void;
-  setDeepseekKey: (apiKey: string) => void;
-  setOpenrouterKey: (apiKey: string) => void;
   setClaudeKey: (apiKey: string) => void;
-  setOpenaiKey: (apiKey: string) => void;
   setCostPerKg: (cost: number) => void;
   setDefaultPrinter: (printer: string) => void;
   setLanguage: (lang: 'pt-BR' | 'en') => void;
