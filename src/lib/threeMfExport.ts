@@ -140,7 +140,7 @@ export async function downloadThreeMfProject(
   const filamentId = filamentMap[printerKey] || filamentMap["X1C"] || Object.values(filamentMap)[0];
   const [plateW, plateH] = printerInfo.plate;
   const cx = plateW / 2, cy = plateH / 2;
-  const transformStr = getOrientationTransform(orientation?.rotation || "", cx, cy);
+  const transformStr = "1 0 0 0 1 0 0 0 1 0 0 0";
 
   // Nomes únicos para os presets embarcados (evita conflito com presets de sistema)
   const uniqueProcessName = `SlicerAI_${profileName.replace(/\s+/g, '_')}_Process`;
