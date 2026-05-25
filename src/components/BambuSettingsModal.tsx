@@ -113,6 +113,7 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
   const [cfgStatus, setCfgStatus] = useState("");
   
   const meshData = useAppStore(s => s.meshData);
+  const file = useAppStore(s => s.file);
   const results = useAppStore(s => s.results);
   const t = LABELS[lang];
 
