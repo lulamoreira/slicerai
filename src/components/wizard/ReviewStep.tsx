@@ -16,15 +16,10 @@ export const ReviewStep: React.FC = () => {
   const { wizard, setResults, status, geometry, profileHistory } = useAppStore();
   const { profile } = useAuthStore();
   const { 
-    apiKey, groqApiKey, deepseekKey, openrouterKey, aiProvider, 
-    setAiProvider, addToHistory, history: printHistory 
+    claudeKey, addToHistory, history: printHistory 
   } = useSettingsStore();
 
-  const [isAiModalOpen, setIsAiModalOpen] = React.useState(false);
-  const [isQuotaModalOpen, setIsQuotaModalOpen] = React.useState(false);
-  const [selectedProvider, setSelectedProvider] = React.useState(aiProvider);
   const [lastError, setLastError] = React.useState<{ provider: string; message: string } | null>(null);
-  const [failedProviders, setFailedProviders] = React.useState<Set<string>>(new Set());
 
   // Reactive weight: prefer live geometry from store; fallback to PLA density placeholder.
   const volume = geometry?.volume ?? wizard.geometryStats?.volume;
