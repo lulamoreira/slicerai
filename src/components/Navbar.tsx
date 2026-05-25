@@ -31,7 +31,7 @@ interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ onShowSettings, onShowHistory }) => {
-  const { theme, setTheme, language, setLanguage, apiKey, history } = useSettingsStore();
+  const { theme, setTheme, language, setLanguage, claudeKey, history } = useSettingsStore();
   const { user, profile, logout } = useAuthStore();
   const { status, resetApp } = useAppStore();
   
