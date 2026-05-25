@@ -324,13 +324,6 @@ export const ResultsPanel: React.FC = () => {
                     </div>
                     <div className="flex items-center gap-2">
                       <button 
-                        onClick={() => handleCopyAll(item.results)}
-                        className="p-2 hover:bg-primary/10 text-muted-foreground hover:text-primary rounded-lg transition-all"
-                        title="Copiar configurações"
-                      >
-                        <Copy className="w-3.5 h-3.5" />
-                      </button>
-                      <button 
                         onClick={() => handleDownload(item.results, item.version)}
                         className="p-2 hover:bg-primary/10 text-muted-foreground hover:text-primary rounded-lg transition-all"
                         title="Baixar .bbscfg"
