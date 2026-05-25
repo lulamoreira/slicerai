@@ -56,9 +56,7 @@ export const ResultsPanel: React.FC = () => {
   const handleCopyAll = (res = results) => {
     const configText = generateFullConfigText(res);
     navigator.clipboard.writeText(configText);
-    setCopiedAll(true);
     toast.success("Todas as configurações copiadas!");
-    setTimeout(() => setCopiedAll(false), 2000);
   };
 
   const handleDownload = (res = results, versionNum = profileVersion) => {
