@@ -407,7 +407,7 @@ export const ResultsPanel: React.FC = () => {
               seamReason: results.quality.seamReason,
               filamentType: (wizard as any).material || "PLA",
               buildPlate: (wizard as any).buildPlate || "Textured PEI Plate",
-              profileName: `SlicerAI_${(wizard as any).fileName?.split('.')[0] || 'perfil'}`,
+              profileName: `SlicerAI_${(wizard as any).fileName ? (wizard as any).fileName.replace(/\.(stl|3mf)$/i, "") : "perfil"}_${new Date().toISOString().slice(0,10).replace(/-/g,"")}`,
               version: profileVersion,
               decisions: results.decisions,
               improvements: results.improvements,
