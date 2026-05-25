@@ -39,29 +39,10 @@ export const ReviewStep: React.FC = () => {
     window.dispatchEvent(new CustomEvent('slicerai:open-settings'));
   };
 
-  const handleGenerateClick = () => {
-    setSelectedProvider(aiProvider);
-    setIsAiModalOpen(true);
-  };
-
-  const handleConfirmGeneration = async () => {
-    setIsAiModalOpen(false);
-    
-    // Update provider in store if it changed
-    if (selectedProvider !== aiProvider) {
-      setAiProvider(selectedProvider);
-    }
-
+  const handleGenerate = async () => {
     const isCentralized = profile?.api_key_mode === 'centralized';
-    const currentApiKey = 
-      selectedProvider === 'gemini' ? apiKey : 
-      selectedProvider === 'groq' ? groqApiKey :
-      selectedProvider === 'deepseek' ? deepseekKey :
-      selectedProvider === 'claude' ? useSettingsStore.getState().claudeKey :
-      selectedProvider === 'openai' ? useSettingsStore.getState().openaiKey :
-      openrouterKey;
-
-    if (!currentApiKey && !isCentralized) {
+    
+    if (!claudeKey && !isCentralized) {
       openSettings();
       return;
     }
@@ -88,12 +69,11 @@ export const ReviewStep: React.FC = () => {
       
       addToHistory(newEntry as any);
 
-      // Initialize profile versioning in store
       useAppStore.setState({ 
         profileVersion: 1,
         profileHistory: [{
           version: 1,
-          settings: results, // Using results directly as settings for simplicity
+          settings: results,
           results: results,
           downloadedAt: new Date().toISOString()
         }],
@@ -101,38 +81,14 @@ export const ReviewStep: React.FC = () => {
       });
     } catch (error: any) {
       console.error('Generation error:', error);
-      
       useAppStore.setState({ status: 'ready' });
 
-      // Handle specific structured errors from ai.ts
-      if (error?.code === "QUOTA_EXCEEDED" || error?.code === "NO_BALANCE" || error?.code === "INVALID_KEY" || error?.code === "OPENROUTER_NO_MODELS" || error?.code === "VISION_NOT_AVAILABLE") {
-        const hasGroq = !!groqApiKey || profile?.api_key_mode === 'centralized';
-        const isQuotaOrBalanceOrNotFound = error?.code === "QUOTA_EXCEEDED" || error?.code === "NO_BALANCE" || error?.code === "OPENROUTER_NO_MODELS";
-        const isVisionError = error?.code === "VISION_NOT_AVAILABLE";
-
-        if (isQuotaOrBalanceOrNotFound && hasGroq && selectedProvider !== 'groq') {
-          // Automatic fallback to Groq
-          setAiProvider('groq');
-          setLastError({
-            provider: error.provider || selectedProvider,
-            message: `${error.message.split('.')[0]} — alternando automaticamente para Groq (gratuito)`
-          });
-          setFailedProviders(prev => new Set(prev).add(selectedProvider));
-          setIsAiModalOpen(true);
-          return;
-        }
-
+      if (error?.code === "NO_BALANCE" || error?.code === "INVALID_KEY") {
         setLastError({
-          provider: error.provider || selectedProvider,
-          message: isVisionError ? "⚠️ O modelo de visão atual não está disponível. Tentando com outro provedor..." : error.message
+          provider: "Claude",
+          message: error.message
         });
-        setFailedProviders(prev => new Set(prev).add(selectedProvider));
-        setIsAiModalOpen(true); // Re-open the selection modal
-        return;
-      }
-
-      if (error?.code === "QUOTA_EXCEEDED") {
-        setIsQuotaModalOpen(true);
+        toast.error(error.message);
         return;
       }
 
