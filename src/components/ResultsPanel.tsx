@@ -41,8 +41,62 @@ export const ResultsPanel: React.FC = () => {
   const [showImproveArea, setShowImproveArea] = useState(false);
   const [uploadingImage, setUploadingImage] = useState<string | null>(null);
   const [isImproving, setIsImproving] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImageSelected = (file: File) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setUploadingImage(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    const files = Array.from(e.dataTransfer.files);
+    const imageFile = files.find(f => f.type === "image/png" || f.type === "image/jpeg" || /\.(png|jpe?g)$/i.test(f.name));
+    if (imageFile) {
+      handleImageSelected(imageFile);
+    } else {
+      toast.error("Apenas arquivos PNG ou JPG são aceitos");
+    }
+  };
+
+  React.useEffect(() => {
+    const handlePaste = (e: ClipboardEvent) => {
+      if (!showImproveArea) return;
+      const items = e.clipboardData?.items;
+      if (!items) return;
+      for (const item of Array.from(items)) {
+        if (item.type.startsWith("image/")) {
+          const file = item.getAsFile();
+          if (file) {
+            handleImageSelected(file);
+            toast.success("Imagem colada com sucesso");
+          }
+        }
+      }
+    };
+
+    window.addEventListener("paste", handlePaste);
+    return () => window.removeEventListener("paste", handlePaste);
+  }, [showImproveArea]);
 
   if (!results) return null;
 
@@ -99,16 +153,6 @@ export const ResultsPanel: React.FC = () => {
     toast.success("Link compartilhado copiado!");
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setUploadingImage(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
 
   const handleImprove = async () => {
     if (!uploadingImage) return;
@@ -239,16 +283,23 @@ export const ResultsPanel: React.FC = () => {
                       Faça o fatiamento no Bambu Studio com este perfil, tire um print screen do resultado e envie aqui para a IA analisar e melhorar.
                     </p>
                   </div>
-                  <button onClick={() => setShowImproveArea(false)} className="text-muted-foreground hover:text-white">
+                  <button onClick={() => { setShowImproveArea(false); setUploadingImage(null); }} className="text-muted-foreground hover:text-white">
                     <X className="w-4 h-4" />
                   </button>
                 </div>
 
                 <div 
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
                   onClick={() => fileInputRef.current?.click()}
                   className={cn(
                     "border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center gap-3 transition-all cursor-pointer",
-                    uploadingImage ? "border-primary/50 bg-primary/5" : "border-border-strong hover:border-primary/30 hover:bg-primary/5"
+                    isDragging 
+                      ? "border-green-500 bg-green-500/10 scale-[1.02]" 
+                      : uploadingImage 
+                        ? "border-primary/50 bg-primary/5" 
+                        : "border-border-strong hover:border-primary/30 hover:bg-primary/5"
                   )}
                 >
                   <input 
@@ -256,7 +307,10 @@ export const ResultsPanel: React.FC = () => {
                     ref={fileInputRef} 
                     className="hidden" 
                     accept="image/png,image/jpeg"
-                    onChange={handleImageUpload}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) handleImageSelected(file);
+                    }}
                   />
                   {uploadingImage ? (
                     <div className="relative group w-full max-w-[200px] aspect-video">
@@ -266,12 +320,24 @@ export const ResultsPanel: React.FC = () => {
                       </div>
                     </div>
                   ) : (
-                    <>
-                      <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
-                        <ImageIcon className="w-6 h-6 text-primary" />
+                    <div className="flex flex-col items-center justify-center gap-3 text-center">
+                      <div className={cn(
+                        "w-14 h-14 rounded-full flex items-center justify-center transition-colors",
+                        isDragging ? "bg-green-500/20" : "bg-primary/10"
+                      )}>
+                        <ImageIcon className={cn("w-7 h-7", isDragging ? "text-green-400" : "text-primary")} />
                       </div>
-                      <p className="text-[10px] font-bold text-primary uppercase tracking-widest">Clique para selecionar PNG ou JPG</p>
-                    </>
+                      <div>
+                        <p className="font-bold text-[10px] uppercase tracking-widest text-primary">
+                          {isDragging 
+                            ? "✨ Solte a imagem aqui" 
+                            : "ARRASTE A IMAGEM AQUI OU CLIQUE PARA SELECIONAR"}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-tight">
+                          PNG ou JPG • Você também pode colar com Ctrl+V
+                        </p>
+                      </div>
+                    </div>
                   )}
                 </div>
 
