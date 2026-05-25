@@ -222,28 +222,6 @@ export function BambuSettingsModal({ open, onClose, settings }: Props) {
     }
   };
 
-  const copyAll = () => {
-    const all = [
-      `${t.printer}: ${settings.printer}`,
-      `${t.nozzle}: ${settings.nozzle}mm`,
-      `${t.filament}: ${settings.filamentType}`,
-      `${t.layerHeight}: ${settings.layerHeight}mm`,
-      `${t.wallLoops}: ${settings.wallLoops}`,
-      `${t.topLayers}: ${settings.topLayers}`,
-      `${t.bottomLayers}: ${settings.bottomLayers}`,
-      `${t.infillDensity}: ${settings.infillDensity}%`,
-      `${t.infillPattern}: ${settings.infillPattern}`,
-      `${t.ironing}: ${settings.enableIroning ? "On" : "Off"}`,
-      `${t.printSpeed}: ${settings.printSpeed}mm/s`,
-      `${t.travelSpeed}: ${settings.travelSpeed}mm/s`,
-      `${t.enableSupport}: ${settings.enableSupport ? "On" : "Off"}`,
-      `${t.supportType}: ${settings.supportType}`,
-      `${t.nozzleTemp}: ${settings.nozzleTemp}°C`,
-      `${t.bedTemp}: ${settings.bedTemp}°C`,
-    ].join("\n");
-    navigator.clipboard.writeText(all);
-    toast.success(t.copied);
-  };
 
   const tabs: Tab[] = ["Quality", "Strength", "Speed", "Support", "Geometry", "Analysis"];
   const tabLabel: Record<Tab, string> = {
