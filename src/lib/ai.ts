@@ -156,6 +156,10 @@ export const parseAIResponse = (text: string): any => {
 export const callClaude = async (prompt: string, apiKey: string, improvementImage?: string) => {
   const claudeMessages = [];
   if (improvementImage) {
+    let mediaType = "image/jpeg";
+    if (improvementImage.startsWith("data:image/png")) mediaType = "image/png";
+    else if (improvementImage.startsWith("data:image/webp")) mediaType = "image/webp";
+
     claudeMessages.push({
       role: "user",
       content: [
@@ -164,7 +168,7 @@ export const callClaude = async (prompt: string, apiKey: string, improvementImag
           type: "image", 
           source: { 
             type: "base64", 
-            media_type: "image/jpeg", 
+            media_type: mediaType, 
             data: improvementImage.split(',')[1] 
           } 
         }
