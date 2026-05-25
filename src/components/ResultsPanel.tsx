@@ -18,8 +18,13 @@ import {
   History,
   X,
   FileText,
-  Wand2
+  Wand2,
+  FileArchive,
+  Eye
 } from "lucide-react";
+import { Badge } from "./ui/badge";
+import { Button } from "./ui/button";
+
 import { toast } from "sonner";
 import { SummaryTab } from "./results/tabs/SummaryTab";
 import { SettingsTab } from "./results/tabs/SettingsTab";
@@ -113,6 +118,35 @@ export const ResultsPanel: React.FC = () => {
     toast.success("Todas as configurações copiadas!");
   };
 
+  const translateField = (field: string): string => {
+    const translations: Record<string, string> = {
+      layer_height: "Altura de camada",
+      layerHeight: "Altura de camada",
+      wall_loops: "Paredes",
+      wallLoops: "Paredes",
+      infill_density: "Preenchimento",
+      infillDensity: "Preenchimento",
+      printSpeed: "Velocidade",
+      print_speed: "Velocidade",
+      nozzleTemp: "Temperatura do bico",
+      nozzle_temp: "Temperatura do bico",
+      bedTemp: "Temperatura da mesa",
+      bed_temp: "Temperatura da mesa",
+      supportType: "Tipo de suporte",
+      support_type: "Tipo de suporte",
+      supportThreshold: "Ângulo de suporte",
+      support_threshold: "Ângulo de suporte",
+      ironing: "Alisamento (Ironing)",
+      infill_pattern: "Padrão de preenchimento",
+      infillPattern: "Padrão de preenchimento",
+      top_layers: "Camadas superiores",
+      bottom_layers: "Camadas inferiores",
+    };
+    return translations[field] || field;
+  };
+
+  const [isDownloading, setIsDownloading] = useState(false);
+
   const handleDownload = (res = results, versionNum = profileVersion) => {
     const fileNameBase = (wizard as any).fileName ? (wizard as any).fileName.replace(/\.(stl|3mf)$/i, "") : "perfil";
     const autoProfileName = `SlicerAI_${fileNameBase}_${new Date().toISOString().slice(0,10).replace(/-/g,"")}`;
@@ -145,13 +179,63 @@ export const ResultsPanel: React.FC = () => {
     });
   };
 
-  const handleShare = () => {
-    const url = new URL(window.location.href);
-    const cfg = btoa(JSON.stringify({ wizard, results }));
-    url.searchParams.set("cfg", cfg);
-    navigator.clipboard.writeText(url.toString());
-    toast.success("Link compartilhado copiado!");
+  const handleDownload3mfVersion = async (version: any) => {
+    setIsDownloading(true);
+    try {
+      // Import dynamicly to avoid circular or heavy initial load
+      const { generateThreeMf } = await import("../lib/threeMfGenerator");
+      const res = version.results;
+      const fileNameBase = (wizard as any).fileName ? (wizard as any).fileName.replace(/\.(stl|3mf)$/i, "") : "perfil";
+      const fileName = `SlicerAI_${fileNameBase}_v${version.version}.3mf`;
+      
+      const config = {
+        printer: (wizard as any).printer || "X1 Carbon",
+        nozzle: String((wizard as any).nozzle || "0.4"),
+        layerHeight: res.quality.layer_height,
+        wallLoops: res.strength.wall_loops,
+        topLayers: res.strength.top_layers,
+        bottomLayers: res.strength.bottom_layers,
+        infillDensity: res.strength.infill_density,
+        infillPattern: res.strength.infill_pattern,
+        printSpeed: res.speed.inner_wall,
+        enableSupport: res.support.needed,
+        supportType: res.support.type,
+        supportThreshold: res.support.threshold_angle,
+        nozzleTemp: res.temperature.nozzle,
+        bedTemp: res.temperature.bed,
+        filamentType: (wizard as any).material || "PLA",
+      };
+
+      const currentMeshData = version.meshData || meshData;
+      if (!currentMeshData) {
+        toast.error("Dados do modelo não encontrados para gerar .3mf");
+        return;
+      }
+
+      const blob = await generateThreeMf(currentMeshData, config);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fileName;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success(".3mf gerado com sucesso!");
+    } catch (error) {
+      console.error("3MF generation error:", error);
+      toast.error("Erro ao gerar arquivo .3mf");
+    } finally {
+      setIsDownloading(false);
+    }
   };
+
+  const openSettingsModal = (settings: any) => {
+    // Logic to open modal with specific settings
+    // Since BambuSettingsModal usually uses the current store results, 
+    // we might need to temporarily set results or pass them to modal
+    setResults(settings);
+    setShowBambuModal(true);
+  };
+
 
 
   const handleImprove = async () => {
@@ -176,8 +260,12 @@ export const ResultsPanel: React.FC = () => {
         settings: improvedResults,
         results: improvedResults,
         downloadedAt: new Date().toISOString(),
-        improveReason: (improvedResults as any).quality.improveReason || improvedResults.explanation.postprocessing_tips
+        aiAnalysis: (improvedResults as any).aiAnalysis,
+        improvements: (improvedResults as any).improvements,
+        summary: (improvedResults as any).explanation?.postprocessing_tips,
+        meshData: meshData || undefined
       });
+
       
       setShowImproveArea(false);
       setUploadingImage(null);
@@ -370,43 +458,92 @@ export const ResultsPanel: React.FC = () => {
               <History className="w-3.5 h-3.5" />
               Histórico de Versões
             </div>
-            <div className="grid grid-cols-1 gap-3">
-              {(profileHistory || []).map((item) => (
-                <div 
-                  key={item.version}
-                  className={cn(
-                    "p-4 rounded-xl border transition-all space-y-3",
-                    results.profile_name_suggestion === item.results.profile_name_suggestion && profileVersion === item.version
-                      ? "bg-primary/5 border-primary/30"
-                      : "bg-surface-raised border-border"
-                  )}
-                >
-                  <div className="flex items-center justify-between">
+            <div className="grid grid-cols-1 gap-4">
+              {(profileHistory || []).map((version) => (
+                <div key={version.version} className="bg-gray-900/50 border border-gray-700 rounded-xl p-5 mb-3">
+                  {/* Header da versão */}
+                  <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-3">
-                      <span className="text-sm font-mono font-bold text-primary">v{item.version}</span>
-                      <span className="text-[10px] text-muted-foreground uppercase tracking-widest">
-                        {new Date(item.downloadedAt).toLocaleString()}
-                      </span>
+                      <div className="w-10 h-10 rounded-full bg-green-600/20 border border-green-500 flex items-center justify-center">
+                        <span className="text-green-400 font-bold text-sm">v{version.version}</span>
+                      </div>
+                      <div>
+                        <p className="text-white font-semibold text-sm">Versão {version.version}</p>
+                        <p className="text-gray-400 text-xs">{new Date(version.downloadedAt).toLocaleString("pt-BR")}</p>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <button 
-                        onClick={() => handleDownload(item.results, item.version)}
-                        className="p-2 hover:bg-primary/10 text-muted-foreground hover:text-primary rounded-lg transition-all"
-                        title="Baixar .bbscfg"
+                    {version.version === profileVersion && (
+                      <Badge className="bg-green-600 text-white">✨ Atual</Badge>
+                    )}
+                  </div>
+
+                  {/* Análise da IA (v2+) */}
+                  {version.version > 1 && version.aiAnalysis && (
+                    <div className="bg-blue-950/40 border border-blue-500/30 rounded-lg p-3 mb-3">
+                      <p className="text-blue-300 text-xs font-bold uppercase tracking-wide mb-2 flex items-center gap-1">
+                        🔍 O que a IA identificou na imagem
+                      </p>
+                      <p className="text-blue-100/90 text-sm leading-relaxed">{version.aiAnalysis}</p>
+                    </div>
+                  )}
+
+                  {/* Melhorias aplicadas (v2+) */}
+                  {version.version > 1 && version.improvements && Object.keys(version.improvements).length > 0 && (
+                    <div className="bg-green-950/40 border border-green-500/30 rounded-lg p-3 mb-3">
+                      <p className="text-green-300 text-xs font-bold uppercase tracking-wide mb-2 flex items-center gap-1">
+                        🎯 O que foi melhorado nesta versão
+                      </p>
+                      <ul className="space-y-1.5">
+                        {Object.entries(version.improvements).map(([field, reason]) => (
+                          <li key={field} className="text-sm">
+                            <span className="text-green-400 font-semibold">{translateField(field)}:</span>
+                            <span className="text-gray-200 ml-2">{reason as string}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Resumo melhoria (v1 ou fallback) */}
+                  {version.summary && (
+                    <div className="bg-gray-800/60 rounded-lg p-3 mb-3">
+                      <p className="text-xs text-gray-400 uppercase tracking-wide mb-1">📝 Resumo</p>
+                      <p className="text-gray-200 text-sm">{version.summary}</p>
+                    </div>
+                  )}
+
+                  {/* Botões de download — .3mf em destaque */}
+                  <div className="space-y-2 mt-3">
+                    <Button
+                      size="default"
+                      onClick={() => handleDownload3mfVersion(version)}
+                      disabled={isDownloading}
+                      className="w-full gap-2 bg-green-600 hover:bg-green-700 text-white font-bold h-11"
+                    >
+                      <FileArchive className="w-4 h-4" />
+                      📦 BAIXAR .3MF v{version.version} (PRONTO PARA IMPRIMIR)
+                    </Button>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button
+                        variant="outline" size="sm"
+                        onClick={() => handleDownload(version.results, version.version)}
+                        className="border-gray-600 text-gray-300 hover:bg-gray-800 text-xs h-9"
                       >
-                        <Download className="w-3.5 h-3.5" />
-                      </button>
+                        <Download className="w-3 h-3 mr-1" /> .bbscfg
+                      </Button>
+                      <Button
+                        variant="outline" size="sm"
+                        onClick={() => openSettingsModal(version.results)}
+                        className="border-gray-600 text-gray-300 hover:bg-gray-800 text-xs h-9"
+                      >
+                        <Eye className="w-3 h-3 mr-1" /> Ver configurações
+                      </Button>
                     </div>
                   </div>
-                  {item.improveReason && (
-                    <p className="text-[11px] text-muted-foreground italic bg-black/10 p-2 rounded-lg border border-border/50">
-                      <span className="font-bold text-primary mr-1 opacity-70">Melhoria:</span>
-                      {item.improveReason}
-                    </p>
-                  )}
                 </div>
               ))}
             </div>
+
           </div>
         )}
 
