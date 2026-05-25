@@ -36,7 +36,6 @@ export const ResultsPanel: React.FC = () => {
   const { history: printHistory } = useSettingsStore();
   
   const [activeTab, setActiveTab] = useState(0);
-  const [copiedAll, setCopiedAll] = useState(false);
   const [showBambuModal, setShowBambuModal] = useState(false);
   const [selectedHistoryVersion, setSelectedHistoryVersion] = useState<number | null>(null);
   const [showImproveArea, setShowImproveArea] = useState(false);
