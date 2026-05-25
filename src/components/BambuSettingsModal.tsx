@@ -84,22 +84,18 @@ function DecisionNote({ text }: { text?: string }) {
 
 }
 
-function Row({ label, value, onCopy, decision }: { label: string; value: string; onCopy: () => void; decision?: string }) {
+function Row({ label, value, decision }: { label: string; value: string; onCopy?: () => void; decision?: string }) {
   return (
     <div className="py-1.5 border-b border-gray-700">
       <div className="flex items-center justify-between group">
         <span className="text-sm text-gray-200 font-medium">{label}</span>
         <div className="flex items-center gap-2">
           <span className="text-sm font-mono font-semibold text-white">{value}</span>
-          <button onClick={onCopy} className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-white/10 rounded text-gray-400 hover:text-white">
-            <Copy className="w-3 h-3" />
-          </button>
         </div>
       </div>
       <DecisionNote text={decision} />
     </div>
   );
-
 }
 
 export function BambuSettingsModal({ open, onClose, settings }: Props) {
